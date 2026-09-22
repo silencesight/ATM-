@@ -1,0 +1,4241 @@
+{
+  "exportDate": "2026-09-22T00:47:21.919Z",
+  "settings": {
+    "startingBalance": 150,
+    "monthlyPayment": 482,
+    "bimonthlyPayment": 241,
+    "baseInterestRate": 10,
+    "delayPenaltyIncrement": 2,
+    "sentenceValue": 30,
+    "wordValue": 20,
+    "phrasalVerbValue": 50,
+    "startingLoanLimit": 50,
+    "maxLoanCap": 1000,
+    "punctualityScoreBoost": 15,
+    "decoratedPresentationScoreBoost": 35,
+    "lateDelayScorePenalty": 25,
+    "maxDailyEnglishDollars": 100,
+    "schoolName": "Victoria Bilingual Christian Academy",
+    "classroomTitle": "Advanced Level"
+  },
+  "students": [
+    {
+      "name": "ANDRADE GOMEZ MARIA ESTHER",
+      "studentIdNumber": "ENG-2026-031",
+      "cardNumber": "4834294036297418",
+      "expiryDate": "12/29",
+      "cvv": "535",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 645,
+      "maxLoanLimit": 650,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-0",
+      "creditLimitRaisesHistory": [
+        {
+          "id": "raise_1790004344321_t3vw",
+          "studentId": "std-1789955859514-0",
+          "studentName": "ANDRADE GOMEZ MARIA ESTHER",
+          "previousLimit": 500,
+          "newLimit": 650,
+          "increaseAmount": 150,
+          "reason": "⭐ Pristine on-time loan settlement track record",
+          "grantedBy": "Teacher",
+          "creditScoreBonus": 15,
+          "timestamp": "2026-09-21T15:25:44.321Z"
+        },
+        {
+          "id": "raise_1790003813880_z4rs",
+          "studentId": "std-1789955859514-0",
+          "studentName": "ANDRADE GOMEZ MARIA ESTHER",
+          "previousLimit": 300,
+          "newLimit": 500,
+          "increaseAmount": 200,
+          "reason": "⭐ Pristine on-time loan settlement track record",
+          "grantedBy": "Teacher",
+          "creditScoreBonus": 15,
+          "timestamp": "2026-09-21T15:16:53.881Z"
+        },
+        {
+          "id": "raise_1790002312265_o9mx",
+          "studentId": "std-1789955859514-0",
+          "studentName": "ANDRADE GOMEZ MARIA ESTHER",
+          "previousLimit": 100,
+          "newLimit": 300,
+          "increaseAmount": 200,
+          "reason": "⭐ Pristine on-time loan settlement track record",
+          "grantedBy": "Teacher",
+          "creditScoreBonus": 15,
+          "timestamp": "2026-09-21T14:51:52.265Z"
+        }
+      ]
+    },
+    {
+      "name": "ARGOTI RUIZ NICOLAS DAVID",
+      "studentIdNumber": "ENG-2026-032",
+      "cardNumber": "4321498862646249",
+      "expiryDate": "12/29",
+      "cvv": "922",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1452,
+      "creditScore": 605,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-1",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790013018873_lnbl",
+          "studentId": "std-1789955859514-1",
+          "studentName": "ARGOTI RUIZ NICOLAS DAVID",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:50:18.873Z"
+        }
+      ]
+    },
+    {
+      "name": "BAEZ CUEVA ARLETH SARAHI",
+      "studentIdNumber": "ENG-2026-033",
+      "cardNumber": "4568282287893810",
+      "expiryDate": "12/29",
+      "cvv": "890",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-2"
+    },
+    {
+      "name": "BENITEZ QUELAL CHELSEA SKARLETT",
+      "studentIdNumber": "ENG-2026-034",
+      "cardNumber": "4163828796678098",
+      "expiryDate": "12/29",
+      "cvv": "110",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-3"
+    },
+    {
+      "name": "BURKHARDT MOROCHO MICHAEL ANDREAS",
+      "studentIdNumber": "ENG-2026-035",
+      "cardNumber": "4342954720985130",
+      "expiryDate": "12/29",
+      "cvv": "575",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-4"
+    },
+    {
+      "name": "CAO JIANTAO",
+      "studentIdNumber": "ENG-2026-036",
+      "cardNumber": "4501405526908153",
+      "expiryDate": "12/29",
+      "cvv": "882",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 552,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-5",
+      "dailyEnglishEarned": {
+        "date": "2026-09-22",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790038041897_rlms",
+          "studentId": "std-1789955859514-5",
+          "studentName": "CAO JIANTAO",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-22T00:47:21.897Z"
+        }
+      ]
+    },
+    {
+      "name": "FLORES DIAZ FELIPE CALEB",
+      "studentIdNumber": "ENG-2026-037",
+      "cardNumber": "4477885471856922",
+      "expiryDate": "12/29",
+      "cvv": "119",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-6"
+    },
+    {
+      "name": "GUERRERO CHAMORRO MARIA EMILIA",
+      "studentIdNumber": "ENG-2026-038",
+      "cardNumber": "4912513292465623",
+      "expiryDate": "12/29",
+      "cvv": "761",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-7"
+    },
+    {
+      "name": "GUERRON CASTRO VALENTINA MAYTE",
+      "studentIdNumber": "ENG-2026-039",
+      "cardNumber": "4527895059128186",
+      "expiryDate": "12/29",
+      "cvv": "791",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-8"
+    },
+    {
+      "name": "JARA ERAZO ESTELA BEATRIZ",
+      "studentIdNumber": "ENG-2026-040",
+      "cardNumber": "4616845018021301",
+      "expiryDate": "12/29",
+      "cvv": "338",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1452,
+      "creditScore": 605,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-9",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790012845477_tpfm",
+          "studentId": "std-1789955859514-9",
+          "studentName": "JARA ERAZO ESTELA BEATRIZ",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:47:25.477Z"
+        }
+      ]
+    },
+    {
+      "name": "JIMENEZ SEVILLA MARTINA RAPHAELA",
+      "studentIdNumber": "ENG-2026-041",
+      "cardNumber": "4385128986456603",
+      "expiryDate": "12/29",
+      "cvv": "547",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-10"
+    },
+    {
+      "name": "LAGOS CAMPOVERDE JHONATHAN SAMUEL",
+      "studentIdNumber": "ENG-2026-042",
+      "cardNumber": "4793825350611425",
+      "expiryDate": "12/29",
+      "cvv": "492",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1452,
+      "creditScore": 605,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-11",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790012961456_p9ry",
+          "studentId": "std-1789955859514-11",
+          "studentName": "LAGOS CAMPOVERDE JHONATHAN SAMUEL",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:49:21.456Z"
+        }
+      ]
+    },
+    {
+      "name": "LUNA LEON VALENTINA",
+      "studentIdNumber": "ENG-2026-043",
+      "cardNumber": "4936601921383853",
+      "expiryDate": "12/29",
+      "cvv": "786",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-12"
+    },
+    {
+      "name": "MARROQUIN VELASCO MATHIAS",
+      "studentIdNumber": "ENG-2026-044",
+      "cardNumber": "4917877419806203",
+      "expiryDate": "12/29",
+      "cvv": "903",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-13"
+    },
+    {
+      "name": "MEJIA TEJADA MICAELA VALENTINA",
+      "studentIdNumber": "ENG-2026-045",
+      "cardNumber": "4375879636675903",
+      "expiryDate": "12/29",
+      "cvv": "992",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1452,
+      "creditScore": 605,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-14",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790012874397_6ofe",
+          "studentId": "std-1789955859514-14",
+          "studentName": "MEJIA TEJADA MICAELA VALENTINA",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:47:54.397Z"
+        }
+      ]
+    },
+    {
+      "name": "NARVAEZ HENAO JOAQUIN ESTEBAN",
+      "studentIdNumber": "ENG-2026-046",
+      "cardNumber": "4935749471721673",
+      "expiryDate": "12/29",
+      "cvv": "381",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1952,
+      "creditScore": 610,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-15",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790010365249_9pva",
+          "studentId": "std-1789955859514-15",
+          "studentName": "NARVAEZ HENAO JOAQUIN ESTEBAN",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1452,
+          "newBalance": 1952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:06:05.249Z"
+        },
+        {
+          "id": "adj_1790010304203_o2cp",
+          "studentId": "std-1789955859514-15",
+          "studentName": "NARVAEZ HENAO JOAQUIN ESTEBAN",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:05:04.203Z"
+        }
+      ]
+    },
+    {
+      "name": "NAVARRETE NAULA GABRIEL DIDIER",
+      "studentIdNumber": "ENG-2026-047",
+      "cardNumber": "4880793136277684",
+      "expiryDate": "12/29",
+      "cvv": "717",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-16"
+    },
+    {
+      "name": "NAVARRETE SALCEDO MARTINA ALEJANDRA",
+      "studentIdNumber": "ENG-2026-048",
+      "cardNumber": "4728467292475704",
+      "expiryDate": "12/29",
+      "cvv": "142",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-17"
+    },
+    {
+      "name": "PROAÑO IMBAGO ROLAN AARON",
+      "studentIdNumber": "ENG-2026-049",
+      "cardNumber": "4423600983613136",
+      "expiryDate": "12/29",
+      "cvv": "600",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-18"
+    },
+    {
+      "name": "RUANO GUANOLUIZA LAYLA ISABELLA",
+      "studentIdNumber": "ENG-2026-050",
+      "cardNumber": "4420863429047623",
+      "expiryDate": "12/29",
+      "cvv": "529",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1452,
+      "creditScore": 605,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-19",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790012918882_wqkf",
+          "studentId": "std-1789955859514-19",
+          "studentName": "RUANO GUANOLUIZA LAYLA ISABELLA",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:48:38.882Z"
+        }
+      ]
+    },
+    {
+      "name": "SCOTT ROSALES IAN DAVID",
+      "studentIdNumber": "ENG-2026-051",
+      "cardNumber": "4653123762751451",
+      "expiryDate": "12/29",
+      "cvv": "895",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-20"
+    },
+    {
+      "name": "TAMAYO HIROSE JOAQUIN",
+      "studentIdNumber": "ENG-2026-052",
+      "cardNumber": "4187890592784410",
+      "expiryDate": "12/29",
+      "cvv": "665",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-21"
+    },
+    {
+      "name": "TERÁN ROJAS CARLOS SEBASTIÁN",
+      "studentIdNumber": "ENG-2026-053",
+      "cardNumber": "4569302833673271",
+      "expiryDate": "12/29",
+      "cvv": "361",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 1452,
+      "creditScore": 605,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-22",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790012993927_qz99",
+          "studentId": "std-1789955859514-22",
+          "studentName": "TERÁN ROJAS CARLOS SEBASTIÁN",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T17:49:53.927Z"
+        }
+      ]
+    },
+    {
+      "name": "VALLEJOS TORRES MATEO EDUARDO",
+      "studentIdNumber": "ENG-2026-054",
+      "cardNumber": "4867510968126590",
+      "expiryDate": "12/29",
+      "cvv": "109",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-23"
+    },
+    {
+      "name": "VALLETA PIRELA LUCIANO JOSUE",
+      "studentIdNumber": "ENG-2026-055",
+      "cardNumber": "4543811140369949",
+      "expiryDate": "12/29",
+      "cvv": "822",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-24"
+    },
+    {
+      "name": "VELA ROSERO PABLO JOSE",
+      "studentIdNumber": "ENG-2026-056",
+      "cardNumber": "4723603911904491",
+      "expiryDate": "12/29",
+      "cvv": "438",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-25"
+    },
+    {
+      "name": "VELASQUEZ RECALDE CESAR LEONEL",
+      "studentIdNumber": "ENG-2026-057",
+      "cardNumber": "4277541526712636",
+      "expiryDate": "12/29",
+      "cvv": "955",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-26"
+    },
+    {
+      "name": "YEPEZ AGREDA MIGUEL ANGEL",
+      "studentIdNumber": "ENG-2026-058",
+      "cardNumber": "4359600816258077",
+      "expiryDate": "12/29",
+      "cvv": "212",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 452,
+      "currentBalance": 452,
+      "creditScore": 600,
+      "maxLoanLimit": 100,
+      "paymentFrequency": "bimonthly",
+      "classId": "class-2nd-a",
+      "className": "2nd BGU",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1789955859514-27"
+    },
+    {
+      "name": "Emilia Serrano",
+      "studentIdNumber": "ENG-2026-031",
+      "cardNumber": "4253578978208437",
+      "expiryDate": "12/29",
+      "cvv": "168",
+      "cardDesignTheme": "sapphire",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "startingBalance": 150,
+      "currentBalance": 2445,
+      "creditScore": 700,
+      "maxLoanLimit": 500,
+      "paymentFrequency": "monthly",
+      "cardStatus": "active",
+      "activeLoanId": "loan-7389",
+      "totalLoansCompleted": 3,
+      "punctualPaymentsCount": 3,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 1,
+      "id": "std-1789400120427",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_nncgcoy",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006117890_qerm",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 2045,
+          "newBalance": 2345,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:55:17.890Z"
+        },
+        {
+          "id": "adj_1790004331420_d26a",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 1795,
+          "newBalance": 2045,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:25:31.420Z"
+        },
+        {
+          "id": "adj_1789492462188_4u71",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 470,
+          "newBalance": 1470,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-15T17:14:22.188Z"
+        },
+        {
+          "id": "adj_1789477601630_k5vt",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 150,
+          "newBalance": 450,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-15T13:06:41.630Z"
+        }
+      ],
+      "creditLimitRaisesHistory": [
+        {
+          "id": "raise_1789558975608_0bkq",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "previousLimit": 250,
+          "newLimit": 350,
+          "increaseAmount": 100,
+          "reason": "⭐ Pristine on-time loan settlement track record",
+          "grantedBy": "Teacher",
+          "creditScoreBonus": 0,
+          "timestamp": "2026-09-16T11:42:55.608Z"
+        },
+        {
+          "id": "raise_1789493346944_u51m",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "previousLimit": 150,
+          "newLimit": 250,
+          "increaseAmount": 100,
+          "reason": "⭐ Pristine on-time loan settlement track record",
+          "grantedBy": "Teacher",
+          "creditScoreBonus": 0,
+          "timestamp": "2026-09-15T17:29:06.944Z"
+        }
+      ]
+    },
+    {
+      "name": "BENALCAZAR MORALES MARTINA ISABELA",
+      "studentIdNumber": "ENG-2026-002",
+      "cardNumber": "4675375861569404",
+      "expiryDate": "12/29",
+      "cvv": "604",
+      "cardDesignTheme": "sapphire",
+      "startingBalance": 150,
+      "currentBalance": 1075,
+      "creditScore": 610,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-0",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757797275_1khd",
+          "studentId": "std-1788923401753-0",
+          "studentName": "BENALCAZAR MORALES MARTINA ISABELA",
+          "amount": 100,
+          "reason": "Great Interview",
+          "createdAt": "2026-09-18T18:56:37.275Z"
+        },
+        {
+          "id": "rew_1789398646749_ulcm",
+          "studentId": "std-1788923401753-0",
+          "studentName": "BENALCAZAR MORALES MARTINA ISABELA",
+          "amount": 25,
+          "reason": "Samuel",
+          "createdAt": "2026-09-14T15:10:46.749Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_bb1l6r8",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006204324_s2m4",
+          "studentId": "std-1788923401753-0",
+          "studentName": "BENALCAZAR MORALES MARTINA ISABELA",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 675,
+          "newBalance": 975,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:56:44.324Z"
+        },
+        {
+          "id": "adj_1789399006304_h6z0",
+          "studentId": "std-1788923401753-0",
+          "studentName": "BENALCAZAR MORALES MARTINA ISABELA",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 175,
+          "newBalance": 575,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:16:46.304Z"
+        }
+      ]
+    },
+    {
+      "name": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+      "studentIdNumber": "ENG-2026-003",
+      "cardNumber": "4521422531673797",
+      "expiryDate": "12/29",
+      "cvv": "434",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 150,
+      "currentBalance": 2013,
+      "creditScore": 685,
+      "maxLoanLimit": 450,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": "loan-1940",
+      "totalLoansCompleted": 2,
+      "punctualPaymentsCount": 2,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 1,
+      "id": "std-1788923401753-1",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_6amg6mp",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790001864257_7e68",
+          "studentId": "std-1788923401753-1",
+          "studentName": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+          "type": "increase",
+          "amount": 348,
+          "previousBalance": 1565,
+          "newBalance": 1913,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T14:44:24.257Z"
+        },
+        {
+          "id": "adj_1789570021821_b1lz",
+          "studentId": "std-1788923401753-1",
+          "studentName": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 495,
+          "newBalance": 695,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-16T14:47:01.821Z"
+        },
+        {
+          "id": "adj_1788969737159_y4mb",
+          "studentId": "std-1788923401753-1",
+          "studentName": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 250,
+          "newBalance": 450,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:02:17.159Z"
+        },
+        {
+          "id": "adj_1788923569201_d8ya",
+          "studentId": "std-1788923401753-1",
+          "studentName": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 150,
+          "newBalance": 250,
+          "reason": "Homework / Project Bonus",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T03:12:49.201Z"
+        }
+      ]
+    },
+    {
+      "name": "ECHEVERRIA CHIU MARIA SOL",
+      "studentIdNumber": "ENG-2026-005",
+      "cardNumber": "4915685228879876",
+      "expiryDate": "12/29",
+      "cvv": "248",
+      "cardDesignTheme": "gold",
+      "startingBalance": 150,
+      "currentBalance": 850,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-3",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757835616_lh8b",
+          "studentId": "std-1788923401753-3",
+          "studentName": "ECHEVERRIA CHIU MARIA SOL",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:57:15.616Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_ur88az8",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006330630_2x4y",
+          "studentId": "std-1788923401753-3",
+          "studentName": "ECHEVERRIA CHIU MARIA SOL",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 250,
+          "newBalance": 750,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:58:50.631Z"
+        }
+      ]
+    },
+    {
+      "name": "ENRIQUEZ ZULETA NATHALIA ISABELLA",
+      "studentIdNumber": "ENG-2026-006",
+      "cardNumber": "4808316935244124",
+      "expiryDate": "12/29",
+      "cvv": "611",
+      "cardDesignTheme": "obsidian",
+      "startingBalance": 150,
+      "currentBalance": 250,
+      "creditScore": 600,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-4",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_cmvphfe",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    },
+    {
+      "name": "GALLEGOS GÓMEZ BRITTANY ELIZABETH",
+      "studentIdNumber": "ENG-2026-007",
+      "cardNumber": "4715146847513767",
+      "expiryDate": "12/29",
+      "cvv": "371",
+      "cardDesignTheme": "sapphire",
+      "startingBalance": 150,
+      "currentBalance": 450,
+      "creditScore": 600,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-5",
+      "dailyEnglishEarned": {
+        "date": "2026-09-21",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790006148147_09wz",
+          "studentId": "std-1788923401753-5",
+          "studentName": "GALLEGOS GÓMEZ BRITTANY ELIZABETH",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-21T15:55:48.147Z"
+        },
+        {
+          "id": "rew_1789757851559_s7c3",
+          "studentId": "std-1788923401753-5",
+          "studentName": "GALLEGOS GÓMEZ BRITTANY ELIZABETH",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-18T18:57:31.559Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_ooozblk",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    },
+    {
+      "name": "GODOY BENAVIDES KAROL ISABELLA",
+      "studentIdNumber": "ENG-2026-008",
+      "cardNumber": "4572602511264391",
+      "expiryDate": "12/29",
+      "cvv": "677",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 150,
+      "currentBalance": 2350,
+      "creditScore": 615,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-6",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_6yym7l3",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006482662_86sr",
+          "studentId": "std-1788923401753-6",
+          "studentName": "GODOY BENAVIDES KAROL ISABELLA",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1750,
+          "newBalance": 2250,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T16:01:22.662Z"
+        },
+        {
+          "id": "adj_1789398792766_hif6",
+          "studentId": "std-1788923401753-6",
+          "studentName": "GODOY BENAVIDES KAROL ISABELLA",
+          "type": "increase",
+          "amount": 1250,
+          "previousBalance": 400,
+          "newBalance": 1650,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:13:12.766Z"
+        },
+        {
+          "id": "adj_1788969931822_dgnm",
+          "studentId": "std-1788923401753-6",
+          "studentName": "GODOY BENAVIDES KAROL ISABELLA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 150,
+          "newBalance": 400,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:05:31.822Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757866822_ow3z",
+          "studentId": "std-1788923401753-6",
+          "studentName": "GODOY BENAVIDES KAROL ISABELLA",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:57:46.822Z"
+        }
+      ]
+    },
+    {
+      "name": "MARTINEZ CALDERON NATALY SALOME",
+      "studentIdNumber": "ENG-2026-009",
+      "cardNumber": "4148217968857903",
+      "expiryDate": "12/29",
+      "cvv": "669",
+      "cardDesignTheme": "ruby",
+      "startingBalance": 150,
+      "currentBalance": 1250,
+      "creditScore": 610,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-7",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_1tcu9ut",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006378969_gp1z",
+          "studentId": "std-1788923401753-7",
+          "studentName": "MARTINEZ CALDERON NATALY SALOME",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 850,
+          "newBalance": 1150,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:59:38.969Z"
+        },
+        {
+          "id": "adj_1789398982266_8lay",
+          "studentId": "std-1788923401753-7",
+          "studentName": "MARTINEZ CALDERON NATALY SALOME",
+          "type": "increase",
+          "amount": 600,
+          "previousBalance": 150,
+          "newBalance": 750,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:16:22.266Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757882940_qd6i",
+          "studentId": "std-1788923401753-7",
+          "studentName": "MARTINEZ CALDERON NATALY SALOME",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-18T18:58:02.940Z"
+        }
+      ]
+    },
+    {
+      "name": "MEJIA MARTINEZ DANTE SANTIAGO",
+      "studentIdNumber": "ENG-2026-010",
+      "cardNumber": "4617864868936499",
+      "expiryDate": "12/29",
+      "cvv": "854",
+      "cardDesignTheme": "gold",
+      "startingBalance": 150,
+      "currentBalance": 650,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-8",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_qp0zgx1",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1789399917918_e4yv",
+          "studentId": "std-1788923401753-8",
+          "studentName": "MEJIA MARTINEZ DANTE SANTIAGO",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 150,
+          "newBalance": 450,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:31:57.918Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757891865_m2q2",
+          "studentId": "std-1788923401753-8",
+          "studentName": "MEJIA MARTINEZ DANTE SANTIAGO",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:58:11.865Z"
+        }
+      ]
+    },
+    {
+      "name": "MONTOYA PINCHAO NALY VICTORIA",
+      "studentIdNumber": "ENG-2026-011",
+      "cardNumber": "4904585280505413",
+      "expiryDate": "12/29",
+      "cvv": "519",
+      "cardDesignTheme": "obsidian",
+      "startingBalance": 150,
+      "currentBalance": 250,
+      "creditScore": 600,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-9",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_yk2v7u7",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    },
+    {
+      "name": "PANTOJA BUSTOS JULIETA SALOME",
+      "studentIdNumber": "ENG-2026-012",
+      "cardNumber": "4404170622429961",
+      "expiryDate": "12/29",
+      "cvv": "700",
+      "cardDesignTheme": "sapphire",
+      "startingBalance": 150,
+      "currentBalance": 2345,
+      "creditScore": 660,
+      "maxLoanLimit": 300,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 1,
+      "punctualPaymentsCount": 1,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 1,
+      "id": "std-1788923401753-10",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_mzg8s27",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006667314_kqq1",
+          "studentId": "std-1788923401753-10",
+          "studentName": "PANTOJA BUSTOS JULIETA SALOME",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 1845,
+          "newBalance": 2245,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T16:04:27.314Z"
+        },
+        {
+          "id": "adj_1789398845058_jx6s",
+          "studentId": "std-1788923401753-10",
+          "studentName": "PANTOJA BUSTOS JULIETA SALOME",
+          "type": "increase",
+          "amount": 1500,
+          "previousBalance": 150,
+          "newBalance": 1650,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:14:05.058Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 150
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757924702_ezwb",
+          "studentId": "std-1788923401753-10",
+          "studentName": "PANTOJA BUSTOS JULIETA SALOME",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-18T18:58:44.702Z"
+        },
+        {
+          "id": "rew_1789757906675_ik94",
+          "studentId": "std-1788923401753-10",
+          "studentName": "PANTOJA BUSTOS JULIETA SALOME",
+          "amount": 50,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-18T18:58:26.675Z"
+        }
+      ]
+    },
+    {
+      "name": "POSADA ALARCON LUCIANA ESTER",
+      "studentIdNumber": "ENG-2026-013",
+      "cardNumber": "4328948770337762",
+      "expiryDate": "12/29",
+      "cvv": "884",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 150,
+      "currentBalance": 750,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-11",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757918834_hos0",
+          "studentId": "std-1788923401753-11",
+          "studentName": "POSADA ALARCON LUCIANA ESTER",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-18T18:58:38.834Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_8l18t87",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006169975_jwsg",
+          "studentId": "std-1788923401753-11",
+          "studentName": "POSADA ALARCON LUCIANA ESTER",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 250,
+          "newBalance": 650,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:56:09.975Z"
+        }
+      ]
+    },
+    {
+      "name": "RODRIGUEZ MANZO  JHULIANA ESTEFANIA",
+      "studentIdNumber": "ENG-2026-014",
+      "cardNumber": "4479265071059514",
+      "expiryDate": "12/29",
+      "cvv": "921",
+      "cardDesignTheme": "ruby",
+      "startingBalance": 150,
+      "currentBalance": 1650,
+      "creditScore": 615,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-12",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_qn09y3o",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790005239025_2krg",
+          "studentId": "std-1788923401753-12",
+          "studentName": "RODRIGUEZ MANZO  JHULIANA ESTEFANIA",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 1150,
+          "newBalance": 1550,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:40:39.025Z"
+        },
+        {
+          "id": "adj_1789398921760_ydhc",
+          "studentId": "std-1788923401753-12",
+          "studentName": "RODRIGUEZ MANZO  JHULIANA ESTEFANIA",
+          "type": "increase",
+          "amount": 700,
+          "previousBalance": 350,
+          "newBalance": 1050,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:15:21.760Z"
+        },
+        {
+          "id": "adj_1788969908140_zlpj",
+          "studentId": "std-1788923401753-12",
+          "studentName": "RODRIGUEZ MANZO  JHULIANA ESTEFANIA",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 150,
+          "newBalance": 350,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:05:08.140Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757935557_r796",
+          "studentId": "std-1788923401753-12",
+          "studentName": "RODRIGUEZ MANZO  JHULIANA ESTEFANIA",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:58:55.557Z"
+        }
+      ]
+    },
+    {
+      "name": "ROMERO MORENO AMELIE CRISTINA",
+      "studentIdNumber": "ENG-2026-015",
+      "cardNumber": "4571308574706114",
+      "expiryDate": "12/29",
+      "cvv": "150",
+      "cardDesignTheme": "gold",
+      "startingBalance": 150,
+      "currentBalance": 350,
+      "creditScore": 600,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-13",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757944112_u3nx",
+          "studentId": "std-1788923401753-13",
+          "studentName": "ROMERO MORENO AMELIE CRISTINA",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:59:04.112Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_2cf4kmb",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    },
+    {
+      "name": "VALLEJO CHUQUIMARCA ROMINA VALEZKA",
+      "studentIdNumber": "ENG-2026-016",
+      "cardNumber": "4806366021303125",
+      "expiryDate": "12/29",
+      "cvv": "698",
+      "cardDesignTheme": "obsidian",
+      "startingBalance": 150,
+      "currentBalance": 650,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-14",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757951055_tyfq",
+          "studentId": "std-1788923401753-14",
+          "studentName": "VALLEJO CHUQUIMARCA ROMINA VALEZKA",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:59:11.055Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_id1be18",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006550247_bu01",
+          "studentId": "std-1788923401753-14",
+          "studentName": "VALLEJO CHUQUIMARCA ROMINA VALEZKA",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 250,
+          "newBalance": 550,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T16:02:30.247Z"
+        }
+      ]
+    },
+    {
+      "name": "VILLARREAL RODRIGUEZ ISABELLA",
+      "studentIdNumber": "ENG-2026-017",
+      "cardNumber": "4785417813969551",
+      "expiryDate": "12/29",
+      "cvv": "898",
+      "cardDesignTheme": "sapphire",
+      "startingBalance": 150,
+      "currentBalance": 575,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-15",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 25
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757971151_fa2z",
+          "studentId": "std-1788923401753-15",
+          "studentName": "VILLARREAL RODRIGUEZ ISABELLA",
+          "amount": 25,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-18T18:59:31.151Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_k86fj6s",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006242948_a2r6",
+          "studentId": "std-1788923401753-15",
+          "studentName": "VILLARREAL RODRIGUEZ ISABELLA",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 175,
+          "newBalance": 475,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:57:22.948Z"
+        }
+      ]
+    },
+    {
+      "name": "ANDRADE BUITRON SOFIA CRISTINA",
+      "studentIdNumber": "ENG-2026-018",
+      "cardNumber": "4683297180078188",
+      "expiryDate": "12/29",
+      "cvv": "453",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 150,
+      "currentBalance": 1050,
+      "creditScore": 610,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-16",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_982ufpu",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790006288644_fswr",
+          "studentId": "std-1788923401753-16",
+          "studentName": "ANDRADE BUITRON SOFIA CRISTINA",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 650,
+          "newBalance": 950,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:58:08.644Z"
+        },
+        {
+          "id": "adj_1789399452412_sfnv",
+          "studentId": "std-1788923401753-16",
+          "studentName": "ANDRADE BUITRON SOFIA CRISTINA",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 150,
+          "newBalance": 450,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:24:12.412Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789757980131_52ql",
+          "studentId": "std-1788923401753-16",
+          "studentName": "ANDRADE BUITRON SOFIA CRISTINA",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T18:59:40.131Z"
+        },
+        {
+          "id": "rew_1789688323131_nmiz",
+          "studentId": "std-1788923401753-16",
+          "studentName": "ANDRADE BUITRON SOFIA CRISTINA",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-17T23:38:43.131Z"
+        }
+      ]
+    },
+    {
+      "name": "CASTILLO MENESES MISHELLE ANTHONELA",
+      "studentIdNumber": "ENG-2026-019",
+      "cardNumber": "4557793432699945",
+      "expiryDate": "12/29",
+      "cvv": "223",
+      "cardDesignTheme": "ruby",
+      "startingBalance": 150,
+      "currentBalance": 720,
+      "creditScore": 625,
+      "maxLoanLimit": 150,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 1,
+      "punctualPaymentsCount": 1,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-17",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_1i0v8d8",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790005848543_2q1g",
+          "studentId": "std-1788923401753-17",
+          "studentName": "CASTILLO MENESES MISHELLE ANTHONELA",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 420,
+          "newBalance": 620,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:50:48.543Z"
+        },
+        {
+          "id": "adj_1790004912659_z8ck",
+          "studentId": "std-1788923401753-17",
+          "studentName": "CASTILLO MENESES MISHELLE ANTHONELA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 170,
+          "newBalance": 420,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:35:12.659Z"
+        }
+      ]
+    },
+    {
+      "name": "ESPARZA TORRES GABRIEL SEBASTIAN",
+      "studentIdNumber": "ENG-2026-020",
+      "cardNumber": "4462902360313197",
+      "expiryDate": "12/29",
+      "cvv": "904",
+      "cardDesignTheme": "gold",
+      "startingBalance": 150,
+      "currentBalance": 350,
+      "creditScore": 600,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-18",
+      "dailyEnglishEarned": {
+        "date": "2026-09-18",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789758003560_wm5z",
+          "studentId": "std-1788923401753-18",
+          "studentName": "ESPARZA TORRES GABRIEL SEBASTIAN",
+          "amount": 100,
+          "reason": "Great Interview!",
+          "createdAt": "2026-09-18T19:00:03.560Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_wl34y9z",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    },
+    {
+      "name": "GUERRA ORTEGA ALLISON",
+      "studentIdNumber": "ENG-2026-021",
+      "cardNumber": "4412778418266880",
+      "expiryDate": "12/29",
+      "cvv": "181",
+      "cardDesignTheme": "obsidian",
+      "startingBalance": 150,
+      "currentBalance": 1995,
+      "creditScore": 625,
+      "maxLoanLimit": 150,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 1,
+      "punctualPaymentsCount": 1,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-19",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_f0a2iz6",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1789399649603_ylmi",
+          "studentId": "std-1788923401753-19",
+          "studentName": "GUERRA ORTEGA ALLISON",
+          "type": "increase",
+          "amount": 1400,
+          "previousBalance": 450,
+          "newBalance": 1850,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:27:29.603Z"
+        },
+        {
+          "id": "adj_1788969639328_wkzk",
+          "studentId": "std-1788923401753-19",
+          "studentName": "GUERRA ORTEGA ALLISON",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 150,
+          "newBalance": 350,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:00:39.328Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-09",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1788969651089_l3sh",
+          "studentId": "std-1788923401753-19",
+          "studentName": "GUERRA ORTEGA ALLISON",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-09T16:00:51.089Z"
+        }
+      ]
+    },
+    {
+      "name": "GUERRON MINA JUAN FRANCISCO",
+      "studentIdNumber": "ENG-2026-022",
+      "cardNumber": "4966805086208974",
+      "expiryDate": "12/29",
+      "cvv": "588",
+      "cardDesignTheme": "sapphire",
+      "startingBalance": 150,
+      "currentBalance": 700,
+      "creditScore": 610,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-20",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_cep6f87",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790003798908_ppjf",
+          "studentId": "std-1788923401753-20",
+          "studentName": "GUERRON MINA JUAN FRANCISCO",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 350,
+          "newBalance": 600,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:16:38.908Z"
+        },
+        {
+          "id": "adj_1788969628213_myzv",
+          "studentId": "std-1788923401753-20",
+          "studentName": "GUERRON MINA JUAN FRANCISCO",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 150,
+          "newBalance": 350,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:00:28.213Z"
+        }
+      ]
+    },
+    {
+      "name": "HARO ACOSTA JOSEPH HESED",
+      "studentIdNumber": "ENG-2026-023",
+      "cardNumber": "4774204238472042",
+      "expiryDate": "12/29",
+      "cvv": "807",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 150,
+      "currentBalance": 2150,
+      "creditScore": 680,
+      "maxLoanLimit": 400,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": "loan-4328",
+      "totalLoansCompleted": 3,
+      "punctualPaymentsCount": 3,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-21",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_tkcepkc",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1789674865608_444a",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 50,
+          "previousBalance": 1950,
+          "newBalance": 2000,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 15,
+          "timestamp": "2026-09-17T19:54:25.608Z"
+        },
+        {
+          "id": "adj_1789399755330_edbk",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 1300,
+          "previousBalance": 495,
+          "newBalance": 1795,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:29:15.330Z"
+        },
+        {
+          "id": "adj_1789399739241_f5xd",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "decrease",
+          "amount": 1000,
+          "previousBalance": 1495,
+          "newBalance": 495,
+          "reason": "Classroom Store Custom Purchase",
+          "category": "store",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:28:59.241Z"
+        },
+        {
+          "id": "adj_1789399718630_q7l8",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 495,
+          "newBalance": 1495,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:28:38.630Z"
+        },
+        {
+          "id": "adj_1788969664199_nl9s",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 150,
+          "newBalance": 450,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:01:04.199Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-21",
+        "amount": 50
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790003129755_sfpz",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "amount": 50,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-21T15:05:29.755Z"
+        },
+        {
+          "id": "rew_1789493242834_p10i",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-15T17:27:22.834Z"
+        }
+      ]
+    },
+    {
+      "name": "ISACAS ISACAS JOYCE ABIGAIL",
+      "studentIdNumber": "ENG-2026-024",
+      "cardNumber": "4348854950708656",
+      "expiryDate": "12/29",
+      "cvv": "588",
+      "cardDesignTheme": "ruby",
+      "startingBalance": 150,
+      "currentBalance": 2050,
+      "creditScore": 610,
+      "maxLoanLimit": 125,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-22",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_uvqrrhl",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790002950529_l9wb",
+          "studentId": "std-1788923401753-22",
+          "studentName": "ISACAS ISACAS JOYCE ABIGAIL",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 1700,
+          "newBalance": 1950,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:02:30.529Z"
+        },
+        {
+          "id": "adj_1789399468494_suht",
+          "studentId": "std-1788923401753-22",
+          "studentName": "ISACAS ISACAS JOYCE ABIGAIL",
+          "type": "increase",
+          "amount": 1450,
+          "previousBalance": 150,
+          "newBalance": 1600,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:24:28.494Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-17",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1789688341972_fufu",
+          "studentId": "std-1788923401753-22",
+          "studentName": "ISACAS ISACAS JOYCE ABIGAIL",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-17T23:39:01.972Z"
+        }
+      ]
+    },
+    {
+      "name": "MEJÍA ESTEVEZ DOMENICA JULIETH",
+      "studentIdNumber": "ENG-2026-025",
+      "cardNumber": "4850963162162520",
+      "expiryDate": "12/29",
+      "cvv": "289",
+      "cardDesignTheme": "gold",
+      "startingBalance": 150,
+      "currentBalance": 750,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-23",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_6j3q8bn",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1789399676597_d0k9",
+          "studentId": "std-1788923401753-23",
+          "studentName": "MEJÍA ESTEVEZ DOMENICA JULIETH",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 150,
+          "newBalance": 650,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:27:56.597Z"
+        }
+      ]
+    },
+    {
+      "name": "MORAN ARTEAGA ANDRES FELIPE",
+      "studentIdNumber": "ENG-2026-026",
+      "cardNumber": "4832303665544208",
+      "expiryDate": "12/29",
+      "cvv": "165",
+      "cardDesignTheme": "obsidian",
+      "startingBalance": 150,
+      "currentBalance": 1250,
+      "creditScore": 605,
+      "maxLoanLimit": 150,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-24",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_pqp5t5d",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1789399773541_f2k1",
+          "studentId": "std-1788923401753-24",
+          "studentName": "MORAN ARTEAGA ANDRES FELIPE",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 150,
+          "newBalance": 1150,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:29:33.541Z"
+        }
+      ],
+      "creditLimitRaisesHistory": [
+        {
+          "id": "raise_1789559151105_cy1h",
+          "studentId": "std-1788923401753-24",
+          "studentName": "MORAN ARTEAGA ANDRES FELIPE",
+          "previousLimit": 50,
+          "newLimit": 150,
+          "increaseAmount": 100,
+          "reason": "⭐ Pristine on-time loan settlement track record",
+          "grantedBy": "Teacher",
+          "creditScoreBonus": 0,
+          "timestamp": "2026-09-16T11:45:51.105Z"
+        }
+      ]
+    },
+    {
+      "name": "PRADO TORO ALEGRIA MALENA",
+      "studentIdNumber": "ENG-2026-027",
+      "cardNumber": "4336170533675396",
+      "expiryDate": "12/29",
+      "cvv": "556",
+      "cardDesignTheme": "sapphire",
+      "startingBalance": 150,
+      "currentBalance": 350,
+      "creditScore": 600,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-25",
+      "dailyEnglishEarned": {
+        "date": "2026-09-21",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790002320908_xwdi",
+          "studentId": "std-1788923401753-25",
+          "studentName": "PRADO TORO ALEGRIA MALENA",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-21T14:52:00.908Z"
+        }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_5e9n9fl",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    },
+    {
+      "name": "PROCEL TANA PAULA ALEJANDRA",
+      "studentIdNumber": "ENG-2026-028",
+      "cardNumber": "4104438840319565",
+      "expiryDate": "12/29",
+      "cvv": "988",
+      "cardDesignTheme": "emerald",
+      "startingBalance": 150,
+      "currentBalance": 1400,
+      "creditScore": 605,
+      "maxLoanLimit": 50,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-26",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_cu69i0b",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1789399563462_pq7w",
+          "studentId": "std-1788923401753-26",
+          "studentName": "PROCEL TANA PAULA ALEJANDRA",
+          "type": "increase",
+          "amount": 1050,
+          "previousBalance": 150,
+          "newBalance": 1200,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:26:03.462Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-21",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790006031520_en9z",
+          "studentId": "std-1788923401753-26",
+          "studentName": "PROCEL TANA PAULA ALEJANDRA",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-21T15:53:51.520Z"
+        }
+      ]
+    },
+    {
+      "name": "PUEDMAG AGUILAR RENATA MAITE",
+      "studentIdNumber": "ENG-2026-029",
+      "cardNumber": "4135736452105766",
+      "expiryDate": "12/29",
+      "cvv": "815",
+      "cardDesignTheme": "ruby",
+      "startingBalance": 150,
+      "currentBalance": 2800,
+      "creditScore": 690,
+      "maxLoanLimit": 400,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": null,
+      "totalLoansCompleted": 3,
+      "punctualPaymentsCount": 3,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 1,
+      "id": "std-1788923401753-27",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_okj7rwl",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790005610610_09fl",
+          "studentId": "std-1788923401753-27",
+          "studentName": "PUEDMAG AGUILAR RENATA MAITE",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 2300,
+          "newBalance": 2700,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:46:50.610Z"
+        },
+        {
+          "id": "adj_1789399598788_d66d",
+          "studentId": "std-1788923401753-27",
+          "studentName": "PUEDMAG AGUILAR RENATA MAITE",
+          "type": "increase",
+          "amount": 2000,
+          "previousBalance": 195,
+          "newBalance": 2195,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-14T15:26:38.788Z"
+        }
+      ]
+    },
+    {
+      "name": "YARAD ANDRADE DANNA VALENTINA",
+      "studentIdNumber": "ENG-2026-030",
+      "cardNumber": "4297673358921687",
+      "expiryDate": "12/29",
+      "cvv": "930",
+      "cardDesignTheme": "gold",
+      "startingBalance": 150,
+      "currentBalance": 1360,
+      "creditScore": 630,
+      "maxLoanLimit": 425,
+      "paymentFrequency": "monthly",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "cardStatus": "active",
+      "activeLoanId": "loan-1955",
+      "totalLoansCompleted": 1,
+      "punctualPaymentsCount": 1,
+      "delaysCount": 0,
+      "decoratedStatementsCount": 0,
+      "id": "std-1788923401753-28",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_xly6s3s",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        },
+        {
+          "id": "adj_1790005868891_ocm3",
+          "studentId": "std-1788923401753-28",
+          "studentName": "YARAD ANDRADE DANNA VALENTINA",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 860,
+          "newBalance": 1260,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-21T15:51:08.891Z"
+        },
+        {
+          "id": "adj_1789571760878_2kov",
+          "studentId": "std-1788923401753-28",
+          "studentName": "YARAD ANDRADE DANNA VALENTINA",
+          "type": "increase",
+          "amount": 480,
+          "previousBalance": 280,
+          "newBalance": 760,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-16T15:16:00.878Z"
+        },
+        {
+          "id": "adj_1788969683225_wbx0",
+          "studentId": "std-1788923401753-28",
+          "studentName": "YARAD ANDRADE DANNA VALENTINA",
+          "type": "increase",
+          "amount": 110,
+          "previousBalance": 150,
+          "newBalance": 260,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-09T16:01:23.225Z"
+        }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-21",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790001769131_s537",
+          "studentId": "std-1788923401753-28",
+          "studentName": "YARAD ANDRADE DANNA VALENTINA",
+          "amount": 100,
+          "reason": "🗣️ Spoke in English",
+          "createdAt": "2026-09-21T14:42:49.131Z"
+        }
+      ]
+    },
+    {
+      "id": "std-5",
+      "name": "Lucas Silva",
+      "studentIdNumber": "ENG-2026-003",
+      "cardNumber": "4201884400192348",
+      "expiryDate": "08/26",
+      "cvv": "912",
+      "cardDesignTheme": "ruby",
+      "classId": "class-1st-a",
+      "className": "1st BGU - Group A",
+      "startingBalance": 150,
+      "currentBalance": 100,
+      "creditScore": 340,
+      "maxLoanLimit": 0,
+      "paymentFrequency": "monthly",
+      "cardStatus": "delisted",
+      "delistedReason": "Defaulted on loan. Missed final payment deadline beyond permissible delay window.",
+      "delistedAt": "2026-08-15T14:30:00Z",
+      "activeLoanId": "loan-100",
+      "totalLoansCompleted": 0,
+      "punctualPaymentsCount": 0,
+      "delaysCount": 4,
+      "decoratedStatementsCount": 0,
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790035938778_vgg7xbs",
+          "amount": 100,
+          "type": "increase",
+          "reason": "Working on the project.",
+          "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ]
+    }
+  ],
+  "loans": [
+    {
+      "id": "loan-7389",
+      "studentId": "std-1789400120427",
+      "principal": 500,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 550,
+      "amountRepaid": 0,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-21T15:21:17.389Z",
+      "dueDate": "2026-09-22T15:21:17.389Z",
+      "status": "active",
+      "submissions": [],
+      "notes": ""
+    },
+    {
+      "id": "loan-1940",
+      "studentId": "std-1788923401753-1",
+      "principal": 450,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 495,
+      "amountRepaid": 0,
+      "loanType": "big",
+      "durationDays": 7,
+      "createdAt": "2026-09-21T14:45:31.940Z",
+      "dueDate": "2026-09-28T14:45:31.940Z",
+      "status": "active",
+      "submissions": [],
+      "notes": "words"
+    },
+    {
+      "id": "loan-4328",
+      "studentId": "std-1788923401753-21",
+      "principal": 400,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 440,
+      "amountRepaid": 0,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-18T19:08:44.328Z",
+      "dueDate": "2026-09-23T19:08:44.328Z",
+      "status": "active",
+      "submissions": [],
+      "notes": "pv"
+    },
+    {
+      "id": "loan-4823",
+      "studentId": "std-1789400120427",
+      "principal": 400,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 440,
+      "amountRepaid": 440,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-18T17:40:04.823Z",
+      "dueDate": "2026-09-23T17:40:04.823Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-4823",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 15,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790004025497_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790004025497_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 750,
+          "totalCreditValue": 750,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-09-21T15:20:25.497Z",
+          "id": "sub-1790004025497",
+          "createdAt": "2026-09-21T15:20:25.497Z"
+        }
+      ],
+      "notes": "ph",
+      "paidAt": "2026-09-21T15:20:25.497Z"
+    },
+    {
+      "id": "loan-1955",
+      "studentId": "std-1788923401753-28",
+      "principal": 425,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 467.5,
+      "amountRepaid": 0,
+      "loanType": "big",
+      "durationDays": 7,
+      "createdAt": "2026-09-16T15:12:11.955Z",
+      "dueDate": "2026-09-23T15:12:11.955Z",
+      "status": "active",
+      "submissions": [],
+      "notes": ""
+    },
+    {
+      "id": "loan-6604",
+      "studentId": "std-1789400120427",
+      "principal": 350,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 385,
+      "amountRepaid": 385,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-16T15:00:46.604Z",
+      "dueDate": "2026-09-17T15:00:46.604Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-6604",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 12,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789753165797_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789753165797_2",
+              "sentence": "In-class physical sentence statement #2"
+            },
+            {
+              "id": "sent_1789753165797_3",
+              "sentence": "In-class physical sentence statement #3"
+            },
+            {
+              "id": "sent_1789753165797_4",
+              "sentence": "In-class physical sentence statement #4"
+            },
+            {
+              "id": "sent_1789753165797_5",
+              "sentence": "In-class physical sentence statement #5"
+            },
+            {
+              "id": "sent_1789753165797_6",
+              "sentence": "In-class physical sentence statement #6"
+            },
+            {
+              "id": "sent_1789753165797_7",
+              "sentence": "In-class physical sentence statement #7"
+            },
+            {
+              "id": "sent_1789753165797_8",
+              "sentence": "In-class physical sentence statement #8"
+            },
+            {
+              "id": "sent_1789753165797_9",
+              "sentence": "In-class physical sentence statement #9"
+            },
+            {
+              "id": "sent_1789753165797_10",
+              "sentence": "In-class physical sentence statement #10"
+            },
+            {
+              "id": "sent_1789753165797_11",
+              "sentence": "In-class physical sentence statement #11"
+            },
+            {
+              "id": "sent_1789753165797_12",
+              "sentence": "In-class physical sentence statement #12"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 300,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 300,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-18T17:39:25.797Z",
+          "id": "sub-1789753165797",
+          "createdAt": "2026-09-18T17:39:25.797Z"
+        },
+        {
+          "loanId": "loan-6604",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 4,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789753151900_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789753151900_2",
+              "sentence": "In-class physical sentence statement #2"
+            },
+            {
+              "id": "sent_1789753151900_3",
+              "sentence": "In-class physical sentence statement #3"
+            },
+            {
+              "id": "sent_1789753151900_4",
+              "sentence": "In-class physical sentence statement #4"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 100,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 100,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-18T17:39:11.900Z",
+          "id": "sub-1789753151900",
+          "createdAt": "2026-09-18T17:39:11.901Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-18T17:39:25.797Z"
+    },
+    {
+      "id": "loan-5039",
+      "studentId": "std-1788923401753-1",
+      "principal": 300,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 330,
+      "amountRepaid": 330,
+      "loanType": "big",
+      "durationDays": 7,
+      "createdAt": "2026-09-16T14:48:05.039Z",
+      "dueDate": "2026-09-23T14:48:05.039Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-5039",
+          "studentId": "std-1788923401753-1",
+          "sentencesCount": 0,
+          "wordsCount": 60,
+          "phrasalVerbsCount": 0,
+          "sentences": [],
+          "words": [
+            {
+              "id": "word_1790001845148_1",
+              "word": "In-class vocabulary word #1",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_2",
+              "word": "In-class vocabulary word #2",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_3",
+              "word": "In-class vocabulary word #3",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_4",
+              "word": "In-class vocabulary word #4",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_5",
+              "word": "In-class vocabulary word #5",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_6",
+              "word": "In-class vocabulary word #6",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_7",
+              "word": "In-class vocabulary word #7",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_8",
+              "word": "In-class vocabulary word #8",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_9",
+              "word": "In-class vocabulary word #9",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_10",
+              "word": "In-class vocabulary word #10",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_11",
+              "word": "In-class vocabulary word #11",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_12",
+              "word": "In-class vocabulary word #12",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_13",
+              "word": "In-class vocabulary word #13",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_14",
+              "word": "In-class vocabulary word #14",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_15",
+              "word": "In-class vocabulary word #15",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_16",
+              "word": "In-class vocabulary word #16",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_17",
+              "word": "In-class vocabulary word #17",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_18",
+              "word": "In-class vocabulary word #18",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_19",
+              "word": "In-class vocabulary word #19",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_20",
+              "word": "In-class vocabulary word #20",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_21",
+              "word": "In-class vocabulary word #21",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_22",
+              "word": "In-class vocabulary word #22",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_23",
+              "word": "In-class vocabulary word #23",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_24",
+              "word": "In-class vocabulary word #24",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_25",
+              "word": "In-class vocabulary word #25",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_26",
+              "word": "In-class vocabulary word #26",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_27",
+              "word": "In-class vocabulary word #27",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_28",
+              "word": "In-class vocabulary word #28",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_29",
+              "word": "In-class vocabulary word #29",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_30",
+              "word": "In-class vocabulary word #30",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_31",
+              "word": "In-class vocabulary word #31",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_32",
+              "word": "In-class vocabulary word #32",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_33",
+              "word": "In-class vocabulary word #33",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_34",
+              "word": "In-class vocabulary word #34",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_35",
+              "word": "In-class vocabulary word #35",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_36",
+              "word": "In-class vocabulary word #36",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_37",
+              "word": "In-class vocabulary word #37",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_38",
+              "word": "In-class vocabulary word #38",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_39",
+              "word": "In-class vocabulary word #39",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_40",
+              "word": "In-class vocabulary word #40",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_41",
+              "word": "In-class vocabulary word #41",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_42",
+              "word": "In-class vocabulary word #42",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_43",
+              "word": "In-class vocabulary word #43",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_44",
+              "word": "In-class vocabulary word #44",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_45",
+              "word": "In-class vocabulary word #45",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_46",
+              "word": "In-class vocabulary word #46",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_47",
+              "word": "In-class vocabulary word #47",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_48",
+              "word": "In-class vocabulary word #48",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_49",
+              "word": "In-class vocabulary word #49",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_50",
+              "word": "In-class vocabulary word #50",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_51",
+              "word": "In-class vocabulary word #51",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_52",
+              "word": "In-class vocabulary word #52",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_53",
+              "word": "In-class vocabulary word #53",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_54",
+              "word": "In-class vocabulary word #54",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_55",
+              "word": "In-class vocabulary word #55",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_56",
+              "word": "In-class vocabulary word #56",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_57",
+              "word": "In-class vocabulary word #57",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_58",
+              "word": "In-class vocabulary word #58",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_59",
+              "word": "In-class vocabulary word #59",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790001845148_60",
+              "word": "In-class vocabulary word #60",
+              "contextOrMeaning": "Presented in physical reading book"
+            }
+          ],
+          "phrasalVerbs": [],
+          "sentencesCredit": 0,
+          "wordsCredit": 1200,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 1200,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-21T14:44:05.148Z",
+          "id": "sub-1790001845148",
+          "createdAt": "2026-09-21T14:44:05.148Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-21T14:44:05.148Z"
+    },
+    {
+      "id": "loan-6342",
+      "studentId": "std-1788923401753-21",
+      "principal": 300,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 330,
+      "amountRepaid": 330,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-15T17:24:46.342Z",
+      "dueDate": "2026-09-16T17:24:46.342Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-6342",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 7,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789674779820_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674779820_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674779820_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674779820_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674779820_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674779820_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674779820_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 350,
+          "totalCreditValue": 350,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-17T19:52:59.820Z",
+          "id": "sub-1789674779820",
+          "createdAt": "2026-09-17T19:52:59.820Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-17T19:52:59.820Z"
+    },
+    {
+      "id": "loan-3610",
+      "studentId": "std-1788923401753-27",
+      "principal": 300,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 330,
+      "amountRepaid": 330,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-15T17:24:13.610Z",
+      "dueDate": "2026-09-16T17:24:13.610Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-3610",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 8,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789674791985_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674791985_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 400,
+          "totalCreditValue": 400,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-09-17T19:53:11.985Z",
+          "id": "sub-1789674791985",
+          "createdAt": "2026-09-17T19:53:11.985Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-17T19:53:11.985Z"
+    },
+    {
+      "id": "loan-4198",
+      "studentId": "std-1788923401753-10",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-15T17:03:54.198Z",
+      "dueDate": "2026-09-16T17:03:54.198Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-4198",
+          "studentId": "std-1788923401753-10",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 2,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789492081693_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789492081693_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 100,
+          "totalCreditValue": 100,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-09-15T17:08:01.693Z",
+          "id": "sub-1789492081693",
+          "createdAt": "2026-09-15T17:08:01.693Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-15T17:08:01.693Z"
+    },
+    {
+      "id": "loan-6740",
+      "studentId": "std-1788923401753-19",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:39:56.740Z",
+      "dueDate": "2026-09-15T15:39:56.740Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-6740",
+          "studentId": "std-1788923401753-19",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 2,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789674802010_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789674802010_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 100,
+          "totalCreditValue": 100,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-17T19:53:22.010Z",
+          "id": "sub-1789674802010",
+          "createdAt": "2026-09-17T19:53:22.010Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-17T19:53:22.010Z"
+    },
+    {
+      "id": "loan-1427",
+      "studentId": "std-1788923401753-27",
+      "principal": 150,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 165,
+      "amountRepaid": 165,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:39:31.427Z",
+      "dueDate": "2026-09-15T15:39:31.427Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-1427",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 4,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789492974994_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789492974994_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789492974994_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789492974994_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 200,
+          "totalCreditValue": 200,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-15T17:22:54.994Z",
+          "id": "sub-1789492974994",
+          "createdAt": "2026-09-15T17:22:54.994Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-15T17:22:54.994Z"
+    },
+    {
+      "id": "loan-1488",
+      "studentId": "std-1788923401753-21",
+      "principal": 150,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 165,
+      "amountRepaid": 165,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:38:51.488Z",
+      "dueDate": "2026-09-15T15:38:51.488Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-1488",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 4,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789491854412_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789491854413_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789491854413_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789491854413_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 200,
+          "totalCreditValue": 200,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-15T17:04:14.413Z",
+          "id": "sub-1789491854413",
+          "createdAt": "2026-09-15T17:04:14.413Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-15T17:04:14.413Z"
+    },
+    {
+      "id": "loan-2530",
+      "studentId": "std-1788923401753-17",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:36:22.530Z",
+      "dueDate": "2026-09-15T15:36:22.530Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-2530",
+          "studentId": "std-1788923401753-17",
+          "sentencesCount": 3,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789492741065_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789492741065_2",
+              "sentence": "In-class physical sentence statement #2"
+            },
+            {
+              "id": "sent_1789492741065_3",
+              "sentence": "In-class physical sentence statement #3"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 75,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 75,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-15T17:19:01.065Z",
+          "id": "sub-1789492741065",
+          "createdAt": "2026-09-15T17:19:01.065Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-15T17:19:01.065Z"
+    },
+    {
+      "id": "loan-6809",
+      "studentId": "std-1789400120427",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:35:56.809Z",
+      "dueDate": "2026-09-15T15:35:56.809Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-6809",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 3,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789492448257_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789492448257_2",
+              "sentence": "In-class physical sentence statement #2"
+            },
+            {
+              "id": "sent_1789492448257_3",
+              "sentence": "In-class physical sentence statement #3"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 75,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 75,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-15T17:14:08.257Z",
+          "id": "sub-1789492448257",
+          "createdAt": "2026-09-15T17:14:08.257Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-15T17:14:08.257Z"
+    },
+    {
+      "id": "loan-0814",
+      "studentId": "std-1788923401753-28",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:33:30.814Z",
+      "dueDate": "2026-09-15T15:33:30.814Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-0814",
+          "studentId": "std-1788923401753-28",
+          "sentencesCount": 3,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789571454006_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789571454006_2",
+              "sentence": "In-class physical sentence statement #2"
+            },
+            {
+              "id": "sent_1789571454006_3",
+              "sentence": "In-class physical sentence statement #3"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 75,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 75,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-16T15:10:54.006Z",
+          "id": "sub-1789571454006",
+          "createdAt": "2026-09-16T15:10:54.006Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-16T15:10:54.006Z"
+    },
+    {
+      "id": "loan-7171",
+      "studentId": "std-1788923401753-1",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-14T15:11:07.171Z",
+      "dueDate": "2026-09-15T15:11:07.171Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-7171",
+          "studentId": "std-1788923401753-1",
+          "sentencesCount": 2,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789569599179_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789569599179_2",
+              "sentence": "In-class physical sentence statement #2"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 50,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 50,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-16T14:39:59.179Z",
+          "id": "sub-1789569599179",
+          "createdAt": "2026-09-16T14:39:59.179Z"
+        },
+        {
+          "loanId": "loan-7171",
+          "studentId": "std-1788923401753-1",
+          "sentencesCount": 2,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1789569586616_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1789569586616_2",
+              "sentence": "In-class physical sentence statement #2"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 50,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 50,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-09-16T14:39:46.616Z",
+          "id": "sub-1789569586617",
+          "createdAt": "2026-09-16T14:39:46.617Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-16T14:39:59.179Z"
+    },
+    {
+      "id": "loan-4063",
+      "studentId": "std-1788923401753-27",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-11T18:50:34.063Z",
+      "dueDate": "2026-09-16T18:50:34.063Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-4063",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 2,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789398713083_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789398713083_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 100,
+          "totalCreditValue": 100,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-14T15:11:53.083Z",
+          "id": "sub-1789398713083",
+          "createdAt": "2026-09-14T15:11:53.083Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-14T15:11:53.083Z"
+    },
+    {
+      "id": "loan-4562",
+      "studentId": "std-1788923401753-21",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 55,
+      "amountRepaid": 55,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-11T18:50:14.562Z",
+      "dueDate": "2026-09-16T18:50:14.562Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-4562",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 2,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1789398696875_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1789398696875_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 100,
+          "totalCreditValue": 100,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-14T15:11:36.875Z",
+          "id": "sub-1789398696875",
+          "createdAt": "2026-09-14T15:11:36.875Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-14T15:11:36.875Z"
+    },
+    {
+      "id": "loan-100",
+      "studentId": "std-5",
+      "principal": 50,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 4,
+      "effectiveInterestRate": 18,
+      "totalDue": 59,
+      "amountRepaid": 0,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-08-01T09:00:00Z",
+      "dueDate": "2026-08-06T09:00:00Z",
+      "status": "defaulted",
+      "notes": "Payment deadline exceeded. Card revoked forever and student delisted per didactic rulebook.",
+      "submissions": []
+    }
+  ],
+  "classrooms": [
+    {
+      "id": "class-1st-a",
+      "name": "1st BGU - Group A",
+      "gradeLevel": "1st BGU",
+      "section": "A",
+      "description": "First Year Baccalaureate - Morning Section A",
+      "color": "emerald",
+      "createdAt": "2026-08-01T00:00:00Z"
+    },
+    {
+      "id": "class-2nd-a",
+      "name": "2nd BGU",
+      "gradeLevel": "2nd BGU",
+      "section": "A",
+      "description": "Second Year Baccalaureate - Advanced English",
+      "color": "amber",
+      "createdAt": "2026-08-01T00:00:00Z"
+    }
+  ],
+  "storeCatalog": [
+    {
+      "id": "store-skip-hw",
+      "name": "Skip Homework",
+      "subtitle": "Homework Privilege",
+      "category": "privilege",
+      "basePrice": 1700,
+      "discountPercent": 0,
+      "stock": 2,
+      "iconType": "skip-hw",
+      "description": "Waives one standard English homework assignment without penalty."
+    },
+    {
+      "id": "store-skip-lesson",
+      "name": "Skip Lesson",
+      "subtitle": "Classroom Privilege",
+      "category": "privilege",
+      "basePrice": 3200,
+      "discountPercent": 0,
+      "stock": 3,
+      "iconType": "skip-lesson",
+      "description": "Excuses attendance or active participation for one English period."
+    },
+    {
+      "id": "store-extra-points-hw",
+      "name": "3 Extra Points (HW)",
+      "subtitle": "Academic Boost",
+      "category": "academic",
+      "basePrice": 2200,
+      "discountPercent": 0,
+      "stock": 5,
+      "iconType": "extra-points-hw",
+      "description": "+3 bonus points added directly to your English homework grade."
+    },
+    {
+      "id": "store-half-lesson",
+      "name": "Half Lesson",
+      "subtitle": "Classroom Privilege",
+      "category": "privilege",
+      "basePrice": 2900,
+      "discountPercent": 0,
+      "stock": 5,
+      "iconType": "half-lesson",
+      "description": "Leave half-lesson early or sit out for the second half of class."
+    },
+    {
+      "id": "store-lucky-draw",
+      "name": "A spin of the Lucky Draw",
+      "subtitle": "Mystery Wheel",
+      "category": "game",
+      "basePrice": 10500,
+      "discountPercent": 0,
+      "stock": 1,
+      "iconType": "lucky-draw",
+      "description": "One spin of the classroom prize wheel for legendary rewards."
+    },
+    {
+      "id": "store-super-mini-prize",
+      "name": "Super-mini Prize",
+      "subtitle": "Collectible Reward",
+      "category": "prize",
+      "basePrice": 2500,
+      "discountPercent": 0,
+      "stock": 5,
+      "iconType": "super-mini-prize",
+      "description": "Mini novelty toy, stationery, stickers, or classroom sweet treat."
+    },
+    {
+      "id": "store-extra-points-lss",
+      "name": "3 Extra Points (Lss)",
+      "subtitle": "Academic Boost",
+      "category": "academic",
+      "basePrice": 4200,
+      "discountPercent": 0,
+      "stock": 5,
+      "iconType": "extra-points-lss",
+      "description": "+3 bonus points added directly to your active Lesson / Exam evaluation."
+    },
+    {
+      "id": "store-mini-prize",
+      "name": "Mini Prize",
+      "subtitle": "Mystery Box",
+      "category": "prize",
+      "basePrice": 5000,
+      "discountPercent": 0,
+      "stock": 5,
+      "iconType": "mini-prize",
+      "description": "Mystery black dice reward box with curated school rewards."
+    },
+    {
+      "id": "store-big-prize",
+      "name": "Big Prize",
+      "subtitle": "Grand Reward Box",
+      "category": "prize",
+      "basePrice": 25000,
+      "discountPercent": 0,
+      "stock": 1,
+      "iconType": "big-prize",
+      "description": "Ultimate classroom grand prize mystery box for top savers."
+    }
+  ]
+}
