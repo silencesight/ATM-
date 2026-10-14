@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #42e5b0;
   --color-primary-container: #00c896;
@@ -10,38 +12,57 @@
   --color-surface-dark: #0b0e14;
   --color-surface-card-dark: #181d29;
   --color-surface-card-hover: #1f2535;
-  --color-surface-light: #f4f6fb;
+  --color-surface-light: #f8f9ff;
   --color-surface-card-light: #ffffff;
 }
 
-@layer base {
-  :root {
-    --bg-app: #0b0e14;
-    --bg-card: #181d29;
-    --text-main: #e6edf3;
-    --text-muted: #94a3b8;
-    --border-glass: rgba(255, 255, 255, 0.08);
-  }
+:root {
+  color-scheme: dark;
+  --bg-app: #0b0e14;
+  --bg-card: #181d29;
+  --text-main: #e6edf3;
+  --text-muted: #94a3b8;
+  --border-glass: rgba(255, 255, 255, 0.08);
+}
 
-  .light {
-    --bg-app: #f4f6fb;
-    --bg-card: #ffffff;
-    --text-main: #0b1c30;
-    --text-muted: #64748b;
-    --border-glass: rgba(0, 0, 0, 0.08);
-  }
+html.light {
+  color-scheme: light;
+  --bg-app: #f8f9ff;
+  --bg-card: #ffffff;
+  --text-main: #0b1c30;
+  --text-muted: #64748b;
+  --border-glass: rgba(0, 0, 0, 0.08);
+}
 
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
+html.dark {
+  color-scheme: dark;
+  --bg-app: #0b0e14;
+  --bg-card: #181d29;
+  --text-main: #e6edf3;
+  --text-muted: #94a3b8;
+  --border-glass: rgba(255, 255, 255, 0.08);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark body {
+  background-color: #0b0e14;
+  color: #e6edf3;
+}
+
+html.light body {
+  background-color: #f8f9ff;
+  color: #0b1c30;
 }
 
 .font-display {
-  font-family: 'Manrope', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .font-body {
@@ -97,21 +118,5 @@
 
   .print-only {
     display: block !important;
-  }
-
-  .printable-card-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 16px !important;
-    page-break-inside: auto !important;
-  }
-
-  .printable-card-item {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    background: transparent !important;
-    border: 1px dashed #94a3b8 !important;
-    box-shadow: none !important;
-    padding: 8px !important;
   }
 }

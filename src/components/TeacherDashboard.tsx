@@ -51,16 +51,23 @@ import { DeleteStudentModal } from './DeleteStudentModal';
 import { ClassManagerModal } from './ClassManagerModal';
 import { ManualBalanceAdjustModal } from './ManualBalanceAdjustModal';
 import { GrantCreditLimitRaiseModal } from './GrantCreditLimitRaiseModal';
-import { StudentReportsModal } from './StudentReportsModal';
 import { DataBackupModal } from './DataBackupModal';
 import { StudentYearlyHistory } from './StudentYearlyHistory';
 import { BulkGiveMoneyModal } from './BulkGiveMoneyModal';
+import { StudentReportsModal } from './StudentReportsModal';
 
 interface TeacherDashboardProps {
   students: Student[];
   loans: Loan[];
   settings: TeacherSettings;
   classrooms?: Classroom[];
+  theme?: 'dark' | 'light';
+  onBulkAdjustBalance?: (
+    studentIds: string[],
+    amount: number,
+    type: 'increase' | 'reduce',
+    reason: string
+  ) => void;
   onOpenSettings: () => void;
   onOpenPrintStudio: () => void;
   onOpenClassManager?: () => void;
@@ -112,12 +119,6 @@ interface TeacherDashboardProps {
     category?: BalanceAdjustmentTransaction['category'],
     creditScoreChange?: number
   ) => void;
-  onBulkAdjustBalance?: (
-    studentIds: string[],
-    amount: number,
-    type: 'increase' | 'reduce',
-    reason: string
-  ) => void;
   onCreateClassroom?: (newClass: Omit<Classroom, 'id' | 'createdAt'>) => void;
   onUpdateClassroom?: (updatedClass: Classroom) => void;
   onDeleteClassroom?: (classId: string) => void;
@@ -155,7 +156,6 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onDeleteStudent,
   onReduceBalance,
   onManualAdjustBalance,
-  onBulkAdjustBalance,
   onCreateClassroom,
   onUpdateClassroom,
   onDeleteClassroom,
@@ -163,6 +163,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   storeCatalog,
   onUpdateCatalog,
   onOpenStore,
+  onBulkAdjustBalance,
+  theme = 'dark',
 }) => {
   const [activeTab, setActiveTab] = useState<'roster' | 'loans' | 'submissions' | 'delisted'>('roster');
   const [searchQuery, setSearchQuery] = useState('');
@@ -385,35 +387,32 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               Terminal Actions
             </p>
             <div className="space-y-2">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setIsAddStudentOpen(true)}
-                  className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5"
+                  className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5"
                   title="Enroll an individual student"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">+ Student</span>
-                  <span className="sm:hidden text-[9px]">Student</span>
+                  + Single Student
                 </button>
                 <button
                   onClick={() => setIsBulkAddOpen(true)}
-                  className="py-2.5 px-2 bg-emerald-700/80 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg border border-emerald-500/40 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5 shadow-sm"
+                  className="py-2.5 px-2 bg-emerald-700/80 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg border border-emerald-500/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                   title="Import student roster in bulk"
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">+ Roster</span>
-                  <span className="sm:hidden text-[9px]">Roster</span>
-                </button>
-                <button
-                  onClick={() => setIsBulkGiveMoneyOpen(true)}
-                  className="py-2.5 px-2 bg-emerald-700/80 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-lg border border-emerald-500/40 transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5 shadow-sm"
-                  title="Add money to multiple students at once"
-                >
-                  <DollarSign className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">+ Bulk $</span>
-                  <span className="sm:hidden text-[9px]">Bulk $</span>
+                  + Bulk Students
                 </button>
               </div>
+              <button
+                onClick={() => setIsBulkGiveMoneyOpen(true)}
+                className="w-full py-2 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg border border-sky-400/40 transition-all flex items-center justify-center gap-2 shadow-sm"
+                title="Award or deduct money in bulk across multiple students"
+              >
+                <Layers className="w-4 h-4 text-sky-200" />
+                Bulk Money Award / Deduct (+/-E$)
+              </button>
               <button
                 onClick={() => setIsClassManagerOpen(true)}
                 className="w-full py-2 bg-gradient-to-r from-amber-700/80 to-amber-600/80 hover:from-amber-600 hover:to-amber-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg border border-amber-500/40 transition-all flex items-center justify-center gap-2 shadow-sm"
@@ -678,6 +677,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               >
                 <Users className="w-3.5 h-3.5" />
                 <span>+ Bulk</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsBulkGiveMoneyOpen(true)}
+                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1 transition-colors shadow-sm"
+                title="Bulk award or deduct money across multiple students"
+              >
+                <Layers className="w-3.5 h-3.5 text-sky-200" />
+                <span>+ Bulk Money</span>
               </button>
 
               <button
@@ -2053,6 +2062,23 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         onSaveManualSnapshot={onSaveManualSnapshot || (() => {})}
       />
 
+      {/* ================= MODAL: BULK GIVE / DEDUCT MONEY ================= */}
+      {isBulkGiveMoneyOpen && (
+        <BulkGiveMoneyModal
+          isOpen={isBulkGiveMoneyOpen}
+          onClose={() => setIsBulkGiveMoneyOpen(false)}
+          students={students}
+          classrooms={classrooms}
+          theme={theme}
+          onSubmit={(studentIds, amount, type, reason) => {
+            if (onBulkAdjustBalance) {
+              onBulkAdjustBalance(studentIds, amount, type, reason);
+            }
+            setIsBulkGiveMoneyOpen(false);
+          }}
+        />
+      )}
+
       {/* ================= MODAL: WHOLE-YEAR STUDENT HISTORY VIEWER ================= */}
       {historyModalStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
@@ -2094,18 +2120,6 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </div>
           </div>
         </div>
-      )}
-
-      {isBulkGiveMoneyOpen && onBulkAdjustBalance && (
-        <BulkGiveMoneyModal
-          students={students}
-          classrooms={classrooms}
-          onClose={() => setIsBulkGiveMoneyOpen(false)}
-          onSubmit={(studentIds, amount, type, reason) => {
-            onBulkAdjustBalance(studentIds, amount, type, reason);
-            setIsBulkGiveMoneyOpen(false);
-          }}
-        />
       )}
     </div>
   );

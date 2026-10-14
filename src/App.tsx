@@ -62,6 +62,18 @@ export default function App() {
     });
   };
 
+  // Sync HTML class for Tailwind v4 dark/light themes
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
   // Local storage state initialization
   const [students, setStudents] = useState<Student[]>(() => {
     try {
@@ -447,6 +459,63 @@ export default function App() {
       'success',
       `Balance ${type === 'increase' ? 'Credited' : 'Deducted'}`,
       `${typeLabel} adjusted for ${student.name} (${adjustmentTx.reason})${scoreNote}.`
+    );
+  };
+
+  // Bulk Balance Adjustment (award or deduct money across multiple selected students)
+  const handleBulkAdjustBalance = (
+    studentIds: string[],
+    amount: number,
+    type: 'increase' | 'reduce',
+    reason: string
+  ) => {
+    if (!studentIds || studentIds.length === 0) {
+      addToast('warning', 'No Students Selected', 'Please select at least one student.');
+      return;
+    }
+    if (amount <= 0) {
+      addToast('warning', 'Invalid Amount', 'Adjustment amount must be greater than 0.');
+      return;
+    }
+
+    const targetType: 'increase' | 'decrease' = type === 'reduce' ? 'decrease' : 'increase';
+
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (!studentIds.includes(s.id)) return s;
+
+        const prevBalance = s.currentBalance;
+        const finalAmount = targetType === 'decrease' ? Math.min(amount, prevBalance) : amount;
+        const newBalance = targetType === 'increase' ? prevBalance + finalAmount : prevBalance - finalAmount;
+
+        const adjustmentTx: BalanceAdjustmentTransaction = {
+          id: `bulk_adj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: s.id,
+          studentName: s.name,
+          type: targetType,
+          amount: finalAmount,
+          previousBalance: prevBalance,
+          newBalance,
+          reason: reason || (targetType === 'increase' ? 'Bulk Reward' : 'Bulk Fee/Deduction'),
+          category: targetType === 'increase' ? 'reward' : 'fine',
+          creditScoreChange: 0,
+          timestamp: new Date().toISOString(),
+        };
+
+        return {
+          ...s,
+          currentBalance: newBalance,
+          balanceAdjustmentsHistory: [adjustmentTx, ...(s.balanceAdjustmentsHistory || [])],
+        };
+      })
+    );
+
+    const actionWord = type === 'increase' ? 'Awarded' : 'Deducted';
+    const sign = type === 'increase' ? '+' : '-';
+    addToast(
+      'success',
+      'Bulk Operation Complete',
+      `${actionWord} ${sign}E$${amount}.00 for ${studentIds.length} student${studentIds.length > 1 ? 's' : ''} (${reason}).`
     );
   };
 
@@ -1035,15 +1104,12 @@ export default function App() {
       />
 
       {/* Main Work Area with Left Sidebar and Top Header Offsets */}
-      <div className="lg:pl-64 flex-1 flex flex-col min-w-0 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         <TopHeader
-          currentStudent={currentStudent}
-          students={students}
-          onSelectStudent={setSelectedStudentId}
           theme={theme}
           onToggleTheme={toggleTheme}
           title={viewTitle}
-          subtitle="v1.1 Edition"
+          subtitle="v2.0 Native Shell"
         />
 
         {/* Main Views */}
@@ -1054,6 +1120,8 @@ export default function App() {
               loans={loans}
               settings={settings}
               classrooms={classrooms}
+              theme={theme}
+              onBulkAdjustBalance={handleBulkAdjustBalance}
               onOpenSettings={() => setIsSettingsOpen(true)}
               onOpenPrintStudio={() => {
                 setPrintTargetStudentId(null);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ShoppingBag,
   Sliders,
@@ -25,7 +25,11 @@ import {
   CreditCard,
   Receipt,
   CheckCircle2,
-  Filter
+  Filter,
+  Users,
+  X,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { Student, StoreItem, StorePurchaseTransaction } from '../types';
 import { StoreItemVisual } from './StoreItemVisual';
@@ -35,7 +39,6 @@ import {
   resetDefaultStoreItems
 } from '../data/storeCatalog';
 import { getCreditTier } from '../utils/creditCalculator';
-import { StudentSelectorNav } from './StudentSelectorNav';
 
 interface ClassroomStoreViewProps {
   students: Student[];
@@ -82,6 +85,11 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'privilege' | 'academic' | 'prize' | 'game'>('all');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [globalDiscountInput, setGlobalDiscountInput] = useState<number>(0);
+
+  // Dedicated Shopper Picker Modal (prevents any UI collision)
+  const [isShopperPickerOpen, setIsShopperPickerOpen] = useState(false);
+  const [shopperSearch, setShopperSearch] = useState('');
+  const [shopperClassFilter, setShopperClassFilter] = useState('all');
 
   // Selected item for the Settlement Drawer / Checkout
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -137,6 +145,18 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     activeSelectedItem.stock <= 0 &&
     !activeSelectedItem.unlimitedStock;
 
+  // Filtered students for shopper picker modal
+  const filteredShoppers = useMemo(() => {
+    return students.filter((s) => {
+      const matchesSearch =
+        s.name.toLowerCase().includes(shopperSearch.toLowerCase()) ||
+        s.id.toLowerCase().includes(shopperSearch.toLowerCase()) ||
+        (s.cardNumber && s.cardNumber.toLowerCase().includes(shopperSearch.toLowerCase()));
+      const matchesClass = shopperClassFilter === 'all' || s.classId === shopperClassFilter || s.className === shopperClassFilter;
+      return matchesSearch && matchesClass;
+    });
+  }, [students, shopperSearch, shopperClassFilter]);
+
   // Stock update handler
   const handleUpdateStock = (itemId: string, delta: number) => {
     const updated = storeCatalog.map((item) => {
@@ -155,61 +175,47 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     onUpdateCatalog(updated);
   };
 
-  // Price adjustment handler
-  const handleAdjustPrice = (itemId: string, delta: number) => {
+  const handleUpdateItemPrice = (itemId: string, delta: number) => {
     const updated = storeCatalog.map((item) => {
       if (item.id !== itemId) return item;
-      const newPrice = Math.max(10, item.basePrice + delta);
+      const newPrice = Math.max(0, item.basePrice + delta);
       return { ...item, basePrice: newPrice };
     });
     onUpdateCatalog(updated);
   };
 
-  const handleSetExactPrice = (itemId: string, newPrice: number) => {
+  const handleUpdateItemDiscount = (itemId: string, newDiscount: number) => {
+    const clamped = Math.max(0, Math.min(100, newDiscount));
     const updated = storeCatalog.map((item) => {
       if (item.id !== itemId) return item;
-      return { ...item, basePrice: Math.max(10, newPrice) };
+      return { ...item, discountPercent: clamped };
     });
     onUpdateCatalog(updated);
   };
 
-  // Discount handler
-  const handleSetDiscount = (itemId: string, discountPercent: number) => {
+  const handleToggleHideItem = (itemId: string) => {
     const updated = storeCatalog.map((item) => {
       if (item.id !== itemId) return item;
-      return { ...item, discountPercent: Math.min(95, Math.max(0, discountPercent)) };
+      return { ...item, isHidden: !item.isHidden };
     });
     onUpdateCatalog(updated);
   };
 
-  // Global discount handler
-  const handleApplyGlobalDiscount = (percent: number) => {
-    const updated = storeCatalog.map((item) => ({
-      ...item,
-      discountPercent: percent,
-    }));
-    onUpdateCatalog(updated);
-    setGlobalDiscountInput(percent);
-  };
-
-  // Reset to default catalog while preserving custom items
-  const handleResetCatalog = () => {
-    if (
-      window.confirm(
-        'Reset standard store items back to their original default values? Any custom items you added will be preserved.'
-      )
-    ) {
-      onUpdateCatalog(resetDefaultStoreItems(storeCatalog));
-      setIsEditMode(false);
+  const handleDeleteItem = (item: StoreItem) => {
+    if (window.confirm(`Are you sure you want to permanently delete "${item.name}" from the store catalog?`)) {
+      const updated = storeCatalog.filter((i) => i.id !== item.id);
+      onUpdateCatalog(updated);
+      if (selectedItemId === item.id) {
+        setSelectedItemId(null);
+      }
     }
   };
 
-  // Modal open helpers
   const handleOpenAddModal = () => {
     setModalMode('add');
     setEditingItemIdForModal(null);
     setFormName('');
-    setFormSubtitle('Classroom Reward');
+    setFormSubtitle('');
     setFormCategory('privilege');
     setFormBasePrice(1000);
     setFormDiscountPercent(0);
@@ -232,62 +238,36 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     setFormBasePrice(item.basePrice);
     setFormDiscountPercent(item.discountPercent || 0);
     setFormStock(item.stock);
-    setFormUnlimitedStock(Boolean(item.unlimitedStock));
-    if (item.emoji && item.emoji.trim()) {
+    setFormUnlimitedStock(!!item.unlimitedStock);
+    if (item.emoji) {
       setFormVisualType('emoji');
       setFormEmoji(item.emoji);
-      setFormIconType(item.iconType || 'custom');
     } else {
       setFormVisualType('preset');
-      setFormIconType(item.iconType || 'custom');
-      setFormEmoji('🎁');
+      setFormIconType(item.iconType);
     }
     setFormDesc(item.description || '');
-    setFormIsHidden(Boolean(item.isHidden));
+    setFormIsHidden(!!item.isHidden);
     setIsItemModalOpen(true);
   };
 
-  // Delete item handler
-  const handleDeleteItem = (itemId: string, itemName: string) => {
-    if (window.confirm(`Are you sure you want to permanently delete "${itemName}" from the store?`)) {
-      const updated = storeCatalog.filter((item) => item.id !== itemId);
-      onUpdateCatalog(updated);
-      if (editingItemId === itemId) {
-        setEditingItemId(null);
-      }
-      if (selectedItemId === itemId) {
-        setSelectedItemId(null);
-      }
-    }
-  };
-
-  // Toggle shelf visibility (Inactive / Hidden)
-  const handleToggleHideItem = (itemId: string) => {
-    const updated = storeCatalog.map((item) => {
-      if (item.id !== itemId) return item;
-      return { ...item, isHidden: !item.isHidden };
-    });
-    onUpdateCatalog(updated);
-  };
-
-  // Save Add/Edit modal form
   const handleSaveItemModal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim()) return;
+    if (!formName.trim() || formBasePrice < 0) return;
 
     if (modalMode === 'add') {
       const newItem: StoreItem = {
-        id: `store-custom-${Date.now()}`,
+        id: `store_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         name: formName.trim(),
         subtitle: formSubtitle.trim() || undefined,
+        description: formDesc.trim() || undefined,
         category: formCategory,
-        basePrice: Math.max(1, formBasePrice),
-        discountPercent: Math.min(95, Math.max(0, formDiscountPercent)),
-        stock: formUnlimitedStock ? 0 : Math.max(0, formStock),
+        basePrice: Math.max(0, formBasePrice),
+        discountPercent: Math.max(0, Math.min(100, formDiscountPercent)),
+        stock: formUnlimitedStock ? 999 : Math.max(0, formStock),
         unlimitedStock: formUnlimitedStock,
         iconType: formVisualType === 'preset' ? formIconType : 'custom',
-        emoji: formVisualType === 'emoji' ? formEmoji.trim() || '🎁' : undefined,
-        description: formDesc.trim() || undefined,
+        emoji: formVisualType === 'emoji' ? formEmoji : undefined,
         isHidden: formIsHidden,
         isCustom: true,
       };
@@ -299,14 +279,14 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
           ...item,
           name: formName.trim(),
           subtitle: formSubtitle.trim() || undefined,
+          description: formDesc.trim() || undefined,
           category: formCategory,
-          basePrice: Math.max(1, formBasePrice),
-          discountPercent: Math.min(95, Math.max(0, formDiscountPercent)),
-          stock: formUnlimitedStock ? 0 : Math.max(0, formStock),
+          basePrice: Math.max(0, formBasePrice),
+          discountPercent: Math.max(0, Math.min(100, formDiscountPercent)),
+          stock: formUnlimitedStock ? 999 : Math.max(0, formStock),
           unlimitedStock: formUnlimitedStock,
           iconType: formVisualType === 'preset' ? formIconType : 'custom',
-          emoji: formVisualType === 'emoji' ? formEmoji.trim() || '🎁' : undefined,
-          description: formDesc.trim() || undefined,
+          emoji: formVisualType === 'emoji' ? formEmoji : undefined,
           isHidden: formIsHidden,
         };
       });
@@ -316,7 +296,45 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     setIsItemModalOpen(false);
   };
 
-  // Initials for avatar
+  const handleApplyGlobalDiscount = (percent: number) => {
+    const updated = storeCatalog.map((item) => ({
+      ...item,
+      discountPercent: percent,
+    }));
+    onUpdateCatalog(updated);
+    setGlobalDiscountInput(percent);
+  };
+
+  const handleResetCatalog = () => {
+    if (window.confirm('Reset catalog default items back to original pricing and stock? Custom items will be kept.')) {
+      const restored = resetDefaultStoreItems(storeCatalog);
+      onUpdateCatalog(restored);
+    }
+  };
+
+  const handleExecutePurchase = () => {
+    if (!activeSelectedItem || !currentStudent) return;
+    if (isSelectedOutOfStock) {
+      alert('This item is currently out of stock.');
+      return;
+    }
+    if (!canAffordSelected) {
+      alert(`Insufficient funds. Student has E$${currentStudent.currentBalance}, but this item costs E$${selectedItemEffectivePrice}.`);
+      return;
+    }
+
+    onPurchaseItem(
+      currentStudent.id,
+      selectedItemEffectivePrice,
+      activeSelectedItem,
+      selectedItemEffectivePrice
+    );
+
+    if (!activeSelectedItem.unlimitedStock) {
+      handleUpdateStock(activeSelectedItem.id, -1);
+    }
+  };
+
   const getInitials = (name?: string) => {
     if (!name) return 'ES';
     const parts = name.trim().split(/\s+/);
@@ -327,29 +345,29 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-16 transition-colors duration-200">
+    <div className="w-full space-y-6">
       {/* ======================================================== */}
-      {/* 1. TOP CONTEXT BAR: STITCH APPLE WALLET ACTIVE CHIP & CONTROLS */}
+      {/* 1. TOP CONTEXT ROW: APPLE WALLET CHIP & CATALOG CONTROLS */}
       {/* ======================================================== */}
-      <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
-        {/* Active Student Apple Wallet Glass Chip */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Left: Active Student Glass Chip */}
         {currentStudent ? (
           <div
-            className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+            className={`flex items-center gap-3.5 p-3 rounded-2xl border transition-all ${
               isDark
                 ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.35)] text-white'
                 : 'bg-white border-slate-200 shadow-sm text-slate-900'
             }`}
           >
             {/* Initials Avatar */}
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#009b74] via-[#00c896] to-[#42e5b0] text-[#003828] flex items-center justify-center font-display text-base font-bold shadow-[0_0_14px_rgba(66,229,176,0.3)] shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#009b74] via-[#00c896] to-[#42e5b0] text-[#003828] flex items-center justify-center font-display text-sm font-bold shadow-[0_0_14px_rgba(66,229,176,0.3)] shrink-0">
               {getInitials(currentStudent.name)}
             </div>
 
             {/* Student Info & Tiers */}
             <div className="flex flex-col min-w-0 pr-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-display font-bold text-sm sm:text-base truncate">
+                <span className="font-display font-semibold text-sm truncate max-w-[200px]">
                   {currentStudent.name}
                 </span>
                 <span
@@ -363,7 +381,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                 </span>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-[#4cd6fb] border border-cyan-500/20 font-semibold flex items-center gap-1">
                   <Award className="w-3 h-3 text-[#4cd6fb]" />
-                  <span>{tierInfo?.name || 'Standard Tier'}</span>
+                  <span>{tierInfo?.name || 'Silver Tier'}</span>
                 </span>
               </div>
 
@@ -374,7 +392,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                 </span>
                 <span className="w-1 h-1 rounded-full bg-slate-500" />
                 <span>
-                  Reserve: <strong className="text-[#42e5b0] font-bold">${currentStudent.currentBalance}.00</strong>
+                  Reserve: <strong className="text-[#42e5b0] font-bold">E${currentStudent.currentBalance}.00</strong>
                 </span>
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-semibold flex items-center gap-0.5">
                   <TrendingUp className="w-2.5 h-2.5" />
@@ -383,23 +401,21 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               </div>
             </div>
 
-            {/* Switch Student Dropdown Navigation */}
+            {/* Dedicated Switch Shopper Button (Never collides with anything) */}
             {students.length > 1 && onSelectStudent && (
-              <div className="ml-auto pl-2 border-l border-white/[0.08]">
-                <StudentSelectorNav
-                  students={students}
-                  selectedStudentId={activeStudentId}
-                  onSelectStudent={(id) => {
-                    setActiveStudentId(id);
-                    onSelectStudent(id);
-                  }}
-                  label="Shopper"
-                  variant="store"
-                  showBalance={true}
-                  showCreditScore={false}
-                  showClassFilter={true}
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsShopperPickerOpen(true)}
+                className={`ml-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono font-semibold flex items-center gap-1.5 transition-all ${
+                  isDark
+                    ? 'bg-white/[0.06] hover:bg-white/[0.12] border-white/[0.1] text-slate-300 hover:text-white'
+                    : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                }`}
+                title="Switch active shopper"
+              >
+                <Users className="w-3.5 h-3.5 text-[#42e5b0]" />
+                <span className="hidden sm:inline">Switch</span>
+              </button>
             )}
           </div>
         ) : (
@@ -534,214 +550,166 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
             const isOutOfStock = item.stock <= 0 && !item.unlimitedStock;
             const canAfford = currentStudent && currentStudent.currentBalance >= effectivePrice;
             const isSelected = activeSelectedItem?.id === item.id;
-            const isEditingThis = editingItemId === item.id;
             const isReady = canAfford && !isOutOfStock;
 
             return (
               <div
                 key={item.id}
                 onClick={() => setSelectedItemId(item.id)}
-                className={`group relative flex flex-col justify-between rounded-2xl p-4 border transition-all cursor-pointer ${
-                  isSelected
+                className={`group relative flex flex-col justify-between rounded-xl p-4 border transition-all cursor-pointer ${
+                  isReady && isSelected
                     ? isDark
-                      ? 'bg-gradient-to-b from-[#1c2826] to-[#142023] border-[#42e5b0] shadow-[0_0_25px_rgba(66,229,176,0.25)] ring-1 ring-[#42e5b0]'
-                      : 'bg-emerald-50/80 border-[#42e5b0] shadow-md ring-1 ring-[#42e5b0]'
+                      ? 'bg-gradient-to-b from-[#1c2826] to-[#142023] border-2 border-[#42e5b0]/80 shadow-[0_0_25px_rgba(66,229,176,0.25)] ring-1 ring-[#42e5b0]'
+                      : 'bg-emerald-50 border-2 border-[#42e5b0] shadow-md ring-1 ring-[#42e5b0]'
                     : isDark
-                    ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] hover:bg-[#1f2535] hover:border-white/[0.14] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
+                    ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-[#1f2535] hover:border-white/[0.14] hover:shadow-[0_8px_28px_rgba(0,0,0,0.45)]'
+                    : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'
                 }`}
               >
-                {/* Ready to purchase active badge */}
-                {isReady && !isSelected && (
-                  <div className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-[#42e5b0] text-[#003828] font-mono text-[9px] font-bold tracking-wide flex items-center gap-1 shadow-[0_0_10px_rgba(66,229,176,0.5)]">
+                {/* READY TO PURCHASE GLOW BADGE (Exact Stitch Style) */}
+                {isReady && (
+                  <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#42e5b0] text-[#003828] font-mono text-[9px] font-bold tracking-wide flex items-center gap-1 shadow-[0_0_12px_rgba(66,229,176,0.6)]">
                     <CheckCircle2 className="w-3 h-3 font-bold" />
-                    <span>READY</span>
+                    <span>READY TO PURCHASE</span>
                   </div>
                 )}
 
-                {/* Card Top: Category / Status Badges */}
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {item.isHidden && isTeacher && isEditMode && (
-                      <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-mono font-bold text-[9px] rounded uppercase tracking-wider">
-                        Inactive
-                      </span>
-                    )}
-                    <span
-                      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                        item.category === 'academic'
-                          ? 'bg-cyan-500/10 text-[#4cd6fb] border-cyan-500/30'
-                          : item.category === 'game'
-                          ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
-                          : item.category === 'prize'
-                          ? 'bg-pink-500/10 text-pink-300 border-pink-500/30'
-                          : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                      }`}
-                    >
-                      {item.subtitle || item.category}
-                    </span>
+                {/* Card Top: Icon & Status */}
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 rounded-lg bg-[#11151f] border border-white/[0.08] flex items-center justify-center text-[#42e5b0] group-hover:scale-105 transition-transform shadow-inner text-xl">
+                    {item.emoji ? item.emoji : <StoreItemVisual iconType={item.iconType} className="w-6 h-6" />}
                   </div>
 
-                  {/* Stock or Status Badge */}
-                  <div>
-                    {item.unlimitedStock ? (
-                      <span className="text-[10px] font-mono font-semibold text-[#42e5b0]">
-                        ∞ Unlimited
-                      </span>
-                    ) : isOutOfStock ? (
-                      <span className="text-[10px] font-mono font-semibold text-red-400">
-                        Out of stock
-                      </span>
-                    ) : !canAfford ? (
-                      <span className="text-[10px] font-mono text-amber-400">
-                        Needs E${effectivePrice - (currentStudent?.currentBalance || 0)}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {item.stock} in stock
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card Center: Visual & Info */}
-                <div className="my-2 flex flex-col items-center">
-                  <StoreItemVisual iconType={item.iconType} emoji={item.emoji} className="w-full h-24 mb-2" />
-                  <h3
-                    className={`font-display font-bold text-sm tracking-tight text-center leading-snug ${
-                      isDark ? 'text-white' : 'text-slate-900'
-                    }`}
-                  >
-                    {item.name}
-                  </h3>
-                  {item.description && (
-                    <p className={`text-[11px] text-center mt-1 line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {item.description}
-                    </p>
+                  {!isReady && (
+                    <div>
+                      {item.isHidden && isTeacher && isEditMode ? (
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
+                          Inactive
+                        </span>
+                      ) : isOutOfStock ? (
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-semibold">
+                          Out of stock
+                        </span>
+                      ) : !canAfford ? (
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-red-950/60 text-red-300 border border-red-500/30 font-semibold shadow-[0_0_8px_rgba(239,68,68,0.2)]">
+                          Needs E${effectivePrice - (currentStudent?.currentBalance || 0)}
+                        </span>
+                      ) : null}
+                    </div>
                   )}
                 </div>
 
-                {/* Card Bottom: Price, Stock, and Teacher Edit Actions */}
-                <div className="mt-3 pt-2.5 flex items-center justify-between border-t border-white/[0.06]">
+                {/* Card Center: Titles & Description */}
+                <div className="mt-3.5">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold truncate">
+                    {item.subtitle || item.category}
+                  </div>
+                  <h3 className={`font-display font-semibold text-sm mt-0.5 truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    {item.name}
+                  </h3>
+                  <p className={`text-xs mt-1 line-clamp-2 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {item.description || 'Standard non-summative classroom privilege authorization.'}
+                  </p>
+                </div>
+
+                {/* Card Bottom: Cost Rate & Stock */}
+                <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-white/[0.05]">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-mono uppercase text-slate-400">Price</span>
+                    <span className="text-[10px] font-mono text-slate-400">Cost Rate</span>
                     <div className="flex items-baseline gap-1 font-mono">
                       {hasDiscount && (
                         <span className="text-[10px] text-slate-500 line-through">
-                          ${item.basePrice}
+                          E${item.basePrice}
                         </span>
                       )}
-                      <span className="text-base font-bold text-[#42e5b0]">
+                      <span className="font-semibold text-sm text-[#42e5b0]">
                         E${effectivePrice}
                       </span>
                     </div>
                   </div>
 
-                  {/* Teacher Inline Management Quick Actions */}
-                  {isTeacher && isEditMode && (
-                    <div className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-700 rounded-lg p-0.5 shadow-sm">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenEditModal(item);
-                        }}
-                        className="p-1 text-slate-300 hover:text-[#42e5b0] hover:bg-white/[0.08] rounded transition-colors"
-                        title="Edit Item Details"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleHideItem(item.id);
-                        }}
-                        className={`p-1 rounded transition-colors ${
-                          item.isHidden
-                            ? 'bg-amber-500/20 text-amber-300'
-                            : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
-                        }`}
-                        title={item.isHidden ? 'Unhide item' : 'Hide item'}
-                      >
-                        {item.isHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteItem(item.id, item.name);
-                        }}
-                        className="p-1 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                        title="Delete Item"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingItemId(isEditingThis ? null : item.id);
-                        }}
-                        className="p-1 text-slate-400 hover:text-amber-300 hover:bg-white/[0.08] rounded transition-colors"
-                        title="Quick Sliders (Stock/Price)"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1 font-mono text-[10px] text-slate-300 bg-white/[0.05] border border-white/[0.06] px-2 py-1 rounded">
+                    <Package className="w-3 h-3 text-slate-400" />
+                    <span>{item.unlimitedStock ? 'Unlimited' : `${item.stock} in stock`}</span>
+                  </div>
                 </div>
 
-                {/* Teacher Quick Inline Adjustment Drawer */}
-                {isTeacher && isEditMode && isEditingThis && (
-                  <div className="mt-3 pt-2.5 border-t border-amber-500/30 space-y-2 text-xs font-mono">
+                {/* In Edit Mode: Teacher In-Card Controls */}
+                {isTeacher && isEditMode && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-3 pt-2.5 border-t border-amber-500/20 bg-amber-500/5 -mx-4 -mb-4 p-3 rounded-b-xl space-y-2 text-xs font-mono"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Stock: {item.stock}</span>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateStock(item.id, -1);
-                          }}
-                          className="px-2 py-0.5 bg-slate-800 rounded hover:bg-slate-700"
+                          onClick={() => handleUpdateItemPrice(item.id, -100)}
+                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold"
+                          title="Reduce price $100"
                         >
-                          -1
+                          -
                         </button>
+                        <span className="px-1 text-[11px] text-white font-bold">Price</span>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateStock(item.id, 1);
-                          }}
-                          className="px-2 py-0.5 bg-slate-800 rounded hover:bg-slate-700"
+                          onClick={() => handleUpdateItemPrice(item.id, 100)}
+                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold"
+                          title="Increase price $100"
                         >
-                          +1
+                          +
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStock(item.id, -1)}
+                          disabled={item.unlimitedStock}
+                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
+                          title="Reduce stock"
+                        >
+                          -
+                        </button>
+                        <span className="px-1 text-[11px] text-white font-bold">Stock</span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateStock(item.id, 1)}
+                          disabled={item.unlimitedStock}
+                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
+                          title="Increase stock"
+                        >
+                          +
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Price: ${item.basePrice}</span>
-                      <div className="flex items-center gap-1">
+
+                    <div className="flex items-center justify-between pt-1 border-t border-white/[0.05]">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHideItem(item.id)}
+                        className="flex items-center gap-1 text-[11px] text-amber-300 hover:underline"
+                      >
+                        {item.isHidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                        <span>{item.isHidden ? 'Show on shelf' : 'Hide / Inactive'}</span>
+                      </button>
+
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAdjustPrice(item.id, -100);
-                          }}
-                          className="px-1.5 py-0.5 bg-slate-800 text-rose-300 rounded hover:bg-slate-700"
+                          onClick={() => handleOpenEditModal(item)}
+                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200"
+                          title="Edit complete details"
                         >
-                          -$100
+                          <Pencil className="w-3 h-3" />
                         </button>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAdjustPrice(item.id, 100);
-                          }}
-                          className="px-1.5 py-0.5 bg-slate-800 text-emerald-300 rounded hover:bg-slate-700"
+                          onClick={() => handleDeleteItem(item)}
+                          className="p-1 rounded bg-rose-900/60 hover:bg-rose-800 text-rose-300"
+                          title="Delete item"
                         >
-                          +$100
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
@@ -752,450 +720,541 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
           })}
         </div>
 
-        {/* ======================================================== */}
-        {/* Right Panel: Purchase Calculation & Checkout Sidebar (4 cols) */}
-        {/* ======================================================== */}
+        {/* Right Panel: Purchase Calculation & Checkout Glass Panel (4 cols) */}
         <div className="xl:col-span-4 flex flex-col gap-4">
-          {/* Apple Wallet Mini Ledger Preview Card */}
-          <div className="bg-gradient-to-br from-[#0c1f2e] via-[#0f343e] to-[#044c3c] text-white rounded-2xl p-5 border border-white/[0.12] shadow-[0_12px_36px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between h-52">
+          {/* Apple Wallet Mini Ledger Preview Card (Exact Stitch Style) */}
+          <div className="bg-gradient-to-br from-[#0c1f2e] via-[#0f343e] to-[#044c3c] text-white rounded-2xl p-5 border border-white/[0.12] shadow-[0_12px_36px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between h-48">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(66,229,176,0.18),transparent_60%)] pointer-events-none" />
-
-            {/* Top row */}
             <div className="flex justify-between items-start z-10">
               <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-300 font-mono">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-300 opacity-90">
                   Institutional Debit Card
                 </div>
                 <div className="font-display font-semibold text-sm tracking-wide text-white">
-                  Didactic Classroom Reserve
+                  Colegio BGU Reserve
                 </div>
               </div>
-              <span className="text-[#4cd6fb] font-mono text-xl drop-shadow-[0_0_8px_rgba(76,214,251,0.5)]">
-                ))))
+              <span className="font-mono text-[#4cd6fb] text-lg font-bold drop-shadow-[0_0_8px_rgba(76,214,251,0.5)]">
+                ●)))
               </span>
             </div>
 
-            {/* Chip row */}
             <div className="z-10 flex items-center gap-3">
-              <div className="w-8 h-6 rounded bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                <span className="text-[#ffc149] text-xs font-mono font-bold">▦</span>
+              <div className="w-8 h-6 rounded bg-amber-300/80 backdrop-blur-sm border border-amber-600/40 flex items-center justify-center">
+                <span className="text-[10px] text-amber-950 font-mono font-bold">CHIP</span>
               </div>
               <span className="font-mono text-xs tracking-widest text-slate-200">
-                •••• {currentStudent ? currentStudent.cardNumber.slice(-4) : '0000'}
+                •••• {currentStudent?.cardNumber ? currentStudent.cardNumber.slice(-4) : '7418'}
               </span>
             </div>
 
-            {/* Bottom Card row */}
             <div className="flex justify-between items-end z-10">
               <div>
-                <div className="text-[9px] uppercase tracking-wider text-slate-300 font-mono">
+                <div className="font-mono text-[9px] text-slate-300 opacity-80 uppercase">
                   Cardholder
                 </div>
-                <div className="font-display font-bold text-sm truncate max-w-[150px] text-white">
-                  {currentStudent?.name || 'Student'}
+                <div className="font-display font-semibold text-xs truncate max-w-[150px] text-white">
+                  {currentStudent?.name || 'Student Shopper'}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[9px] uppercase tracking-wider text-slate-300 font-mono">
+                <div className="font-mono text-[9px] text-slate-300 opacity-80 uppercase">
                   Available Balance
                 </div>
-                <div className="font-mono text-xl font-bold text-[#42e5b0] drop-shadow-[0_0_10px_rgba(66,229,176,0.4)]">
-                  ${currentStudent?.currentBalance || 0}.00
+                <div className="font-mono font-bold text-lg text-[#42e5b0] drop-shadow-[0_0_10px_rgba(66,229,176,0.4)]">
+                  E${currentStudent?.currentBalance || 0}.00
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Ledger Settlement & 1-Click Purchase Checkout Sheet */}
+          {/* Checkout Sheet (Exact Stitch Style) */}
           <div
-            className={`rounded-2xl p-5 border transition-all ${
+            className={`rounded-2xl p-5 border flex flex-col ${
               isDark
-                ? 'bg-[#181d29]/85 backdrop-blur-xl border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.45)] text-white'
-                : 'bg-white border-slate-200 shadow-sm text-slate-900'
+                ? 'bg-[#181d29]/85 backdrop-blur-xl border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.45)] text-slate-100'
+                : 'bg-white border-slate-200 shadow-xl text-slate-900'
             }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
                 <Receipt className="w-4 h-4 text-[#42e5b0]" />
-                <h2 className="font-display font-bold text-sm tracking-tight">Ledger Settlement</h2>
+                <h2 className="font-display font-semibold text-sm">Ledger Settlement</h2>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-bold">
-                Live Transaction
+              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-semibold shadow-[0_0_8px_rgba(66,229,176,0.2)]">
+                {canAffordSelected && !isSelectedOutOfStock ? 'Ready' : 'Pending'}
               </span>
             </div>
 
-            {activeSelectedItem ? (
-              <div className="space-y-4 pt-3 font-mono text-xs">
-                {/* Selected Item Summary */}
+            {/* Dynamic Balance Breakdown */}
+            <div className="space-y-2.5 py-4 text-xs">
+              <div className="flex justify-between items-center text-slate-400 font-mono">
+                <span>Opening Available Reserve</span>
+                <span className="font-semibold text-white">
+                  E${currentStudent?.currentBalance || 0}.00
+                </span>
+              </div>
+
+              {activeSelectedItem ? (
                 <div
-                  className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-                    isDark ? 'bg-slate-950/60 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+                  className={`flex justify-between items-start p-2.5 rounded-xl border ${
+                    isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 truncate">
-                    <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
-                      <StoreItemVisual iconType={activeSelectedItem.iconType} emoji={activeSelectedItem.emoji} className="w-full h-full" />
-                    </div>
-                    <div className="truncate">
-                      <p className="font-bold truncate text-sm">{activeSelectedItem.name}</p>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {activeSelectedItem.subtitle || activeSelectedItem.category}
-                      </p>
-                    </div>
+                  <div className="flex flex-col pr-2 min-w-0">
+                    <span className="font-semibold truncate">{activeSelectedItem.name}</span>
+                    <span className="text-[10px] text-slate-400 truncate">
+                      {activeSelectedItem.subtitle || activeSelectedItem.category} &bull; 1 Authorization
+                    </span>
                   </div>
-                  <span className="text-sm font-bold text-[#42e5b0]">
-                    ${selectedItemEffectivePrice}
+                  <span className="font-mono font-bold text-rose-400 drop-shadow-[0_0_6px_rgba(255,107,107,0.3)] shrink-0">
+                    -E${selectedItemEffectivePrice}.00
                   </span>
                 </div>
+              ) : (
+                <div className="text-center py-4 text-slate-500 italic">No item selected from catalog</div>
+              )}
 
-                {/* Calculation Breakdown */}
-                <div className="space-y-1.5 py-1 text-slate-400">
-                  <div className="flex justify-between">
-                    <span>Starting Balance:</span>
-                    <span className={isDark ? 'text-white' : 'text-slate-900'}>
-                      ${currentStudent?.currentBalance || 0}.00
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Item Price Deduction:</span>
-                    <span className="text-rose-400">-${selectedItemEffectivePrice}.00</span>
-                  </div>
-                  <div className="flex justify-between text-emerald-400 font-semibold">
-                    <span>Credit Score Benefit:</span>
-                    <span>+5 Rating Pts</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-white/[0.08] font-bold text-sm">
-                    <span className={isDark ? 'text-white' : 'text-slate-900'}>Remaining Balance:</span>
-                    <span className="text-[#42e5b0]">
-                      ${Math.max(0, (currentStudent?.currentBalance || 0) - selectedItemEffectivePrice)}.00
-                    </span>
-                  </div>
+              <div className="flex justify-between items-center pt-2 border-t border-white/[0.06] font-mono">
+                <span className="font-semibold">Projected Net Reserve</span>
+                <span className="font-bold text-base text-[#42e5b0] drop-shadow-[0_0_10px_rgba(66,229,176,0.4)]">
+                  E${Math.max(0, (currentStudent?.currentBalance || 0) - selectedItemEffectivePrice)}.00
+                </span>
+              </div>
+            </div>
+
+            {/* Credit Metric Boost Indicator */}
+            <div
+              className={`p-3 rounded-xl border mb-4 flex items-center justify-between text-xs ${
+                isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#ffc149] drop-shadow-[0_0_6px_rgba(255,193,73,0.5)]" />
+                <div>
+                  <div className="font-semibold text-[11px]">Credit Trajectory</div>
+                  <div className="text-[10px] text-slate-400">Punctual settlement merit</div>
                 </div>
+              </div>
+              <span className="font-mono text-[10px] font-bold text-[#42e5b0]">+5 pts</span>
+            </div>
 
-                {/* 1-Click Purchase Button */}
-                <button
-                  type="button"
-                  disabled={!canAffordSelected || Boolean(isSelectedOutOfStock)}
-                  onClick={() => {
-                    if (currentStudent && canAffordSelected && !isSelectedOutOfStock) {
-                      onPurchaseItem(
-                        currentStudent.id,
-                        selectedItemEffectivePrice,
-                        activeSelectedItem,
-                        selectedItemEffectivePrice
-                      );
-                    }
-                  }}
-                  className={`w-full py-3 px-4 rounded-xl font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg ${
-                    isSelectedOutOfStock
-                      ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                      : !canAffordSelected
-                      ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 cursor-not-allowed'
-                      : 'bg-[#42e5b0] hover:bg-[#34c495] text-[#003828] shadow-[#42e5b0]/25 hover:shadow-xl hover:scale-[1.01]'
-                  }`}
-                >
-                  {isSelectedOutOfStock ? (
-                    <span>Item Sold Out</span>
-                  ) : !canAffordSelected ? (
-                    <span>Needs ${selectedItemEffectivePrice - (currentStudent?.currentBalance || 0)} More</span>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4 font-bold" />
-                      <span>Confirm Purchase (+5 Score)</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-xs text-slate-400">
-                Click any item card to review settlement
-              </div>
-            )}
+            {/* 1-Click Purchase CTA Button */}
+            <button
+              type="button"
+              onClick={handleExecutePurchase}
+              disabled={!activeSelectedItem || isSelectedOutOfStock || !canAffordSelected}
+              className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
+            >
+              <Check className="w-4 h-4 stroke-[3]" />
+              <span>
+                {isSelectedOutOfStock
+                  ? 'Item Out of Stock'
+                  : !canAffordSelected
+                  ? 'Insufficient Reserve'
+                  : `Complete Settlement (E$${selectedItemEffectivePrice})`}
+              </span>
+            </button>
           </div>
         </div>
       </div>
 
       {/* ======================================================== */}
-      {/* 3. MODAL: ADD / EDIT STORE ITEM (FROSTED GLASS THEME) */}
+      {/* 3. DEDICATED SHOPPER PICKER MODAL (ZERO COLLISION) */}
       {/* ======================================================== */}
-      {isItemModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+      {isShopperPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
           <div
-            className={`border rounded-2xl w-full max-w-xl shadow-2xl p-6 space-y-4 my-8 transition-colors ${
-              isDark
-                ? 'bg-[#11151f]/95 border-white/[0.12] text-slate-100'
-                : 'bg-white border-slate-300 text-slate-900'
+            className={`rounded-2xl border w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh] ${
+              isDark ? 'bg-[#121622] border-white/[0.1] text-white' : 'bg-white border-slate-200 text-slate-900'
             }`}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-              <h3 className="text-base font-bold font-display uppercase tracking-wider flex items-center gap-2">
-                {modalMode === 'add' ? (
-                  <>
-                    <Plus className="w-4 h-4 text-[#42e5b0]" />
-                    <span>Add New Store Item</span>
-                  </>
-                ) : (
-                  <>
-                    <Pencil className="w-4 h-4 text-amber-400" />
-                    <span>Edit Store Item</span>
-                  </>
-                )}
-              </h3>
+            <div className={`p-4 border-b flex items-center justify-between ${
+              isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-200 bg-slate-50'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#42e5b0]">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-sm">Select Student Shopper</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    {students.length} student cardholders registered
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => setIsItemModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                onClick={() => setIsShopperPickerOpen(false)}
+                className={`p-1.5 rounded-lg border transition-colors ${
+                  isDark
+                    ? 'text-slate-400 hover:text-white bg-white/[0.05] border-white/[0.08]'
+                    : 'text-slate-600 hover:text-slate-900 bg-slate-100 border-slate-200'
+                }`}
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveItemModal} className="space-y-4 font-mono">
-              {/* Title & Subtitle */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-300 font-bold">Item Title *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. VIP Desk Pass, Free Snack"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                  />
+            {/* Search Input */}
+            <div className={`p-3 border-b ${isDark ? 'border-white/[0.08]' : 'border-slate-200'}`}>
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={shopperSearch}
+                  onChange={(e) => setShopperSearch(e.target.value)}
+                  placeholder="Search student name or card number..."
+                  className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                    isDark
+                      ? 'bg-[#181d29] border-white/[0.1] text-white placeholder-slate-500'
+                      : 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-400'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Shopper list */}
+            <div className="p-2 space-y-1 overflow-y-auto max-h-[380px]">
+              {filteredShoppers.length === 0 ? (
+                <div className="text-center py-8 text-xs text-slate-400">No matching student found.</div>
+              ) : (
+                filteredShoppers.map((s) => {
+                  const isCurrent = s.id === activeStudentId;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveStudentId(s.id);
+                        if (onSelectStudent) onSelectStudent(s.id);
+                        setIsShopperPickerOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                        isCurrent
+                          ? 'bg-[#42e5b0]/15 border-[#42e5b0]/40 text-white shadow-sm'
+                          : isDark
+                          ? 'bg-[#181d29]/40 border-white/[0.05] text-slate-300 hover:bg-[#181d29] hover:border-white/[0.1]'
+                          : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#009b74] to-[#42e5b0] text-[#003828] font-bold text-xs flex items-center justify-center shrink-0">
+                          {getInitials(s.name)}
+                        </div>
+                        <div className="truncate">
+                          <div className="font-semibold text-xs truncate">{s.name}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            #{s.cardNumber ? s.cardNumber.slice(-4) : '••••'} &bull; Score: {s.creditScore}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="font-mono text-xs font-bold text-[#42e5b0] shrink-0 ml-2">
+                        E${s.currentBalance}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 4. FROSTED GLASS ADD / EDIT ITEM MODAL */}
+      {/* ======================================================== */}
+      {isItemModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div
+            className={`w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${
+              isDark ? 'bg-[#121622] border-white/[0.1] text-white' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            <div className={`p-4 border-b flex items-center justify-between ${
+              isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-200 bg-slate-50'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#42e5b0]">
+                  {modalMode === 'add' ? <Plus className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-300">Subtitle / Tag</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Privilege, Academic Boost"
-                    value={formSubtitle}
-                    onChange={(e) => setFormSubtitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                  />
+                <div>
+                  <h3 className="font-display font-bold text-sm">
+                    {modalMode === 'add' ? 'Add Store Privilege Item' : 'Edit Store Item'}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    Configure privilege title, pricing, stock and visuals
+                  </p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsItemModalOpen(false)}
+                className={`p-1.5 rounded-lg border transition-colors ${
+                  isDark
+                    ? 'text-slate-400 hover:text-white bg-white/[0.05] border-white/[0.08]'
+                    : 'text-slate-600 hover:text-slate-900 bg-slate-100 border-slate-200'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-              {/* Price, Discount & Category */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-300 font-bold">Base Price ($) *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="50"
-                    required
-                    value={formBasePrice}
-                    onChange={(e) => setFormBasePrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                  />
-                </div>
+            <form onSubmit={handleSaveItemModal} className="p-4 space-y-3.5 overflow-y-auto text-xs">
+              <div>
+                <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                  Item Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="e.g. Skip Homework slip"
+                  className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                    isDark
+                      ? 'bg-[#181d29] border-white/[0.1] text-white'
+                      : 'bg-slate-100 border-slate-300 text-slate-900'
+                  }`}
+                />
+              </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-300">Discount (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="95"
-                    value={formDiscountPercent}
-                    onChange={(e) => setFormDiscountPercent(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-300 font-bold">Category</label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                    Category
+                  </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value as StoreItem['category'])}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
+                    className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                      isDark
+                        ? 'bg-[#181d29] border-white/[0.1] text-white'
+                        : 'bg-slate-100 border-slate-300 text-slate-900'
+                    }`}
                   >
-                    <option value="privilege">Privilege / Pass</option>
+                    <option value="privilege">Privilege</option>
                     <option value="academic">Academic Boost</option>
-                    <option value="prize">Prize Box</option>
-                    <option value="game">Game / Draw</option>
+                    <option value="prize">Prize / Keepsake</option>
+                    <option value="game">Game / Raffle</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                    Badge / Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={formSubtitle}
+                    onChange={(e) => setFormSubtitle(e.target.value)}
+                    placeholder="e.g. Rare Vault"
+                    className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                      isDark
+                        ? 'bg-[#181d29] border-white/[0.1] text-white'
+                        : 'bg-slate-100 border-slate-300 text-slate-900'
+                    }`}
+                  />
                 </div>
               </div>
 
-              {/* Stock and Unlimited Stock */}
-              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs text-slate-300 font-bold">Inventory / Stock</label>
-                  <label className="flex items-center gap-2 cursor-pointer text-xs text-[#42e5b0]">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                    Base Price (E$)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={formBasePrice}
+                    onChange={(e) => setFormBasePrice(Number(e.target.value))}
+                    className={`w-full px-3 py-2 rounded-xl border font-mono font-bold focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                      isDark
+                        ? 'bg-[#181d29] border-white/[0.1] text-white'
+                        : 'bg-slate-100 border-slate-300 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                    Discount % (0-100)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formDiscountPercent}
+                    onChange={(e) => setFormDiscountPercent(Number(e.target.value))}
+                    className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                      isDark
+                        ? 'bg-[#181d29] border-white/[0.1] text-white'
+                        : 'bg-slate-100 border-slate-300 text-slate-900'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Stock controls */}
+              <div className="grid grid-cols-2 gap-3 items-center">
+                <div>
+                  <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                    Stock Quantity
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    disabled={formUnlimitedStock}
+                    value={formStock}
+                    onChange={(e) => setFormStock(Number(e.target.value))}
+                    className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] disabled:opacity-40 ${
+                      isDark
+                        ? 'bg-[#181d29] border-white/[0.1] text-white'
+                        : 'bg-slate-100 border-slate-300 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div className="pt-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formUnlimitedStock}
                       onChange={(e) => setFormUnlimitedStock(e.target.checked)}
-                      className="rounded border-slate-700 text-[#42e5b0] focus:ring-0"
+                      className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-400"
                     />
-                    <span>Unlimited Stock (Always Available)</span>
+                    <span className="font-mono text-xs font-semibold">Unlimited Stock (∞)</span>
                   </label>
                 </div>
-                {!formUnlimitedStock && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      value={formStock}
-                      onChange={(e) => setFormStock(Number(e.target.value))}
-                      className="w-32 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                    />
-                    <span className="text-[11px] text-slate-400">units in stock</span>
-                  </div>
-                )}
               </div>
 
-              {/* Visual Card Appearance (Preset vs Custom Emoji) */}
-              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs text-slate-300 font-bold">Visual Appearance</label>
-                  <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => setFormVisualType('emoji')}
-                      className={`px-2.5 py-1 text-xs rounded transition-colors ${
-                        formVisualType === 'emoji'
-                          ? 'bg-[#42e5b0] text-[#003828] font-bold'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Custom Emoji
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormVisualType('preset')}
-                      className={`px-2.5 py-1 text-xs rounded transition-colors ${
-                        formVisualType === 'preset'
-                          ? 'bg-[#42e5b0] text-[#003828] font-bold'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Preset Cards
-                    </button>
-                  </div>
+              {/* Emoji / Preset icon selector */}
+              <div>
+                <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1.5">
+                  Visual Emblem
+                </label>
+                <div className="flex items-center gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormVisualType('emoji')}
+                    className={`px-3 py-1 rounded-lg font-mono text-xs border ${
+                      formVisualType === 'emoji'
+                        ? 'bg-[#42e5b0] text-[#003828] font-bold border-[#42e5b0]'
+                        : isDark
+                        ? 'bg-[#181d29] text-slate-300 border-white/[0.1]'
+                        : 'bg-slate-100 text-slate-700 border-slate-300'
+                    }`}
+                  >
+                    Custom Emoji
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormVisualType('preset')}
+                    className={`px-3 py-1 rounded-lg font-mono text-xs border ${
+                      formVisualType === 'preset'
+                        ? 'bg-[#42e5b0] text-[#003828] font-bold border-[#42e5b0]'
+                        : isDark
+                        ? 'bg-[#181d29] text-slate-300 border-white/[0.1]'
+                        : 'bg-slate-100 text-slate-700 border-slate-300'
+                    }`}
+                  >
+                    Preset Card
+                  </button>
                 </div>
 
                 {formVisualType === 'emoji' ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        maxLength={4}
-                        placeholder="🎁"
-                        value={formEmoji}
-                        onChange={(e) => setFormEmoji(e.target.value)}
-                        className="w-20 text-center text-2xl px-2 py-1 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#42e5b0]"
-                      />
-                      <span className="text-[11px] text-slate-400">
-                        Type any emoji or pick a classroom favorite below:
-                      </span>
-                    </div>
-
-                    {/* Quick Emoji Palette */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {['🍕', '🎮', '🎟️', '📚', '🏆', '🍿', '🍦', '🎧', '⭐', '🎁', '🚀', '👑', '🍫', '⚽', '🎨', '🎬'].map((emo) => (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={formEmoji}
+                      onChange={(e) => setFormEmoji(e.target.value)}
+                      placeholder="e.g. 🍕, 🎮, 🎟️, 🏆"
+                      className={`w-24 px-3 py-2 rounded-xl border text-xl text-center font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                        isDark
+                          ? 'bg-[#181d29] border-white/[0.1] text-white'
+                          : 'bg-slate-100 border-slate-300 text-slate-900'
+                      }`}
+                    />
+                    <div className="flex gap-1.5 flex-wrap">
+                      {['🎟️', '🍕', '🎮', '📚', '⭐', '🏆', '🎁', '🎧', '⚡'].map((em) => (
                         <button
-                          key={emo}
+                          key={em}
                           type="button"
-                          onClick={() => setFormEmoji(emo)}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-transform hover:scale-125 border ${
-                            formEmoji === emo
-                              ? 'bg-[#42e5b0]/30 border-[#42e5b0]'
-                              : 'bg-slate-900 border-slate-800 hover:bg-slate-800'
-                          }`}
+                          onClick={() => setFormEmoji(em)}
+                          className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.15] text-base flex items-center justify-center transition-all"
                         >
-                          {emo}
+                          {em}
                         </button>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-1">
-                    <label className="text-[11px] text-slate-400">Choose Preset Design Style:</label>
-                    <select
-                      value={formIconType}
-                      onChange={(e) => setFormIconType(e.target.value as StoreItem['iconType'])}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                    >
-                      <option value="skip-hw">Skip Homework (Notebook &amp; Fast Forward)</option>
-                      <option value="skip-lesson">Skip Lesson (Classroom Blackboard)</option>
-                      <option value="extra-points-hw">3 Extra Points HW (Triple Golden Stars)</option>
-                      <option value="extra-points-lss">3 Extra Points Lesson (Evaluation Stars)</option>
-                      <option value="half-lesson">Half Lesson (Early Pass Badge)</option>
-                      <option value="lucky-draw">A Spin of the Lucky Draw (Spin Wheel)</option>
-                      <option value="super-mini-prize">Super-mini Prize (Pink Box &amp; Sparkles)</option>
-                      <option value="mini-prize">Mini Prize (Mystery Black Box)</option>
-                      <option value="big-prize">Big Prize (Grand Purple Glowing Box)</option>
-                      <option value="custom">Standard Classroom Gift Box</option>
-                    </select>
-                  </div>
+                  <select
+                    value={formIconType}
+                    onChange={(e) => setFormIconType(e.target.value as StoreItem['iconType'])}
+                    className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                      isDark
+                        ? 'bg-[#181d29] border-white/[0.1] text-white'
+                        : 'bg-slate-100 border-slate-300 text-slate-900'
+                    }`}
+                  >
+                    <option value="skip_hw">Skip Homework Card</option>
+                    <option value="skip_lesson">Skip Lesson Pass</option>
+                    <option value="extra_points">3 Extra Points Booster</option>
+                    <option value="half_lesson">Half Lesson Waiver</option>
+                    <option value="spin_wheel">Lucky Spin Wheel</option>
+                    <option value="mystery_box">Mystery Box Vault</option>
+                    <option value="gift">Gift / Prize</option>
+                  </select>
                 )}
-
-                {/* Live Visual Preview */}
-                <div className="pt-2 border-t border-slate-800 flex items-center gap-3">
-                  <div className="w-24 shrink-0 bg-white/5 rounded-xl border border-slate-800 p-2 flex items-center justify-center">
-                    <StoreItemVisual
-                      iconType={formVisualType === 'preset' ? formIconType : 'custom'}
-                      emoji={formVisualType === 'emoji' ? formEmoji : undefined}
-                      className="w-full h-20"
-                    />
-                  </div>
-                  <div className="text-[11px] text-slate-400 space-y-0.5">
-                    <strong className="text-white block font-sans">Live Preview:</strong>
-                    <span>{formName || 'Item Title'}</span>
-                    <div className="text-[#42e5b0] font-bold">${formBasePrice}</div>
-                  </div>
-                </div>
               </div>
 
-              {/* Shelf Visibility Toggle (Inactive / Hidden) */}
-              <div className="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800">
-                <div>
-                  <p className="text-xs font-bold text-white">Shelf Visibility</p>
-                  <p className="text-[10px] text-slate-400">
-                    Hide this item from regular student shopping view without deleting it.
-                  </p>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <div>
+                <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  placeholder="Explanation of conditions and classroom waiver rules..."
+                  className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                    isDark
+                      ? 'bg-[#181d29] border-white/[0.1] text-white'
+                      : 'bg-slate-100 border-slate-300 text-slate-900'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formIsHidden}
                     onChange={(e) => setFormIsHidden(e.target.checked)}
-                    className="rounded border-slate-700 text-amber-500 focus:ring-0"
+                    className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400"
                   />
-                  <span className={formIsHidden ? 'text-amber-400 font-bold' : 'text-slate-400'}>
-                    {formIsHidden ? 'Hidden (Inactive)' : 'Active (Visible)'}
+                  <span className="font-mono text-xs text-amber-300 font-semibold">
+                    Hide from student shoppers (Inactive / Draft)
                   </span>
                 </label>
               </div>
 
-              {/* Description */}
-              <div className="space-y-1">
-                <label className="text-xs text-slate-300">Description / Details</label>
-                <textarea
-                  rows={2}
-                  placeholder="Details of privilege, reward rules, or redemption notes"
-                  value={formDesc}
-                  onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
-                />
-              </div>
-
-              {/* Modal Buttons */}
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="pt-2 border-t border-white/[0.08] flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsItemModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs transition-colors"
+                  className="px-4 py-2 rounded-xl border border-white/[0.1] font-mono text-xs text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#42e5b0] hover:bg-[#34c495] text-[#003828] font-bold rounded-xl text-xs transition-colors shadow-md shadow-[#42e5b0]/20"
+                  className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold font-mono text-xs uppercase tracking-wider rounded-xl shadow-md"
                 >
-                  {modalMode === 'add' ? 'Add Item to Store' : 'Save Changes'}
+                  {modalMode === 'add' ? 'Add to Catalog' : 'Save Changes'}
                 </button>
               </div>
             </form>
