@@ -17,11 +17,19 @@ import {
   Award,
   ArrowRight,
   Zap,
-  Edit3
+  Edit3,
+  Pencil,
+  Trash2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Student, StoreItem, StorePurchaseTransaction } from '../types';
 import { StoreItemVisual } from './StoreItemVisual';
-import { calculateEffectiveItemPrice, DEFAULT_STORE_ITEMS } from '../data/storeCatalog';
+import {
+  calculateEffectiveItemPrice,
+  DEFAULT_STORE_ITEMS,
+  resetDefaultStoreItems
+} from '../data/storeCatalog';
 import { StudentSelectorNav } from './StudentSelectorNav';
 
 interface ClassroomStoreViewProps {
@@ -64,19 +72,32 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'privilege' | 'academic' | 'prize' | 'game'>('all');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [globalDiscountInput, setGlobalDiscountInput] = useState<number>(0);
-  const [showAddCustomModal, setShowAddCustomModal] = useState<boolean>(false);
+  // Unified Add / Edit Modal state
+  const [isItemModalOpen, setIsItemModalOpen] = useState<boolean>(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [editingItemIdForModal, setEditingItemIdForModal] = useState<string | null>(null);
 
-  // New Custom Item Form state
-  const [customItemName, setCustomItemName] = useState('');
-  const [customItemPrice, setCustomItemPrice] = useState(1000);
-  const [customItemStock, setCustomItemStock] = useState(5);
-  const [customItemCategory, setCustomItemCategory] = useState<StoreItem['category']>('privilege');
-  const [customItemDesc, setCustomItemDesc] = useState('');
+  // Form state
+  const [formName, setFormName] = useState('');
+  const [formSubtitle, setFormSubtitle] = useState('');
+  const [formCategory, setFormCategory] = useState<StoreItem['category']>('privilege');
+  const [formBasePrice, setFormBasePrice] = useState(1000);
+  const [formDiscountPercent, setFormDiscountPercent] = useState(0);
+  const [formStock, setFormStock] = useState(5);
+  const [formUnlimitedStock, setFormUnlimitedStock] = useState(false);
+  const [formVisualType, setFormVisualType] = useState<'preset' | 'emoji'>('preset');
+  const [formIconType, setFormIconType] = useState<StoreItem['iconType']>('custom');
+  const [formEmoji, setFormEmoji] = useState('🎁');
+  const [formDesc, setFormDesc] = useState('');
+  const [formIsHidden, setFormIsHidden] = useState(false);
 
   const currentStudent = students.find((s) => s.id === activeStudentId) || students[0];
 
-  // Filtered items
+  // Filtered items (respects isHidden for students and non-edit mode)
   const filteredCatalog = storeCatalog.filter((item) => {
+    if (item.isHidden && (!isTeacher || !isEditMode)) {
+      return false;
+    }
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -139,37 +160,125 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     setGlobalDiscountInput(percent);
   };
 
-  // Reset to original image catalog
+  // Reset to default catalog while preserving custom items
   const handleResetCatalog = () => {
-    if (window.confirm('Reset all store prices, stocks, and discounts to the original classroom default values?')) {
-      onUpdateCatalog(DEFAULT_STORE_ITEMS);
+    if (
+      window.confirm(
+        'Reset standard store items back to their original default values? Any custom items you added will be preserved.'
+      )
+    ) {
+      onUpdateCatalog(resetDefaultStoreItems(storeCatalog));
       setIsEditMode(false);
     }
   };
 
-  // Add custom item
-  const handleAddCustomItem = (e: React.FormEvent) => {
+  // Modal open helpers
+  const handleOpenAddModal = () => {
+    setModalMode('add');
+    setEditingItemIdForModal(null);
+    setFormName('');
+    setFormSubtitle('Classroom Reward');
+    setFormCategory('privilege');
+    setFormBasePrice(1000);
+    setFormDiscountPercent(0);
+    setFormStock(5);
+    setFormUnlimitedStock(false);
+    setFormVisualType('emoji');
+    setFormIconType('custom');
+    setFormEmoji('🎁');
+    setFormDesc('');
+    setFormIsHidden(false);
+    setIsItemModalOpen(true);
+  };
+
+  const handleOpenEditModal = (item: StoreItem) => {
+    setModalMode('edit');
+    setEditingItemIdForModal(item.id);
+    setFormName(item.name);
+    setFormSubtitle(item.subtitle || '');
+    setFormCategory(item.category);
+    setFormBasePrice(item.basePrice);
+    setFormDiscountPercent(item.discountPercent || 0);
+    setFormStock(item.stock);
+    setFormUnlimitedStock(Boolean(item.unlimitedStock));
+    if (item.emoji && item.emoji.trim()) {
+      setFormVisualType('emoji');
+      setFormEmoji(item.emoji);
+      setFormIconType(item.iconType || 'custom');
+    } else {
+      setFormVisualType('preset');
+      setFormIconType(item.iconType || 'custom');
+      setFormEmoji('🎁');
+    }
+    setFormDesc(item.description || '');
+    setFormIsHidden(Boolean(item.isHidden));
+    setIsItemModalOpen(true);
+  };
+
+  // Delete item handler
+  const handleDeleteItem = (itemId: string, itemName: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete "${itemName}" from the store?`)) {
+      const updated = storeCatalog.filter((item) => item.id !== itemId);
+      onUpdateCatalog(updated);
+      if (editingItemId === itemId) {
+        setEditingItemId(null);
+      }
+    }
+  };
+
+  // Toggle shelf visibility (Inactive / Hidden)
+  const handleToggleHideItem = (itemId: string) => {
+    const updated = storeCatalog.map((item) => {
+      if (item.id !== itemId) return item;
+      return { ...item, isHidden: !item.isHidden };
+    });
+    onUpdateCatalog(updated);
+  };
+
+  // Save Add/Edit modal form
+  const handleSaveItemModal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customItemName.trim()) return;
+    if (!formName.trim()) return;
 
-    const newItem: StoreItem = {
-      id: `store-custom-${Date.now()}`,
-      name: customItemName.trim(),
-      subtitle: 'Classroom Reward',
-      category: customItemCategory,
-      basePrice: customItemPrice,
-      discountPercent: 0,
-      stock: customItemStock,
-      iconType: 'custom',
-      description: customItemDesc.trim() || 'Custom classroom privilege or item.',
-    };
+    if (modalMode === 'add') {
+      const newItem: StoreItem = {
+        id: `store-custom-${Date.now()}`,
+        name: formName.trim(),
+        subtitle: formSubtitle.trim() || undefined,
+        category: formCategory,
+        basePrice: Math.max(1, formBasePrice),
+        discountPercent: Math.min(95, Math.max(0, formDiscountPercent)),
+        stock: formUnlimitedStock ? 0 : Math.max(0, formStock),
+        unlimitedStock: formUnlimitedStock,
+        iconType: formVisualType === 'preset' ? formIconType : 'custom',
+        emoji: formVisualType === 'emoji' ? formEmoji.trim() || '🎁' : undefined,
+        description: formDesc.trim() || undefined,
+        isHidden: formIsHidden,
+        isCustom: true,
+      };
+      onUpdateCatalog([...storeCatalog, newItem]);
+    } else if (modalMode === 'edit' && editingItemIdForModal) {
+      const updated = storeCatalog.map((item) => {
+        if (item.id !== editingItemIdForModal) return item;
+        return {
+          ...item,
+          name: formName.trim(),
+          subtitle: formSubtitle.trim() || undefined,
+          category: formCategory,
+          basePrice: Math.max(1, formBasePrice),
+          discountPercent: Math.min(95, Math.max(0, formDiscountPercent)),
+          stock: formUnlimitedStock ? 0 : Math.max(0, formStock),
+          unlimitedStock: formUnlimitedStock,
+          iconType: formVisualType === 'preset' ? formIconType : 'custom',
+          emoji: formVisualType === 'emoji' ? formEmoji.trim() || '🎁' : undefined,
+          description: formDesc.trim() || undefined,
+          isHidden: formIsHidden,
+        };
+      });
+      onUpdateCatalog(updated);
+    }
 
-    onUpdateCatalog([...storeCatalog, newItem]);
-    setShowAddCustomModal(false);
-    setCustomItemName('');
-    setCustomItemPrice(1000);
-    setCustomItemStock(5);
-    setCustomItemDesc('');
+    setIsItemModalOpen(false);
   };
 
   return (
@@ -345,7 +454,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               <>
                 <button
                   type="button"
-                  onClick={() => setShowAddCustomModal(true)}
+                  onClick={handleOpenAddModal}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -417,30 +526,81 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               }`}
             >
               {/* Card Top: Stock Header matching 1st BGU.png */}
-              <div className="pt-4 px-4 pb-1 flex items-center justify-between border-b border-slate-100">
-                <div className="flex items-center gap-1.5">
+              <div className="pt-3 px-4 pb-2 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {item.isHidden && isTeacher && isEditMode && (
+                    <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-mono font-bold text-[10px] rounded uppercase tracking-wider shadow-sm">
+                      Inactive
+                    </span>
+                  )}
                   <span
-                    className={`text-sm font-bold font-sans tracking-wide ${
-                      isOutOfStock ? 'text-red-600' : item.stock <= 2 ? 'text-amber-600' : 'text-slate-800'
+                    className={`text-xs sm:text-sm font-bold font-sans tracking-wide ${
+                      item.unlimitedStock
+                        ? 'text-emerald-700 font-semibold'
+                        : isOutOfStock
+                        ? 'text-red-600'
+                        : item.stock <= 2
+                        ? 'text-amber-600'
+                        : 'text-slate-800'
                     }`}
                   >
-                    {isOutOfStock ? 'Out of stock' : `${item.stock} in stock`}
+                    {item.unlimitedStock
+                      ? '∞ Unlimited'
+                      : isOutOfStock
+                      ? 'Out of stock'
+                      : `${item.stock} in stock`}
                   </span>
-                  {item.stock <= 2 && !isOutOfStock && (
+                  {item.stock <= 2 && !isOutOfStock && !item.unlimitedStock && (
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                   )}
                 </div>
 
-                {hasDiscount && (
-                  <span className="px-2 py-0.5 bg-red-600 text-white font-mono font-bold text-[11px] rounded-full shadow-sm">
-                    -{item.discountPercent}% OFF
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {hasDiscount && (
+                    <span className="px-2 py-0.5 bg-red-600 text-white font-mono font-bold text-[11px] rounded-full shadow-sm">
+                      -{item.discountPercent}% OFF
+                    </span>
+                  )}
+
+                  {/* Card Edit & Delete Quick Actions (Manage Store Mode) */}
+                  {isTeacher && isEditMode && (
+                    <div className="flex items-center gap-0.5 bg-white border border-slate-300 rounded-lg p-0.5 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(item)}
+                        className="p-1 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                        title="Edit Item Details (Title, Price, Icon/Emoji, Stock, etc.)"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHideItem(item.id)}
+                        className={`p-1 rounded transition-colors ${
+                          item.isHidden
+                            ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                        title={item.isHidden ? 'Unhide item (Show to students)' : 'Hide item (Remove from student view)'}
+                      >
+                        {item.isHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteItem(item.id, item.name)}
+                        className="p-1 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Permanently Delete Item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Card Center: Visual Illustration */}
               <div className="p-4 flex flex-col items-center justify-center min-h-[140px]">
-                <StoreItemVisual iconType={item.iconType} className="w-full h-32" />
+                <StoreItemVisual iconType={item.iconType} emoji={item.emoji} className="w-full h-32" />
                 {item.description && (
                   <p className="text-[11px] text-slate-600 text-center italic mt-1 line-clamp-2">
                     {item.description}
@@ -681,102 +841,279 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
         </div>
       </div>
 
-      {/* MODAL: ADD CUSTOM STORE ITEM */}
-      {showAddCustomModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-6 text-slate-100 space-y-4">
+      {/* MODAL: ADD / EDIT STORE ITEM */}
+      {isItemModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl shadow-2xl p-6 text-slate-100 space-y-4 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
-                <Plus className="w-4 h-4 text-emerald-400" />
-                Add Store Reward Item
+                {modalMode === 'add' ? (
+                  <>
+                    <Plus className="w-4 h-4 text-emerald-400" />
+                    <span>Add New Store Item</span>
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="w-4 h-4 text-amber-400" />
+                    <span>Edit Store Item</span>
+                  </>
+                )}
               </h3>
               <button
                 type="button"
-                onClick={() => setShowAddCustomModal(false)}
-                className="text-slate-400 hover:text-white"
+                onClick={() => setIsItemModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAddCustomItem} className="space-y-4 font-mono">
-              <div className="space-y-1">
-                <label className="text-xs text-slate-300">Item Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. VIP Desk Pass, Free Snack, Bonus Points"
-                  value={customItemName}
-                  onChange={(e) => setCustomItemName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSaveItemModal} className="space-y-4 font-mono">
+              {/* Title & Subtitle */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-300">Base Price ($)</label>
+                  <label className="text-xs text-slate-300 font-bold">Item Title *</label>
                   <input
-                    type="number"
-                    min="10"
-                    step="50"
+                    type="text"
                     required
-                    value={customItemPrice}
-                    onChange={(e) => setCustomItemPrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white"
+                    placeholder="e.g. VIP Desk Pass, Free Snack"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
-
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-300">Initial Stock</label>
+                  <label className="text-xs text-slate-300">Subtitle / Tag</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Privilege, Academic Boost"
+                    value={formSubtitle}
+                    onChange={(e) => setFormSubtitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Price, Discount & Category */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-300 font-bold">Base Price ($) *</label>
                   <input
                     type="number"
                     min="1"
+                    step="50"
                     required
-                    value={customItemStock}
-                    onChange={(e) => setCustomItemStock(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white"
+                    value={formBasePrice}
+                    onChange={(e) => setFormBasePrice(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-300">Discount (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="95"
+                    value={formDiscountPercent}
+                    onChange={(e) => setFormDiscountPercent(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-300 font-bold">Category</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value as StoreItem['category'])}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="privilege">Privilege / Pass</option>
+                    <option value="academic">Academic Boost</option>
+                    <option value="prize">Prize Box</option>
+                    <option value="game">Game / Draw</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-slate-300">Category</label>
-                <select
-                  value={customItemCategory}
-                  onChange={(e) => setCustomItemCategory(e.target.value as StoreItem['category'])}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white"
-                >
-                  <option value="privilege">Privilege / Pass</option>
-                  <option value="academic">Academic Boost / Points</option>
-                  <option value="prize">Prize Box</option>
-                  <option value="game">Game / Draw</option>
-                </select>
+              {/* Stock and Unlimited Stock */}
+              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-slate-300 font-bold">Inventory / Stock</label>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-emerald-400">
+                    <input
+                      type="checkbox"
+                      checked={formUnlimitedStock}
+                      onChange={(e) => setFormUnlimitedStock(e.target.checked)}
+                      className="rounded border-slate-700 text-emerald-600 focus:ring-0"
+                    />
+                    <span>Unlimited Stock (Always Available)</span>
+                  </label>
+                </div>
+                {!formUnlimitedStock && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      value={formStock}
+                      onChange={(e) => setFormStock(Number(e.target.value))}
+                      className="w-32 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                    <span className="text-[11px] text-slate-400">units in stock</span>
+                  </div>
+                )}
               </div>
 
+              {/* Visual Card Appearance (Preset vs Custom Emoji) */}
+              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-slate-300 font-bold">Visual Appearance</label>
+                  <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setFormVisualType('emoji')}
+                      className={`px-2.5 py-1 text-xs rounded transition-colors ${
+                        formVisualType === 'emoji'
+                          ? 'bg-emerald-600 text-white font-bold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Custom Emoji
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormVisualType('preset')}
+                      className={`px-2.5 py-1 text-xs rounded transition-colors ${
+                        formVisualType === 'preset'
+                          ? 'bg-emerald-600 text-white font-bold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Preset Cards
+                    </button>
+                  </div>
+                </div>
+
+                {formVisualType === 'emoji' ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        maxLength={4}
+                        placeholder="🎁"
+                        value={formEmoji}
+                        onChange={(e) => setFormEmoji(e.target.value)}
+                        className="w-20 text-center text-2xl px-2 py-1 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500"
+                      />
+                      <span className="text-[11px] text-slate-400">
+                        Type any emoji or pick a classroom favorite below:
+                      </span>
+                    </div>
+
+                    {/* Quick Emoji Palette */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {['🍕', '🎮', '🎟️', '📚', '🏆', '🍿', '🍦', '🎧', '⭐', '🎁', '🚀', '👑', '🍫', '⚽', '🎨', '🎬'].map((emo) => (
+                        <button
+                          key={emo}
+                          type="button"
+                          onClick={() => setFormEmoji(emo)}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-transform hover:scale-125 border ${
+                            formEmoji === emo
+                              ? 'bg-emerald-500/30 border-emerald-400'
+                              : 'bg-slate-900 border-slate-800 hover:bg-slate-800'
+                          }`}
+                        >
+                          {emo}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400">Choose Preset Design Style:</label>
+                    <select
+                      value={formIconType}
+                      onChange={(e) => setFormIconType(e.target.value as StoreItem['iconType'])}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="skip-hw">Skip Homework (Notebook &amp; Fast Forward)</option>
+                      <option value="skip-lesson">Skip Lesson (Classroom Blackboard)</option>
+                      <option value="extra-points-hw">3 Extra Points HW (Triple Golden Stars)</option>
+                      <option value="extra-points-lss">3 Extra Points Lesson (Evaluation Stars)</option>
+                      <option value="half-lesson">Half Lesson (Early Pass Badge)</option>
+                      <option value="lucky-draw">A Spin of the Lucky Draw (Spin Wheel)</option>
+                      <option value="super-mini-prize">Super-mini Prize (Pink Box &amp; Sparkles)</option>
+                      <option value="mini-prize">Mini Prize (Mystery Black Box)</option>
+                      <option value="big-prize">Big Prize (Grand Purple Glowing Box)</option>
+                      <option value="custom">Standard Classroom Gift Box</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Live Visual Preview */}
+                <div className="pt-2 border-t border-slate-800 flex items-center gap-3">
+                  <div className="w-24 shrink-0 bg-white/5 rounded-xl border border-slate-800 p-2 flex items-center justify-center">
+                    <StoreItemVisual
+                      iconType={formVisualType === 'preset' ? formIconType : 'custom'}
+                      emoji={formVisualType === 'emoji' ? formEmoji : undefined}
+                      className="w-full h-20"
+                    />
+                  </div>
+                  <div className="text-[11px] text-slate-400 space-y-0.5">
+                    <strong className="text-white block font-sans">Preview:</strong>
+                    <span>{formName || 'Item Title'}</span>
+                    <div className="text-emerald-400 font-bold">${formBasePrice}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shelf Visibility Toggle (Inactive / Hidden) */}
+              <div className="flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                <div>
+                  <p className="text-xs font-bold text-white">Shelf Visibility</p>
+                  <p className="text-[10px] text-slate-400">
+                    Hide this item from regular student shopping view without deleting it.
+                  </p>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer text-xs">
+                  <input
+                    type="checkbox"
+                    checked={formIsHidden}
+                    onChange={(e) => setFormIsHidden(e.target.checked)}
+                    className="rounded border-slate-700 text-amber-500 focus:ring-0"
+                  />
+                  <span className={formIsHidden ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                    {formIsHidden ? 'Hidden (Inactive)' : 'Active (Visible)'}
+                  </span>
+                </label>
+              </div>
+
+              {/* Description */}
               <div className="space-y-1">
-                <label className="text-xs text-slate-300">Description (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="Details of privilege or reward"
-                  value={customItemDesc}
-                  onChange={(e) => setCustomItemDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white"
+                <label className="text-xs text-slate-300">Description / Details</label>
+                <textarea
+                  rows={2}
+                  placeholder="Details of privilege, reward rules, or redemption notes"
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              {/* Modal Buttons */}
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
-                  onClick={() => setShowAddCustomModal(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs"
+                  onClick={() => setIsItemModalOpen(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-colors shadow-md shadow-emerald-900/40"
                 >
-                  Add to Store
+                  {modalMode === 'add' ? 'Add Item to Store' : 'Save Changes'}
                 </button>
               </div>
             </form>

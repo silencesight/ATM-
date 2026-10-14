@@ -54,7 +54,8 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
   if (!isOpen) return null;
 
   const currentBalance = student.currentBalance;
-  const selectedItem = storeCatalog.find((i) => i.id === selectedItemId);
+  const activeCatalog = storeCatalog.filter((item) => !item.isHidden);
+  const selectedItem = (mode === 'manage' ? storeCatalog : activeCatalog).find((i) => i.id === selectedItemId);
 
   const deductionAmount =
     mode === 'catalog' && selectedItem
@@ -249,7 +250,7 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-300 font-mono uppercase tracking-wider flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-amber-400" />
-                  Select Store Item ({storeCatalog.length} available)
+                  Select Store Item ({activeCatalog.length} available)
                 </span>
                 <span className="text-[11px] text-slate-400 font-mono">
                   Click an item to select
@@ -257,7 +258,7 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1">
-                {storeCatalog.map((item) => {
+                {activeCatalog.map((item) => {
                   const effectivePrice = calculateEffectiveItemPrice(item);
                   const isSelected = selectedItemId === item.id;
                   const isOut = item.stock <= 0 && !item.unlimitedStock;
@@ -284,10 +285,14 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
                       <div className="flex items-center justify-between mb-1.5">
                         <span
                           className={`text-[10px] font-mono font-bold ${
-                            isOut ? 'text-red-400' : 'text-slate-400'
+                            item.unlimitedStock
+                              ? 'text-emerald-400'
+                              : isOut
+                              ? 'text-red-400'
+                              : 'text-slate-400'
                           }`}
                         >
-                          {isOut ? 'Out of stock' : `${item.stock} in stock`}
+                          {item.unlimitedStock ? '∞ Unlimited' : isOut ? 'Out of stock' : `${item.stock} in stock`}
                         </span>
                         {item.discountPercent > 0 && (
                           <span className="px-1.5 py-0.5 bg-red-600 text-white font-mono font-bold text-[9px] rounded-full">
@@ -299,7 +304,7 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
                       {/* Mini Visual Preview & Name */}
                       <div className="flex items-center gap-2.5 my-1">
                         <div className="w-12 h-10 shrink-0 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center p-1 overflow-hidden">
-                          <StoreItemVisual iconType={item.iconType} className="w-full h-full" />
+                          <StoreItemVisual iconType={item.iconType} emoji={item.emoji} className="w-full h-full" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-white text-xs truncate leading-snug">

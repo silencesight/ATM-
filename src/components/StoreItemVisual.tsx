@@ -3,11 +3,33 @@ import { StoreItem } from '../types';
 import { BookOpen, FastForward, Star, HelpCircle, Gift, Sparkles } from 'lucide-react';
 
 interface StoreItemVisualProps {
-  iconType: StoreItem['iconType'];
+  iconType?: StoreItem['iconType'];
+  emoji?: string;
   className?: string;
 }
 
-export const StoreItemVisual: React.FC<StoreItemVisualProps> = ({ iconType, className = 'w-full h-32' }) => {
+export const StoreItemVisual: React.FC<StoreItemVisualProps> = ({
+  iconType = 'custom',
+  emoji,
+  className = 'w-full h-32',
+}) => {
+  if (emoji && emoji.trim()) {
+    return (
+      <div
+        className={`relative flex items-center justify-center bg-gradient-to-br from-amber-500/10 via-emerald-500/10 to-indigo-500/10 rounded-2xl border border-slate-200/80 p-2 overflow-hidden shadow-inner ${className}`}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_70%)]" />
+        <span
+          className="text-5xl sm:text-6xl drop-shadow-md select-none transform hover:scale-110 transition-transform duration-200 leading-none"
+          role="img"
+          aria-label="Item emoji"
+        >
+          {emoji.trim()}
+        </span>
+      </div>
+    );
+  }
+
   switch (iconType) {
     case 'skip-hw':
       return (

@@ -184,6 +184,9 @@ export interface StoreItem {
     | 'big-prize'
     | 'custom';
   description?: string;
+  emoji?: string;
+  isHidden?: boolean;
+  isCustom?: boolean;
 }
 
 export interface StorePurchaseTransaction {

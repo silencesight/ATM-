@@ -131,3 +131,13 @@ export function calculateEffectiveItemPrice(item: StoreItem): number {
   const discountMultiplier = Math.max(0, 1 - item.discountPercent / 100);
   return Math.max(0, Math.round(item.basePrice * discountMultiplier));
 }
+
+export function resetDefaultStoreItems(currentCatalog: StoreItem[]): StoreItem[] {
+  const defaultIds = new Set(DEFAULT_STORE_ITEMS.map((item) => item.id));
+  const customItems = currentCatalog.filter(
+    (item) => item.isCustom || !defaultIds.has(item.id)
+  );
+  const freshDefaults: StoreItem[] = DEFAULT_STORE_ITEMS.map((item) => ({ ...item }));
+  return [...freshDefaults, ...customItems];
+}
+

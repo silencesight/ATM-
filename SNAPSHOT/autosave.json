@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-09-22T00:47:21.919Z",
+  "exportDate": "2026-10-14T00:54:18.713Z",
   "settings": {
     "startingBalance": 150,
     "monthlyPayment": 482,
@@ -10,7 +10,7 @@
     "wordValue": 20,
     "phrasalVerbValue": 50,
     "startingLoanLimit": 50,
-    "maxLoanCap": 1000,
+    "maxLoanCap": 10000,
     "punctualityScoreBoost": 15,
     "decoratedPresentationScoreBoost": 35,
     "lateDelayScorePenalty": 25,
@@ -27,9 +27,9 @@
       "cvv": "535",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 645,
-      "maxLoanLimit": 650,
+      "currentBalance": 802,
+      "creditScore": 655,
+      "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
       "className": "2nd BGU",
@@ -77,6 +77,34 @@
           "creditScoreBonus": 15,
           "timestamp": "2026-09-21T14:51:52.265Z"
         }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790880143976_2hb2",
+          "studentId": "std-1789955859514-0",
+          "studentName": "ANDRADE GOMEZ MARIA ESTHER",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 702,
+          "newBalance": 802,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-10-01T18:42:23.976Z"
+        },
+        {
+          "id": "adj_1790697017704_nt0o",
+          "studentId": "std-1789955859514-0",
+          "studentName": "ANDRADE GOMEZ MARIA ESTHER",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 452,
+          "newBalance": 702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:50:17.704Z"
+        }
       ]
     },
     {
@@ -87,8 +115,8 @@
       "cvv": "922",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1452,
-      "creditScore": 605,
+      "currentBalance": 2202,
+      "creditScore": 615,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -101,6 +129,32 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-1",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697431592_7660",
+          "studentId": "std-1789955859514-1",
+          "studentName": "ARGOTI RUIZ NICOLAS DAVID",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 1952,
+          "newBalance": 2202,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:57:11.592Z"
+        },
+        {
+          "id": "adj_1790695148624_a5op",
+          "studentId": "std-1789955859514-1",
+          "studentName": "ARGOTI RUIZ NICOLAS DAVID",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1452,
+          "newBalance": 1952,
+          "reason": "Lesson",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:19:08.624Z"
+        },
         {
           "id": "adj_1790013018873_lnbl",
           "studentId": "std-1789955859514-1",
@@ -124,8 +178,8 @@
       "cvv": "890",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 1552,
+      "creditScore": 610,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -136,7 +190,35 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-2"
+      "id": "std-1789955859514-2",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696605125_w199",
+          "studentId": "std-1789955859514-2",
+          "studentName": "BAEZ CUEVA ARLETH SARAHI",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 1452,
+          "newBalance": 1552,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:43:25.125Z"
+        },
+        {
+          "id": "adj_1790090419907_x4n6",
+          "studentId": "std-1789955859514-2",
+          "studentName": "BAEZ CUEVA ARLETH SARAHI",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:20:19.907Z"
+        }
+      ]
     },
     {
       "name": "BENITEZ QUELAL CHELSEA SKARLETT",
@@ -146,8 +228,8 @@
       "cvv": "110",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 552,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -158,7 +240,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-3"
+      "id": "std-1789955859514-3",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696325403_uczj",
+          "studentId": "std-1789955859514-3",
+          "studentName": "BENITEZ QUELAL CHELSEA SKARLETT",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 452,
+          "newBalance": 552,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:38:45.403Z"
+        }
+      ]
     },
     {
       "name": "BURKHARDT MOROCHO MICHAEL ANDREAS",
@@ -190,8 +287,8 @@
       "cvv": "882",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 552,
-      "creditScore": 600,
+      "currentBalance": 1152,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -216,6 +313,21 @@
           "reason": "🗣️ Spoke in English",
           "createdAt": "2026-09-22T00:47:21.897Z"
         }
+      ],
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696305850_mrai",
+          "studentId": "std-1789955859514-5",
+          "studentName": "CAO JIANTAO",
+          "type": "increase",
+          "amount": 600,
+          "previousBalance": 552,
+          "newBalance": 1152,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:38:25.850Z"
+        }
       ]
     },
     {
@@ -226,8 +338,8 @@
       "cvv": "119",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 702,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -238,7 +350,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-6"
+      "id": "std-1789955859514-6",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697569914_xmz0",
+          "studentId": "std-1789955859514-6",
+          "studentName": "FLORES DIAZ FELIPE CALEB",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 452,
+          "newBalance": 702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:59:29.914Z"
+        }
+      ]
     },
     {
       "name": "GUERRERO CHAMORRO MARIA EMILIA",
@@ -248,8 +375,8 @@
       "cvv": "761",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 702,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -260,7 +387,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-7"
+      "id": "std-1789955859514-7",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697602995_y11s",
+          "studentId": "std-1789955859514-7",
+          "studentName": "GUERRERO CHAMORRO MARIA EMILIA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 452,
+          "newBalance": 702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T16:00:02.995Z"
+        }
+      ]
     },
     {
       "name": "GUERRON CASTRO VALENTINA MAYTE",
@@ -270,8 +412,8 @@
       "cvv": "791",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 2902,
+      "creditScore": 620,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -282,7 +424,61 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-8"
+      "id": "std-1789955859514-8",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697611912_zm3k",
+          "studentId": "std-1789955859514-8",
+          "studentName": "GUERRON CASTRO VALENTINA MAYTE",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 2652,
+          "newBalance": 2902,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T16:00:11.912Z"
+        },
+        {
+          "id": "adj_1790092446019_y9qz",
+          "studentId": "std-1789955859514-8",
+          "studentName": "GUERRON CASTRO VALENTINA MAYTE",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 1652,
+          "newBalance": 2652,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:54:06.019Z"
+        },
+        {
+          "id": "adj_1790092324755_sz0o",
+          "studentId": "std-1789955859514-8",
+          "studentName": "GUERRON CASTRO VALENTINA MAYTE",
+          "type": "increase",
+          "amount": 1100,
+          "previousBalance": 552,
+          "newBalance": 1652,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:52:04.755Z"
+        },
+        {
+          "id": "adj_1790092297378_j54l",
+          "studentId": "std-1789955859514-8",
+          "studentName": "GUERRON CASTRO VALENTINA MAYTE",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 452,
+          "newBalance": 552,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:51:37.378Z"
+        }
+      ]
     },
     {
       "name": "JARA ERAZO ESTELA BEATRIZ",
@@ -292,8 +488,8 @@
       "cvv": "338",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1452,
-      "creditScore": 605,
+      "currentBalance": 2702,
+      "creditScore": 615,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -306,6 +502,32 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-9",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790695952071_24kb",
+          "studentId": "std-1789955859514-9",
+          "studentName": "JARA ERAZO ESTELA BEATRIZ",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 2452,
+          "newBalance": 2702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:32:32.071Z"
+        },
+        {
+          "id": "adj_1790092123339_o11r",
+          "studentId": "std-1789955859514-9",
+          "studentName": "JARA ERAZO ESTELA BEATRIZ",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 1452,
+          "newBalance": 2452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:48:43.339Z"
+        },
         {
           "id": "adj_1790012845477_tpfm",
           "studentId": "std-1789955859514-9",
@@ -329,8 +551,8 @@
       "cvv": "547",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 952,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -341,7 +563,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-10"
+      "id": "std-1789955859514-10",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696938627_jvaa",
+          "studentId": "std-1789955859514-10",
+          "studentName": "JIMENEZ SEVILLA MARTINA RAPHAELA",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:48:58.627Z"
+        }
+      ]
     },
     {
       "name": "LAGOS CAMPOVERDE JHONATHAN SAMUEL",
@@ -351,8 +588,8 @@
       "cvv": "492",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1452,
-      "creditScore": 605,
+      "currentBalance": 4202,
+      "creditScore": 620,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -365,6 +602,52 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-11",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790961086382_jbus0hg",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Soccer match",
+          "timestamp": "2026-10-02T17:11:26.382Z"
+        },
+        {
+          "id": "adj_1790879532578_wq6v",
+          "studentId": "std-1789955859514-11",
+          "studentName": "LAGOS CAMPOVERDE JHONATHAN SAMUEL",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 2702,
+          "newBalance": 3702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-10-01T18:32:12.578Z"
+        },
+        {
+          "id": "adj_1790696569897_gqhz",
+          "studentId": "std-1789955859514-11",
+          "studentName": "LAGOS CAMPOVERDE JHONATHAN SAMUEL",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 2452,
+          "newBalance": 2702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:42:49.897Z"
+        },
+        {
+          "id": "adj_1790091594628_8yz7",
+          "studentId": "std-1789955859514-11",
+          "studentName": "LAGOS CAMPOVERDE JHONATHAN SAMUEL",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 1452,
+          "newBalance": 2452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:39:54.628Z"
+        },
         {
           "id": "adj_1790012961456_p9ry",
           "studentId": "std-1789955859514-11",
@@ -388,8 +671,8 @@
       "cvv": "786",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 952,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -400,7 +683,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-12"
+      "id": "std-1789955859514-12",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697247600_3vvy",
+          "studentId": "std-1789955859514-12",
+          "studentName": "LUNA LEON VALENTINA",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:54:07.600Z"
+        }
+      ]
     },
     {
       "name": "MARROQUIN VELASCO MATHIAS",
@@ -432,8 +730,8 @@
       "cvv": "992",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1452,
-      "creditScore": 605,
+      "currentBalance": 2702,
+      "creditScore": 615,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -446,6 +744,32 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-14",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696649279_2gli",
+          "studentId": "std-1789955859514-14",
+          "studentName": "MEJIA TEJADA MICAELA VALENTINA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 2452,
+          "newBalance": 2702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:44:09.280Z"
+        },
+        {
+          "id": "adj_1790090372931_l8bb",
+          "studentId": "std-1789955859514-14",
+          "studentName": "MEJIA TEJADA MICAELA VALENTINA",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 1452,
+          "newBalance": 2452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:19:32.931Z"
+        },
         {
           "id": "adj_1790012874397_6ofe",
           "studentId": "std-1789955859514-14",
@@ -469,8 +793,8 @@
       "cvv": "381",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1952,
-      "creditScore": 610,
+      "currentBalance": 2452,
+      "creditScore": 615,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -483,6 +807,19 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-15",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790695340486_f1n1",
+          "studentId": "std-1789955859514-15",
+          "studentName": "NARVAEZ HENAO JOAQUIN ESTEBAN",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1952,
+          "newBalance": 2452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:22:20.486Z"
+        },
         {
           "id": "adj_1790010365249_9pva",
           "studentId": "std-1789955859514-15",
@@ -519,8 +856,8 @@
       "cvv": "717",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 1702,
+      "creditScore": 610,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -531,7 +868,42 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-16"
+      "id": "std-1789955859514-16",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790961086382_j08us8v",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Soccer match",
+          "timestamp": "2026-10-02T17:11:26.382Z"
+        },
+        {
+          "id": "adj_1790697561477_9g58",
+          "studentId": "std-1789955859514-16",
+          "studentName": "NAVARRETE NAULA GABRIEL DIDIER",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 952,
+          "newBalance": 1202,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:59:21.477Z"
+        },
+        {
+          "id": "adj_1790693590340_8gkp",
+          "studentId": "std-1789955859514-16",
+          "studentName": "NAVARRETE NAULA GABRIEL DIDIER",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Lesson",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T14:53:10.340Z"
+        }
+      ]
     },
     {
       "name": "NAVARRETE SALCEDO MARTINA ALEJANDRA",
@@ -563,8 +935,8 @@
       "cvv": "600",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 952,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -575,7 +947,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-18"
+      "id": "std-1789955859514-18",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696548371_hqdt",
+          "studentId": "std-1789955859514-18",
+          "studentName": "PROAÑO IMBAGO ROLAN AARON",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:42:28.371Z"
+        }
+      ]
     },
     {
       "name": "RUANO GUANOLUIZA LAYLA ISABELLA",
@@ -585,8 +972,8 @@
       "cvv": "529",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1452,
-      "creditScore": 605,
+      "currentBalance": 2202,
+      "creditScore": 615,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -599,6 +986,32 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-19",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696985501_rxvn",
+          "studentId": "std-1789955859514-19",
+          "studentName": "RUANO GUANOLUIZA LAYLA ISABELLA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 1952,
+          "newBalance": 2202,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:49:45.501Z"
+        },
+        {
+          "id": "adj_1790694286521_dmjr",
+          "studentId": "std-1789955859514-19",
+          "studentName": "RUANO GUANOLUIZA LAYLA ISABELLA",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1452,
+          "newBalance": 1952,
+          "reason": "Lesson",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:04:46.521Z"
+        },
         {
           "id": "adj_1790012918882_wqkf",
           "studentId": "std-1789955859514-19",
@@ -622,8 +1035,8 @@
       "cvv": "895",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 702,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -634,7 +1047,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-20"
+      "id": "std-1789955859514-20",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697529795_gk3g",
+          "studentId": "std-1789955859514-20",
+          "studentName": "SCOTT ROSALES IAN DAVID",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 452,
+          "newBalance": 702,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:58:49.795Z"
+        }
+      ]
     },
     {
       "name": "TAMAYO HIROSE JOAQUIN",
@@ -644,8 +1072,8 @@
       "cvv": "665",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 1252,
+      "creditScore": 610,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -656,7 +1084,35 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-21"
+      "id": "std-1789955859514-21",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790697482657_ljfl",
+          "studentId": "std-1789955859514-21",
+          "studentName": "TAMAYO HIROSE JOAQUIN",
+          "type": "increase",
+          "amount": 300,
+          "previousBalance": 952,
+          "newBalance": 1252,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:58:02.657Z"
+        },
+        {
+          "id": "adj_1790695529903_bqro",
+          "studentId": "std-1789955859514-21",
+          "studentName": "TAMAYO HIROSE JOAQUIN",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Lesson",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:25:29.903Z"
+        }
+      ]
     },
     {
       "name": "TERÁN ROJAS CARLOS SEBASTIÁN",
@@ -666,8 +1122,8 @@
       "cvv": "361",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 1452,
-      "creditScore": 605,
+      "currentBalance": 2702,
+      "creditScore": 615,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -680,6 +1136,39 @@
       "decoratedStatementsCount": 0,
       "id": "std-1789955859514-22",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790961086382_of3dl5x",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Soccer match",
+          "timestamp": "2026-10-02T17:11:26.382Z"
+        },
+        {
+          "id": "adj_1790697452574_ocix",
+          "studentId": "std-1789955859514-22",
+          "studentName": "TERÁN ROJAS CARLOS SEBASTIÁN",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 1952,
+          "newBalance": 2202,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:57:32.574Z"
+        },
+        {
+          "id": "adj_1790694659053_3fk5",
+          "studentId": "std-1789955859514-22",
+          "studentName": "TERÁN ROJAS CARLOS SEBASTIÁN",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1452,
+          "newBalance": 1952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:10:59.053Z"
+        },
         {
           "id": "adj_1790012993927_qz99",
           "studentId": "std-1789955859514-22",
@@ -703,8 +1192,8 @@
       "cvv": "109",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 1202,
+      "creditScore": 610,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -715,7 +1204,35 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-23"
+      "id": "std-1789955859514-23",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696415859_wth2",
+          "studentId": "std-1789955859514-23",
+          "studentName": "VALLEJOS TORRES MATEO EDUARDO",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 952,
+          "newBalance": 1202,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:40:15.859Z"
+        },
+        {
+          "id": "adj_1790693256773_hp20",
+          "studentId": "std-1789955859514-23",
+          "studentName": "VALLEJOS TORRES MATEO EDUARDO",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T14:47:36.773Z"
+        }
+      ]
     },
     {
       "name": "VALLETA PIRELA LUCIANO JOSUE",
@@ -725,7 +1242,7 @@
       "cvv": "822",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
+      "currentBalance": 952,
       "creditScore": 600,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
@@ -737,7 +1254,16 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-24"
+      "id": "std-1789955859514-24",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790961086382_5mu8k5b",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Soccer match",
+          "timestamp": "2026-10-02T17:11:26.382Z"
+        }
+      ]
     },
     {
       "name": "VELA ROSERO PABLO JOSE",
@@ -769,8 +1295,8 @@
       "cvv": "955",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 1452,
+      "creditScore": 605,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -781,7 +1307,22 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-26"
+      "id": "std-1789955859514-26",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790090795861_4pmi",
+          "studentId": "std-1789955859514-26",
+          "studentName": "VELASQUEZ RECALDE CESAR LEONEL",
+          "type": "increase",
+          "amount": 1000,
+          "previousBalance": 452,
+          "newBalance": 1452,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T15:26:35.861Z"
+        }
+      ]
     },
     {
       "name": "YEPEZ AGREDA MIGUEL ANGEL",
@@ -791,8 +1332,8 @@
       "cvv": "212",
       "cardDesignTheme": "emerald",
       "startingBalance": 452,
-      "currentBalance": 452,
-      "creditScore": 600,
+      "currentBalance": 1052,
+      "creditScore": 610,
       "maxLoanLimit": 100,
       "paymentFrequency": "bimonthly",
       "classId": "class-2nd-a",
@@ -803,7 +1344,35 @@
       "punctualPaymentsCount": 0,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
-      "id": "std-1789955859514-27"
+      "id": "std-1789955859514-27",
+      "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1790696687969_ryl8",
+          "studentId": "std-1789955859514-27",
+          "studentName": "YEPEZ AGREDA MIGUEL ANGEL",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 952,
+          "newBalance": 1052,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T15:44:47.969Z"
+        },
+        {
+          "id": "adj_1790693114656_faep",
+          "studentId": "std-1789955859514-27",
+          "studentName": "YEPEZ AGREDA MIGUEL ANGEL",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 452,
+          "newBalance": 952,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T14:45:14.656Z"
+        }
+      ]
     },
     {
       "name": "Emilia Serrano",
@@ -815,18 +1384,73 @@
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "startingBalance": 150,
-      "currentBalance": 2445,
-      "creditScore": 700,
-      "maxLoanLimit": 500,
+      "currentBalance": 5010,
+      "creditScore": 765,
+      "maxLoanLimit": 850,
       "paymentFrequency": "monthly",
       "cardStatus": "active",
-      "activeLoanId": "loan-7389",
-      "totalLoansCompleted": 3,
-      "punctualPaymentsCount": 3,
+      "activeLoanId": null,
+      "totalLoansCompleted": 7,
+      "punctualPaymentsCount": 7,
       "delaysCount": 0,
       "decoratedStatementsCount": 1,
       "id": "std-1789400120427",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619771_5o3i0h3",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790966261595_glvkueb",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:37:41.595Z"
+        },
+        {
+          "id": "adj_1790963963116_m5zl",
+          "studentId": "std-1789400120427",
+          "studentName": "Emilia Serrano",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 3730,
+          "newBalance": 3980,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-10-02T17:59:23.116Z"
+        },
+        {
+          "id": "tx_1790787207206_vs6vekt",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.206Z"
+        },
+        {
+          "id": "tx_1790178354413_0linox4",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176308847_vhmw3au",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:11:48.847Z"
+        },
+        {
+          "id": "tx_1790175296350_pxpgwgf",
+          "amount": 200,
+          "type": "increase",
+          "reason": "Acid",
+          "timestamp": "2026-09-23T14:54:56.350Z"
+        },
         {
           "id": "tx_1790035938778_nncgcoy",
           "amount": 100,
@@ -922,8 +1546,8 @@
       "cvv": "604",
       "cardDesignTheme": "sapphire",
       "startingBalance": 150,
-      "currentBalance": 1075,
-      "creditScore": 610,
+      "currentBalance": 2925,
+      "creditScore": 615,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -958,6 +1582,68 @@
         }
       ],
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619771_c6t96ac",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790787207206_vflply5",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.206Z"
+        },
+        {
+          "id": "adj_1790781999532_irfp",
+          "studentId": "std-1788923401753-0",
+          "studentName": "BENALCAZAR MORALES MARTINA ISABELA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 2075,
+          "newBalance": 2325,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:26:39.532Z"
+        },
+        {
+          "id": "tx_1790178571657_gilpq56",
+          "amount": 100,
+          "type": "increase",
+          "reason": "order",
+          "timestamp": "2026-09-23T15:49:31.657Z"
+        },
+        {
+          "id": "tx_1790178354413_36ub1rb",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176403013_e8vqqwb",
+          "amount": 100,
+          "type": "increase",
+          "reason": "good - joke",
+          "timestamp": "2026-09-23T15:13:23.013Z"
+        },
+        {
+          "id": "tx_1790175764968_v34oa4e",
+          "amount": 100,
+          "type": "increase",
+          "reason": "normal joke",
+          "timestamp": "2026-09-23T15:02:44.968Z"
+        },
+        {
+          "id": "tx_1790175513587_bou5tui",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T14:58:33.587Z"
+        },
         {
           "id": "tx_1790035938778_bb1l6r8",
           "amount": 100,
@@ -1001,20 +1687,67 @@
       "cvv": "434",
       "cardDesignTheme": "emerald",
       "startingBalance": 150,
-      "currentBalance": 2013,
-      "creditScore": 685,
-      "maxLoanLimit": 450,
+      "currentBalance": 3558,
+      "creditScore": 725,
+      "maxLoanLimit": 750,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "cardStatus": "active",
-      "activeLoanId": "loan-1940",
-      "totalLoansCompleted": 2,
-      "punctualPaymentsCount": 2,
+      "activeLoanId": null,
+      "totalLoansCompleted": 4,
+      "punctualPaymentsCount": 4,
       "delaysCount": 0,
       "decoratedStatementsCount": 1,
       "id": "std-1788923401753-1",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619771_gfupzd4",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790787207206_p3wmw95",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.206Z"
+        },
+        {
+          "id": "adj_1790781331384_s4zt",
+          "studentId": "std-1788923401753-1",
+          "studentName": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 2518,
+          "newBalance": 2918,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:15:31.384Z"
+        },
+        {
+          "id": "adj_1790781267820_bjat",
+          "studentId": "std-1788923401753-1",
+          "studentName": "CAMACHO LOPEZ SAMUEL ALEJANDRO",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 2318,
+          "newBalance": 2518,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:14:27.820Z"
+        },
+        {
+          "id": "tx_1790175673957_rtfld2j",
+          "amount": 300,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:01:13.957Z"
+        },
         {
           "id": "tx_1790035938778_6amg6mp",
           "amount": 100,
@@ -1084,8 +1817,8 @@
       "cvv": "248",
       "cardDesignTheme": "gold",
       "startingBalance": 150,
-      "currentBalance": 850,
-      "creditScore": 605,
+      "currentBalance": 2550,
+      "creditScore": 610,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1112,6 +1845,68 @@
         }
       ],
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619771_daktfix",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790787207206_cxgohcs",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790781971476_0dig",
+          "studentId": "std-1788923401753-3",
+          "studentName": "ECHEVERRIA CHIU MARIA SOL",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 1850,
+          "newBalance": 1950,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:26:11.476Z"
+        },
+        {
+          "id": "tx_1790178571657_cro5dvc",
+          "amount": 100,
+          "type": "increase",
+          "reason": "order",
+          "timestamp": "2026-09-23T15:49:31.657Z"
+        },
+        {
+          "id": "tx_1790178354413_9efej76",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176403013_mbfnjwv",
+          "amount": 100,
+          "type": "increase",
+          "reason": "good - joke",
+          "timestamp": "2026-09-23T15:13:23.013Z"
+        },
+        {
+          "id": "tx_1790175764968_tuvp2op",
+          "amount": 100,
+          "type": "increase",
+          "reason": "normal joke",
+          "timestamp": "2026-09-23T15:02:44.968Z"
+        },
+        {
+          "id": "tx_1790175513587_qzbtzq6",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T14:58:33.587Z"
+        },
         {
           "id": "tx_1790035938778_ur88az8",
           "amount": 100,
@@ -1142,8 +1937,8 @@
       "cvv": "611",
       "cardDesignTheme": "obsidian",
       "startingBalance": 150,
-      "currentBalance": 250,
-      "creditScore": 600,
+      "currentBalance": 1075,
+      "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1157,11 +1952,75 @@
       "id": "std-1788923401753-4",
       "balanceAdjustmentsHistory": [
         {
+          "id": "tx_1791213375010_lc5ntfr",
+          "amount": 3000,
+          "type": "increase",
+          "reason": "winners of the crossword.",
+          "timestamp": "2026-10-05T15:16:15.010Z"
+        },
+        {
+          "id": "tx_1790967619771_ndpoj8s",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790966112643_6er7g4d",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:35:12.643Z"
+        },
+        {
+          "id": "tx_1790787207207_tnmn1it",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783132777_wiv7qjl",
+          "amount": 100,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-09-30T15:45:32.777Z"
+        },
+        {
+          "id": "tx_1790782397266_szwalhd",
+          "amount": 100,
+          "type": "increase",
+          "reason": "advanced progress in the supermarket",
+          "timestamp": "2026-09-30T15:33:17.266Z"
+        },
+        {
+          "id": "tx_1790177710968_bo5yrrc",
+          "amount": 525,
+          "type": "increase",
+          "reason": "Class task",
+          "timestamp": "2026-09-23T15:35:10.968Z"
+        },
+        {
           "id": "tx_1790035938778_cmvphfe",
           "amount": 100,
           "type": "increase",
           "reason": "Working on the project.",
           "timestamp": "2026-09-22T00:12:18.778Z"
+        }
+      ],
+      "totalStorePurchasesCount": 1,
+      "storePurchasesHistory": [
+        {
+          "id": "purch_1791307641486_ozti",
+          "studentId": "std-1788923401753-4",
+          "studentName": "ENRIQUEZ ZULETA NATHALIA ISABELLA",
+          "itemId": "store-skip-lesson",
+          "itemName": "Skip Lesson",
+          "pricePaid": 4000,
+          "originalPrice": 4000,
+          "discountPercent": 0,
+          "creditScoreBonusAwarded": 5,
+          "timestamp": "2026-10-06T17:27:21.486Z"
         }
       ]
     },
@@ -1173,7 +2032,7 @@
       "cvv": "371",
       "cardDesignTheme": "sapphire",
       "startingBalance": 150,
-      "currentBalance": 450,
+      "currentBalance": 2375,
       "creditScore": 600,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -1210,6 +2069,55 @@
       ],
       "balanceAdjustmentsHistory": [
         {
+          "id": "tx_1790967619771_jwll4w0",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790966112643_qemupy0",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:35:12.643Z"
+        },
+        {
+          "id": "tx_1790787207207_ysibzmh",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783132778_gyb8tkz",
+          "amount": 100,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-09-30T15:45:32.778Z"
+        },
+        {
+          "id": "tx_1790782397266_9uzt7zd",
+          "amount": 100,
+          "type": "increase",
+          "reason": "advanced progress in the supermarket",
+          "timestamp": "2026-09-30T15:33:17.266Z"
+        },
+        {
+          "id": "tx_1790178571657_tfjn826",
+          "amount": 100,
+          "type": "increase",
+          "reason": "order",
+          "timestamp": "2026-09-23T15:49:31.657Z"
+        },
+        {
+          "id": "tx_1790177710968_b53384z",
+          "amount": 525,
+          "type": "increase",
+          "reason": "Class task",
+          "timestamp": "2026-09-23T15:35:10.968Z"
+        },
+        {
           "id": "tx_1790035938778_ooozblk",
           "amount": 100,
           "type": "increase",
@@ -1226,8 +2134,8 @@
       "cvv": "677",
       "cardDesignTheme": "emerald",
       "startingBalance": 150,
-      "currentBalance": 2350,
-      "creditScore": 615,
+      "currentBalance": 4550,
+      "creditScore": 620,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1240,6 +2148,54 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-6",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1791820891845_xdmh",
+          "studentId": "std-1788923401753-6",
+          "studentName": "GODOY BENAVIDES KAROL ISABELLA",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 4300,
+          "newBalance": 4550,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-10-12T16:01:31.845Z"
+        },
+        {
+          "id": "tx_1791307914860_pfeoym6",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Insane work!",
+          "timestamp": "2026-10-06T17:31:54.860Z"
+        },
+        {
+          "id": "tx_1790967619771_vz934ro",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790787207207_nrzl7ka",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178534317_rsznih1",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:48:54.317Z"
+        },
+        {
+          "id": "tx_1790176149912_e94g8bf",
+          "amount": 350,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:09:09.912Z"
+        },
         {
           "id": "tx_1790035938778_6yym7l3",
           "amount": 100,
@@ -1310,8 +2266,8 @@
       "cvv": "669",
       "cardDesignTheme": "ruby",
       "startingBalance": 150,
-      "currentBalance": 1250,
-      "creditScore": 610,
+      "currentBalance": 3100,
+      "creditScore": 620,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1324,6 +2280,81 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-7",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619771_0njl9h3",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790787207207_t9281bx",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790781939140_98pg",
+          "studentId": "std-1788923401753-7",
+          "studentName": "MARTINEZ CALDERON NATALY SALOME",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 2400,
+          "newBalance": 2500,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:25:39.140Z"
+        },
+        {
+          "id": "adj_1790781878994_6ycr",
+          "studentId": "std-1788923401753-7",
+          "studentName": "MARTINEZ CALDERON NATALY SALOME",
+          "type": "increase",
+          "amount": 150,
+          "previousBalance": 2250,
+          "newBalance": 2400,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:24:38.994Z"
+        },
+        {
+          "id": "tx_1790178571657_3yqrc0b",
+          "amount": 100,
+          "type": "increase",
+          "reason": "order",
+          "timestamp": "2026-09-23T15:49:31.657Z"
+        },
+        {
+          "id": "tx_1790178354413_tu1wy6h",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176403013_yjosa2q",
+          "amount": 100,
+          "type": "increase",
+          "reason": "good - joke",
+          "timestamp": "2026-09-23T15:13:23.013Z"
+        },
+        {
+          "id": "tx_1790175764968_aa1akk2",
+          "amount": 100,
+          "type": "increase",
+          "reason": "normal joke",
+          "timestamp": "2026-09-23T15:02:44.968Z"
+        },
+        {
+          "id": "tx_1790175513587_15x4k7n",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T14:58:33.587Z"
+        },
         {
           "id": "tx_1790035938778_1tcu9ut",
           "amount": 100,
@@ -1381,8 +2412,8 @@
       "cvv": "854",
       "cardDesignTheme": "gold",
       "startingBalance": 150,
-      "currentBalance": 650,
-      "creditScore": 605,
+      "currentBalance": 1750,
+      "creditScore": 610,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1395,6 +2426,33 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-8",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619771_koippfg",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790787207207_39i2flk",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790782801764_qn7o",
+          "studentId": "std-1788923401753-8",
+          "studentName": "MEJIA MARTINEZ DANTE SANTIAGO",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 650,
+          "newBalance": 1150,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:40:01.764Z"
+        },
         {
           "id": "tx_1790035938778_qp0zgx1",
           "amount": 100,
@@ -1439,7 +2497,7 @@
       "cvv": "519",
       "cardDesignTheme": "obsidian",
       "startingBalance": 150,
-      "currentBalance": 250,
+      "currentBalance": 6175,
       "creditScore": 600,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -1453,6 +2511,62 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-9",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1791213375010_lgidqho",
+          "amount": 3000,
+          "type": "increase",
+          "reason": "winners of the crossword.",
+          "timestamp": "2026-10-05T15:16:15.010Z"
+        },
+        {
+          "id": "tx_1790967619771_cmwuzzy",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.771Z"
+        },
+        {
+          "id": "tx_1790966112643_br5udpv",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:35:12.643Z"
+        },
+        {
+          "id": "tx_1790787207207_if1tfuv",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783478391_5knd8w2",
+          "amount": 1100,
+          "type": "increase",
+          "reason": "money",
+          "timestamp": "2026-09-30T15:51:18.391Z"
+        },
+        {
+          "id": "tx_1790783132778_buhidwz",
+          "amount": 100,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-09-30T15:45:32.778Z"
+        },
+        {
+          "id": "tx_1790782397266_0hg5pjk",
+          "amount": 100,
+          "type": "increase",
+          "reason": "advanced progress in the supermarket",
+          "timestamp": "2026-09-30T15:33:17.266Z"
+        },
+        {
+          "id": "tx_1790177710968_yv8dgsc",
+          "amount": 525,
+          "type": "increase",
+          "reason": "Class task",
+          "timestamp": "2026-09-23T15:35:10.968Z"
+        },
         {
           "id": "tx_1790035938778_yk2v7u7",
           "amount": 100,
@@ -1470,20 +2584,75 @@
       "cvv": "700",
       "cardDesignTheme": "sapphire",
       "startingBalance": 150,
-      "currentBalance": 2345,
-      "creditScore": 660,
-      "maxLoanLimit": 300,
+      "currentBalance": 7415,
+      "creditScore": 680,
+      "maxLoanLimit": 350,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "cardStatus": "active",
-      "activeLoanId": null,
-      "totalLoansCompleted": 1,
-      "punctualPaymentsCount": 1,
+      "activeLoanId": "loan-6979",
+      "totalLoansCompleted": 2,
+      "punctualPaymentsCount": 2,
       "delaysCount": 0,
       "decoratedStatementsCount": 1,
       "id": "std-1788923401753-10",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1791213375010_s3h21q7",
+          "amount": 3000,
+          "type": "increase",
+          "reason": "winners of the crossword.",
+          "timestamp": "2026-10-05T15:16:15.010Z"
+        },
+        {
+          "id": "tx_1790967619772_vip8pz3",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790963294468_041hhd0",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Finishing on time",
+          "timestamp": "2026-10-02T17:48:14.468Z"
+        },
+        {
+          "id": "tx_1790787207207_17kubrn",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178534317_ut9e95m",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:48:54.317Z"
+        },
+        {
+          "id": "tx_1790176149912_zlqbj5l",
+          "amount": 350,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:09:09.912Z"
+        },
+        {
+          "id": "adj_1790098525612_ynax",
+          "studentId": "std-1788923401753-10",
+          "studentName": "PANTOJA BUSTOS JULIETA SALOME",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 2345,
+          "newBalance": 2445,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-22T17:35:25.612Z"
+        },
         {
           "id": "tx_1790035938778_mzg8s27",
           "amount": 100,
@@ -1549,7 +2718,7 @@
       "cvv": "884",
       "cardDesignTheme": "emerald",
       "startingBalance": 150,
-      "currentBalance": 750,
+      "currentBalance": 2675,
       "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -1577,6 +2746,55 @@
         }
       ],
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_ti9uzn4",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790966112643_c73i4iw",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:35:12.643Z"
+        },
+        {
+          "id": "tx_1790787207207_9115mx6",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783132778_ebb0aer",
+          "amount": 100,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-09-30T15:45:32.778Z"
+        },
+        {
+          "id": "tx_1790782397266_4nkrzz0",
+          "amount": 100,
+          "type": "increase",
+          "reason": "advanced progress in the supermarket",
+          "timestamp": "2026-09-30T15:33:17.266Z"
+        },
+        {
+          "id": "tx_1790178571657_2qcgtsg",
+          "amount": 100,
+          "type": "increase",
+          "reason": "order",
+          "timestamp": "2026-09-23T15:49:31.657Z"
+        },
+        {
+          "id": "tx_1790177710968_uy4gxss",
+          "amount": 525,
+          "type": "increase",
+          "reason": "Class task",
+          "timestamp": "2026-09-23T15:35:10.968Z"
+        },
         {
           "id": "tx_1790035938778_8l18t87",
           "amount": 100,
@@ -1607,8 +2825,8 @@
       "cvv": "921",
       "cardDesignTheme": "ruby",
       "startingBalance": 150,
-      "currentBalance": 1650,
-      "creditScore": 615,
+      "currentBalance": 1100,
+      "creditScore": 620,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1621,6 +2839,41 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-12",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1791307914861_xldt0tz",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Insane work!",
+          "timestamp": "2026-10-06T17:31:54.861Z"
+        },
+        {
+          "id": "tx_1790967619772_g6luefe",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_30smors",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178534317_eguytji",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:48:54.317Z"
+        },
+        {
+          "id": "tx_1790176149912_ryzik95",
+          "amount": 350,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:09:09.912Z"
+        },
         {
           "id": "tx_1790035938778_qn09y3o",
           "amount": 100,
@@ -1681,6 +2934,21 @@
           "reason": "Great Interview!",
           "createdAt": "2026-09-18T18:58:55.557Z"
         }
+      ],
+      "totalStorePurchasesCount": 1,
+      "storePurchasesHistory": [
+        {
+          "id": "purch_1791820322519_kzi1",
+          "studentId": "std-1788923401753-12",
+          "studentName": "RODRIGUEZ MANZO  JHULIANA ESTEFANIA",
+          "itemId": "store-skip-hw",
+          "itemName": "Skip Homework",
+          "pricePaid": 2500,
+          "originalPrice": 2500,
+          "discountPercent": 0,
+          "creditScoreBonusAwarded": 5,
+          "timestamp": "2026-10-12T15:52:02.519Z"
+        }
       ]
     },
     {
@@ -1691,8 +2959,8 @@
       "cvv": "150",
       "cardDesignTheme": "gold",
       "startingBalance": 150,
-      "currentBalance": 350,
-      "creditScore": 600,
+      "currentBalance": 2150,
+      "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1720,6 +2988,47 @@
       ],
       "balanceAdjustmentsHistory": [
         {
+          "id": "tx_1790967619772_t7eox7e",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_h2rce0e",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790782096716_n6af",
+          "studentId": "std-1788923401753-13",
+          "studentName": "ROMERO MORENO AMELIE CRISTINA",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 1050,
+          "newBalance": 1550,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:28:16.716Z"
+        },
+        {
+          "id": "tx_1790178354413_sd82dyh",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790175972579_ea0tii8",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:06:12.579Z"
+        },
+        {
           "id": "tx_1790035938778_2cf4kmb",
           "amount": 100,
           "type": "increase",
@@ -1736,7 +3045,7 @@
       "cvv": "698",
       "cardDesignTheme": "obsidian",
       "startingBalance": 150,
-      "currentBalance": 650,
+      "currentBalance": 3300,
       "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -1764,6 +3073,48 @@
         }
       ],
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_1pdb2rd",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790963294468_8qp7ywl",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Finishing on time",
+          "timestamp": "2026-10-02T17:48:14.468Z"
+        },
+        {
+          "id": "tx_1790787207207_12gf9h4",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783199865_7y8wf4f",
+          "amount": 700,
+          "type": "increase",
+          "reason": "finishing almost on time",
+          "timestamp": "2026-09-30T15:46:39.865Z"
+        },
+        {
+          "id": "tx_1790178534317_7rnlmqn",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:48:54.317Z"
+        },
+        {
+          "id": "tx_1790176149912_uxwplje",
+          "amount": 350,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:09:09.912Z"
+        },
         {
           "id": "tx_1790035938778_id1be18",
           "amount": 100,
@@ -1794,7 +3145,7 @@
       "cvv": "898",
       "cardDesignTheme": "sapphire",
       "startingBalance": 150,
-      "currentBalance": 575,
+      "currentBalance": 2375,
       "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -1822,6 +3173,41 @@
         }
       ],
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_zdt28eg",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790965126270_d30rbx5",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:18:46.270Z"
+        },
+        {
+          "id": "tx_1790787207207_nu30fua",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178354413_33ykh5q",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790175972579_o1cla8h",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:06:12.579Z"
+        },
         {
           "id": "tx_1790035938778_k86fj6s",
           "amount": 100,
@@ -1852,8 +3238,8 @@
       "cvv": "453",
       "cardDesignTheme": "emerald",
       "startingBalance": 150,
-      "currentBalance": 1050,
-      "creditScore": 610,
+      "currentBalance": 3850,
+      "creditScore": 615,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -1866,6 +3252,61 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-16",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_1pyibwc",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790963294468_v4qd00g",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Finishing on time",
+          "timestamp": "2026-10-02T17:48:14.468Z"
+        },
+        {
+          "id": "tx_1790787207207_w7lh439",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783199865_neaa9vn",
+          "amount": 700,
+          "type": "increase",
+          "reason": "finishing almost on time",
+          "timestamp": "2026-09-30T15:46:39.865Z"
+        },
+        {
+          "id": "adj_1790782230924_0o21",
+          "studentId": "std-1788923401753-16",
+          "studentName": "ANDRADE BUITRON SOFIA CRISTINA",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 1650,
+          "newBalance": 2050,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:30:30.924Z"
+        },
+        {
+          "id": "tx_1790178142314_9heerdm",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:42:22.314Z"
+        },
+        {
+          "id": "tx_1790175111882_xznwqc2",
+          "amount": 100,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T14:51:51.882Z"
+        },
         {
           "id": "tx_1790035938778_982ufpu",
           "amount": 100,
@@ -1931,7 +3372,7 @@
       "cvv": "223",
       "cardDesignTheme": "ruby",
       "startingBalance": 150,
-      "currentBalance": 720,
+      "currentBalance": 2720,
       "creditScore": 625,
       "maxLoanLimit": 150,
       "paymentFrequency": "monthly",
@@ -1945,6 +3386,48 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-17",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_ex2gvu1",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790966261595_8xgu6qu",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:37:41.595Z"
+        },
+        {
+          "id": "tx_1790787207207_43tllu7",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178354413_zb5k5w9",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176308847_dv0gqx2",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:11:48.847Z"
+        },
+        {
+          "id": "tx_1790175296350_0l08iyf",
+          "amount": 200,
+          "type": "increase",
+          "reason": "Acid",
+          "timestamp": "2026-09-23T14:54:56.350Z"
+        },
         {
           "id": "tx_1790035938778_1i0v8d8",
           "amount": 100,
@@ -1988,8 +3471,8 @@
       "cvv": "904",
       "cardDesignTheme": "gold",
       "startingBalance": 150,
-      "currentBalance": 350,
-      "creditScore": 600,
+      "currentBalance": 3650,
+      "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -2017,6 +3500,61 @@
       ],
       "balanceAdjustmentsHistory": [
         {
+          "id": "adj_1791393101270_kvkp",
+          "studentId": "std-1788923401753-18",
+          "studentName": "ESPARZA TORRES GABRIEL SEBASTIAN",
+          "type": "decrease",
+          "amount": 1500,
+          "previousBalance": 5150,
+          "newBalance": 3650,
+          "reason": "Mistake commited",
+          "category": "store",
+          "creditScoreChange": 5,
+          "timestamp": "2026-10-07T17:11:41.270Z"
+        },
+        {
+          "id": "tx_1791213375010_bkpg3ly",
+          "amount": 3000,
+          "type": "increase",
+          "reason": "winners of the crossword.",
+          "timestamp": "2026-10-05T15:16:15.010Z"
+        },
+        {
+          "id": "tx_1790967619772_frcc7iv",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790965126270_bp6bc0a",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:18:46.270Z"
+        },
+        {
+          "id": "tx_1790787207207_oyeqvsr",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178354413_s3v19mz",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790175972579_16fkbyd",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:06:12.579Z"
+        },
+        {
           "id": "tx_1790035938778_wl34y9z",
           "amount": 100,
           "type": "increase",
@@ -2033,20 +3571,48 @@
       "cvv": "181",
       "cardDesignTheme": "obsidian",
       "startingBalance": 150,
-      "currentBalance": 1995,
-      "creditScore": 625,
-      "maxLoanLimit": 150,
+      "currentBalance": 6130,
+      "creditScore": 640,
+      "maxLoanLimit": 300,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "cardStatus": "active",
       "activeLoanId": null,
-      "totalLoansCompleted": 1,
-      "punctualPaymentsCount": 1,
+      "totalLoansCompleted": 2,
+      "punctualPaymentsCount": 2,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-19",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1791307914861_n82nblq",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Insane work!",
+          "timestamp": "2026-10-06T17:31:54.861Z"
+        },
+        {
+          "id": "tx_1791213375010_s4omx7a",
+          "amount": 3000,
+          "type": "increase",
+          "reason": "winners of the crossword.",
+          "timestamp": "2026-10-05T15:16:15.010Z"
+        },
+        {
+          "id": "tx_1790967619772_ud2dfd3",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_zoyzo1p",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
         {
           "id": "tx_1790035938778_f0a2iz6",
           "amount": 100,
@@ -2104,8 +3670,8 @@
       "cvv": "588",
       "cardDesignTheme": "sapphire",
       "startingBalance": 150,
-      "currentBalance": 700,
-      "creditScore": 610,
+      "currentBalance": 1800,
+      "creditScore": 615,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -2118,6 +3684,40 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-20",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_xf3dydb",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_1c122io",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790781234633_2q9a",
+          "studentId": "std-1788923401753-20",
+          "studentName": "GUERRON MINA JUAN FRANCISCO",
+          "type": "increase",
+          "amount": 200,
+          "previousBalance": 1000,
+          "newBalance": 1200,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:13:54.633Z"
+        },
+        {
+          "id": "tx_1790175673957_pt96xix",
+          "amount": 300,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:01:13.957Z"
+        },
         {
           "id": "tx_1790035938778_cep6f87",
           "amount": 100,
@@ -2161,20 +3761,87 @@
       "cvv": "807",
       "cardDesignTheme": "emerald",
       "startingBalance": 150,
-      "currentBalance": 2150,
-      "creditScore": 680,
-      "maxLoanLimit": 400,
+      "currentBalance": 3505,
+      "creditScore": 850,
+      "maxLoanLimit": 1225,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "cardStatus": "active",
-      "activeLoanId": "loan-4328",
-      "totalLoansCompleted": 3,
-      "punctualPaymentsCount": 3,
+      "activeLoanId": "loan-4603",
+      "totalLoansCompleted": 10,
+      "punctualPaymentsCount": 10,
       "delaysCount": 0,
-      "decoratedStatementsCount": 0,
+      "decoratedStatementsCount": 3,
       "id": "std-1788923401753-21",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1791388633868_3jqh",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 700,
+          "previousBalance": 2605,
+          "newBalance": 3305,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 15,
+          "timestamp": "2026-10-07T15:57:13.868Z"
+        },
+        {
+          "id": "tx_1790967619772_f6wwbdj",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_3dn4tx9",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790781347050_n08r",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 400,
+          "previousBalance": 3655,
+          "newBalance": 4055,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:15:47.050Z"
+        },
+        {
+          "id": "adj_1790698239460_u43i",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "type": "increase",
+          "amount": 600,
+          "previousBalance": 3015,
+          "newBalance": 3615,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-29T16:10:39.460Z"
+        },
+        {
+          "id": "tx_1790178534317_3mpjzos",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:48:54.317Z"
+        },
+        {
+          "id": "tx_1790176149912_2fhrkme",
+          "amount": 350,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:09:09.912Z"
+        },
         {
           "id": "tx_1790035938778_tkcepkc",
           "amount": 100,
@@ -2269,6 +3936,21 @@
           "reason": "🗣️ Spoke in English",
           "createdAt": "2026-09-15T17:27:22.834Z"
         }
+      ],
+      "totalStorePurchasesCount": 1,
+      "storePurchasesHistory": [
+        {
+          "id": "purch_1791215294950_zt6e",
+          "studentId": "std-1788923401753-21",
+          "studentName": "HARO ACOSTA JOSEPH HESED",
+          "itemId": "store-super-mini-prize",
+          "itemName": "Super-mini Prize",
+          "pricePaid": 2500,
+          "originalPrice": 2500,
+          "discountPercent": 0,
+          "creditScoreBonusAwarded": 5,
+          "timestamp": "2026-10-05T15:48:14.950Z"
+        }
       ]
     },
     {
@@ -2279,8 +3961,8 @@
       "cvv": "588",
       "cardDesignTheme": "ruby",
       "startingBalance": 150,
-      "currentBalance": 2050,
-      "creditScore": 610,
+      "currentBalance": 5700,
+      "creditScore": 625,
       "maxLoanLimit": 125,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -2293,6 +3975,87 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-22",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1791820144001_072v",
+          "studentId": "std-1788923401753-22",
+          "studentName": "ISACAS ISACAS JOYCE ABIGAIL",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 5200,
+          "newBalance": 5700,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-10-12T15:49:04.001Z"
+        },
+        {
+          "id": "tx_1790967619772_e3vydvu",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790963294468_xoyigt8",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Finishing on time",
+          "timestamp": "2026-10-02T17:48:14.468Z"
+        },
+        {
+          "id": "tx_1790787207207_v0gr4gq",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790783199865_zamzuzo",
+          "amount": 700,
+          "type": "increase",
+          "reason": "finishing almost on time",
+          "timestamp": "2026-09-30T15:46:39.865Z"
+        },
+        {
+          "id": "adj_1790782175152_0jae",
+          "studentId": "std-1788923401753-22",
+          "studentName": "ISACAS ISACAS JOYCE ABIGAIL",
+          "type": "increase",
+          "amount": 250,
+          "previousBalance": 3150,
+          "newBalance": 3400,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:29:35.152Z"
+        },
+        {
+          "id": "adj_1790782160977_5q16",
+          "studentId": "std-1788923401753-22",
+          "studentName": "ISACAS ISACAS JOYCE ABIGAIL",
+          "type": "increase",
+          "amount": 500,
+          "previousBalance": 2650,
+          "newBalance": 3150,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:29:20.977Z"
+        },
+        {
+          "id": "tx_1790178142314_4ybnqah",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:42:22.314Z"
+        },
+        {
+          "id": "tx_1790175111883_gb36zlu",
+          "amount": 100,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T14:51:51.883Z"
+        },
         {
           "id": "tx_1790035938778_uvqrrhl",
           "amount": 100,
@@ -2350,7 +4113,7 @@
       "cvv": "289",
       "cardDesignTheme": "gold",
       "startingBalance": 150,
-      "currentBalance": 750,
+      "currentBalance": 2150,
       "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -2364,6 +4127,34 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-23",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_c4o89wa",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_wtho88c",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178354413_7fbj7p6",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790175972579_abew346",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:06:12.579Z"
+        },
         {
           "id": "tx_1790035938778_6j3q8bn",
           "amount": 100,
@@ -2384,6 +4175,20 @@
           "creditScoreChange": 5,
           "timestamp": "2026-09-14T15:27:56.597Z"
         }
+      ],
+      "dailyEnglishEarned": {
+        "date": "2026-09-23",
+        "amount": 100
+      },
+      "englishRewardsHistory": [
+        {
+          "id": "rew_1790179329881_ypwa",
+          "studentId": "std-1788923401753-23",
+          "studentName": "MEJÍA ESTEVEZ DOMENICA JULIETH",
+          "amount": 100,
+          "reason": "🤝 Class Peer Helper",
+          "createdAt": "2026-09-23T16:02:09.881Z"
+        }
       ]
     },
     {
@@ -2394,8 +4199,8 @@
       "cvv": "165",
       "cardDesignTheme": "obsidian",
       "startingBalance": 150,
-      "currentBalance": 1250,
-      "creditScore": 605,
+      "currentBalance": 2250,
+      "creditScore": 610,
       "maxLoanLimit": 150,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
@@ -2408,6 +4213,40 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-24",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_t7xhz0x",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_vv3hp4j",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "adj_1790781207900_xpyl",
+          "studentId": "std-1788923401753-24",
+          "studentName": "MORAN ARTEAGA ANDRES FELIPE",
+          "type": "increase",
+          "amount": 100,
+          "previousBalance": 1550,
+          "newBalance": 1650,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 5,
+          "timestamp": "2026-09-30T15:13:27.900Z"
+        },
+        {
+          "id": "tx_1790175673957_v185lqq",
+          "amount": 300,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:01:13.957Z"
+        },
         {
           "id": "tx_1790035938778_pqp5t5d",
           "amount": 100,
@@ -2452,7 +4291,7 @@
       "cvv": "556",
       "cardDesignTheme": "sapphire",
       "startingBalance": 150,
-      "currentBalance": 350,
+      "currentBalance": 1650,
       "creditScore": 600,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -2481,6 +4320,34 @@
       ],
       "balanceAdjustmentsHistory": [
         {
+          "id": "tx_1790967619772_c2b9k0b",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_56akj30",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178354413_fhqhkmy",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790175972579_tmq393d",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:06:12.579Z"
+        },
+        {
           "id": "tx_1790035938778_5e9n9fl",
           "amount": 100,
           "type": "increase",
@@ -2497,7 +4364,7 @@
       "cvv": "988",
       "cardDesignTheme": "emerald",
       "startingBalance": 150,
-      "currentBalance": 1400,
+      "currentBalance": 3400,
       "creditScore": 605,
       "maxLoanLimit": 50,
       "paymentFrequency": "monthly",
@@ -2511,6 +4378,48 @@
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-26",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_76xmx6s",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790966261595_7rijinl",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:37:41.595Z"
+        },
+        {
+          "id": "tx_1790787207207_irlzq7l",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178354413_08azd31",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176308847_mymlznv",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:11:48.847Z"
+        },
+        {
+          "id": "tx_1790175296350_oeauyz4",
+          "amount": 200,
+          "type": "increase",
+          "reason": "Acid",
+          "timestamp": "2026-09-23T14:54:56.350Z"
+        },
         {
           "id": "tx_1790035938778_cu69i0b",
           "amount": 100,
@@ -2555,20 +4464,75 @@
       "cvv": "815",
       "cardDesignTheme": "ruby",
       "startingBalance": 150,
-      "currentBalance": 2800,
-      "creditScore": 690,
-      "maxLoanLimit": 400,
+      "currentBalance": 7915,
+      "creditScore": 850,
+      "maxLoanLimit": 1125,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "cardStatus": "active",
-      "activeLoanId": null,
-      "totalLoansCompleted": 3,
-      "punctualPaymentsCount": 3,
+      "activeLoanId": "loan-9410",
+      "totalLoansCompleted": 7,
+      "punctualPaymentsCount": 7,
       "delaysCount": 0,
-      "decoratedStatementsCount": 1,
+      "decoratedStatementsCount": 4,
       "id": "std-1788923401753-27",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "adj_1791388762519_g2rs",
+          "studentId": "std-1788923401753-27",
+          "studentName": "PUEDMAG AGUILAR RENATA MAITE",
+          "type": "increase",
+          "amount": 50,
+          "previousBalance": 7865,
+          "newBalance": 7915,
+          "reason": "Exemplary English Speaking",
+          "category": "reward",
+          "creditScoreChange": 15,
+          "timestamp": "2026-10-07T15:59:22.519Z"
+        },
+        {
+          "id": "tx_1791307914861_ttx2owl",
+          "amount": 500,
+          "type": "increase",
+          "reason": "Insane work!",
+          "timestamp": "2026-10-06T17:31:54.861Z"
+        },
+        {
+          "id": "tx_1791213375010_e7926vo",
+          "amount": 3000,
+          "type": "increase",
+          "reason": "winners of the crossword.",
+          "timestamp": "2026-10-05T15:16:15.010Z"
+        },
+        {
+          "id": "tx_1790967619772_qfeghaa",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_chhg373",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178534317_5cum8lk",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:48:54.317Z"
+        },
+        {
+          "id": "tx_1790176149912_jfwcz7j",
+          "amount": 350,
+          "type": "increase",
+          "reason": "good + joke",
+          "timestamp": "2026-09-23T15:09:09.912Z"
+        },
         {
           "id": "tx_1790035938778_okj7rwl",
           "amount": 100,
@@ -2612,20 +4576,69 @@
       "cvv": "930",
       "cardDesignTheme": "gold",
       "startingBalance": 150,
-      "currentBalance": 1360,
-      "creditScore": 630,
-      "maxLoanLimit": 425,
+      "currentBalance": 3472.5,
+      "creditScore": 645,
+      "maxLoanLimit": 525,
       "paymentFrequency": "monthly",
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "cardStatus": "active",
-      "activeLoanId": "loan-1955",
-      "totalLoansCompleted": 1,
-      "punctualPaymentsCount": 1,
+      "activeLoanId": null,
+      "totalLoansCompleted": 2,
+      "punctualPaymentsCount": 2,
       "delaysCount": 0,
       "decoratedStatementsCount": 0,
       "id": "std-1788923401753-28",
       "balanceAdjustmentsHistory": [
+        {
+          "id": "tx_1790967619772_p2flhih",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790966261595_1ecbpow",
+          "amount": 500,
+          "type": "increase",
+          "reason": "finishing on time",
+          "timestamp": "2026-10-02T18:37:41.595Z"
+        },
+        {
+          "id": "tx_1790787207207_4qn4fu2",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
+          "id": "tx_1790178571657_okmv4zq",
+          "amount": 100,
+          "type": "increase",
+          "reason": "order",
+          "timestamp": "2026-09-23T15:49:31.657Z"
+        },
+        {
+          "id": "tx_1790178354413_yu3vipi",
+          "amount": 500,
+          "type": "increase",
+          "reason": "classwork",
+          "timestamp": "2026-09-23T15:45:54.413Z"
+        },
+        {
+          "id": "tx_1790176308847_vx0oovb",
+          "amount": 200,
+          "type": "increase",
+          "reason": "good joke",
+          "timestamp": "2026-09-23T15:11:48.848Z"
+        },
+        {
+          "id": "tx_1790175296350_0jtuugo",
+          "amount": 200,
+          "type": "increase",
+          "reason": "Acid",
+          "timestamp": "2026-09-23T14:54:56.350Z"
+        },
         {
           "id": "tx_1790035938778_xly6s3s",
           "amount": 100,
@@ -2699,7 +4712,7 @@
       "classId": "class-1st-a",
       "className": "1st BGU - Group A",
       "startingBalance": 150,
-      "currentBalance": 100,
+      "currentBalance": 700,
       "creditScore": 340,
       "maxLoanLimit": 0,
       "paymentFrequency": "monthly",
@@ -2713,6 +4726,20 @@
       "decoratedStatementsCount": 0,
       "balanceAdjustmentsHistory": [
         {
+          "id": "tx_1790967619772_zwvyyng",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Extremely great behavior ",
+          "timestamp": "2026-10-02T19:00:19.772Z"
+        },
+        {
+          "id": "tx_1790787207207_z6zy2z2",
+          "amount": 300,
+          "type": "increase",
+          "reason": "Ordering the chairs",
+          "timestamp": "2026-09-30T16:53:27.207Z"
+        },
+        {
           "id": "tx_1790035938778_vgg7xbs",
           "amount": 100,
           "type": "increase",
@@ -2724,6 +4751,2002 @@
   ],
   "loans": [
     {
+      "id": "loan-4603",
+      "studentId": "std-1788923401753-21",
+      "principal": 1225,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 1347.5,
+      "amountRepaid": 0,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-10-13T01:22:24.603Z",
+      "dueDate": "2026-10-18T01:22:24.603Z",
+      "status": "active",
+      "submissions": [],
+      "notes": ""
+    },
+    {
+      "id": "loan-6979",
+      "studentId": "std-1788923401753-10",
+      "principal": 350,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 385,
+      "amountRepaid": 0,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-10-12T16:02:56.979Z",
+      "dueDate": "2026-10-17T16:02:56.979Z",
+      "status": "active",
+      "submissions": [],
+      "notes": "pv"
+    },
+    {
+      "id": "loan-9410",
+      "studentId": "std-1788923401753-27",
+      "principal": 1000,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 1100,
+      "amountRepaid": 0,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-10-07T15:59:09.410Z",
+      "dueDate": "2026-10-12T15:59:09.410Z",
+      "status": "active",
+      "submissions": [],
+      "notes": "pv"
+    },
+    {
+      "id": "loan-9389",
+      "studentId": "std-1788923401753-21",
+      "principal": 1000,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 1100,
+      "amountRepaid": 1100,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-10-07T15:56:59.389Z",
+      "dueDate": "2026-10-08T15:56:59.389Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-9389",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 26,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791854533637_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_17",
+              "verb": "In-class phrasal verb #17",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_18",
+              "verb": "In-class phrasal verb #18",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_19",
+              "verb": "In-class phrasal verb #19",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_20",
+              "verb": "In-class phrasal verb #20",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_21",
+              "verb": "In-class phrasal verb #21",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_22",
+              "verb": "In-class phrasal verb #22",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_23",
+              "verb": "In-class phrasal verb #23",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_24",
+              "verb": "In-class phrasal verb #24",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_25",
+              "verb": "In-class phrasal verb #25",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791854533637_26",
+              "verb": "In-class phrasal verb #26",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 1300,
+          "totalCreditValue": 1300,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-10-13T01:22:13.637Z",
+          "id": "sub-1791854533637",
+          "createdAt": "2026-10-13T01:22:13.637Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-10-13T01:22:13.637Z"
+    },
+    {
+      "id": "loan-2829",
+      "studentId": "std-1788923401753-21",
+      "principal": 1000,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 1100,
+      "amountRepaid": 1100,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-10-07T15:55:32.829Z",
+      "dueDate": "2026-10-08T15:55:32.829Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-2829",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 29,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791388554700_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_17",
+              "verb": "In-class phrasal verb #17",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_18",
+              "verb": "In-class phrasal verb #18",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_19",
+              "verb": "In-class phrasal verb #19",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_20",
+              "verb": "In-class phrasal verb #20",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_21",
+              "verb": "In-class phrasal verb #21",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_22",
+              "verb": "In-class phrasal verb #22",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_23",
+              "verb": "In-class phrasal verb #23",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_24",
+              "verb": "In-class phrasal verb #24",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_25",
+              "verb": "In-class phrasal verb #25",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_26",
+              "verb": "In-class phrasal verb #26",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_27",
+              "verb": "In-class phrasal verb #27",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_28",
+              "verb": "In-class phrasal verb #28",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388554700_29",
+              "verb": "In-class phrasal verb #29",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 1450,
+          "totalCreditValue": 1450,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-10-07T15:55:54.700Z",
+          "id": "sub-1791388554700",
+          "createdAt": "2026-10-07T15:55:54.700Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-10-07T15:55:54.700Z"
+    },
+    {
+      "id": "loan-8726",
+      "studentId": "std-1788923401753-27",
+      "principal": 1000,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 1100,
+      "amountRepaid": 1100,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-10-06T17:34:18.726Z",
+      "dueDate": "2026-10-11T17:34:18.726Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-8726",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 23,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791388667453_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_17",
+              "verb": "In-class phrasal verb #17",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_18",
+              "verb": "In-class phrasal verb #18",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_19",
+              "verb": "In-class phrasal verb #19",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_20",
+              "verb": "In-class phrasal verb #20",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_21",
+              "verb": "In-class phrasal verb #21",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_22",
+              "verb": "In-class phrasal verb #22",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791388667453_23",
+              "verb": "In-class phrasal verb #23",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 1150,
+          "totalCreditValue": 1150,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-10-07T15:57:47.453Z",
+          "id": "sub-1791388667454",
+          "createdAt": "2026-10-07T15:57:47.454Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-10-07T15:57:47.454Z"
+    },
+    {
+      "id": "loan-8975",
+      "studentId": "std-1788923401753-21",
+      "principal": 850,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 935,
+      "amountRepaid": 935,
+      "loanType": "short",
+      "durationDays": 3,
+      "createdAt": "2026-10-02T18:07:08.975Z",
+      "dueDate": "2026-10-05T18:07:08.975Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-8975",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 19,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791307692950_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_17",
+              "verb": "In-class phrasal verb #17",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_18",
+              "verb": "In-class phrasal verb #18",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791307692950_19",
+              "verb": "In-class phrasal verb #19",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 950,
+          "totalCreditValue": 950,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-10-06T17:28:12.950Z",
+          "id": "sub-1791307692950",
+          "createdAt": "2026-10-06T17:28:12.950Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-10-06T17:28:12.950Z"
+    },
+    {
+      "id": "loan-3284",
+      "studentId": "std-1789400120427",
+      "principal": 700,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 770,
+      "amountRepaid": 770,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-10-02T17:58:53.284Z",
+      "dueDate": "2026-10-07T17:58:53.284Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-3284",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 20,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791214510903_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_17",
+              "verb": "In-class phrasal verb #17",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_18",
+              "verb": "In-class phrasal verb #18",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_19",
+              "verb": "In-class phrasal verb #19",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791214510903_20",
+              "verb": "In-class phrasal verb #20",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 1000,
+          "totalCreditValue": 1000,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-10-05T15:35:10.903Z",
+          "id": "sub-1791214510903",
+          "createdAt": "2026-10-05T15:35:10.903Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-10-05T15:35:10.903Z"
+    },
+    {
+      "id": "loan-2904",
+      "studentId": "std-1788923401753-27",
+      "principal": 850,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 935,
+      "amountRepaid": 935,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-30T15:21:12.904Z",
+      "dueDate": "2026-10-05T15:21:12.904Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-2904",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 19,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791308041211_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_17",
+              "verb": "In-class phrasal verb #17",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_18",
+              "verb": "In-class phrasal verb #18",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791308041211_19",
+              "verb": "In-class phrasal verb #19",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 950,
+          "totalCreditValue": 950,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-10-06T17:34:01.211Z",
+          "id": "sub-1791308041212",
+          "createdAt": "2026-10-06T17:34:01.212Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-10-06T17:34:01.212Z"
+    },
+    {
+      "id": "loan-9681",
+      "studentId": "std-1788923401753-21",
+      "principal": 650,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 715,
+      "amountRepaid": 715,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-30T14:55:29.681Z",
+      "dueDate": "2026-10-01T14:55:29.681Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-9681",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 16,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790964398859_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790964398859_16",
+              "verb": "In-class phrasal verb #16",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 800,
+          "totalCreditValue": 800,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-10-02T18:06:38.859Z",
+          "id": "sub-1790964398859",
+          "createdAt": "2026-10-02T18:06:38.859Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-10-02T18:06:38.859Z"
+    },
+    {
+      "id": "loan-1800",
+      "studentId": "std-1788923401753-1",
+      "principal": 600,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 660,
+      "amountRepaid": 660,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-30T14:53:51.799Z",
+      "dueDate": "2026-10-05T14:53:51.799Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-1800",
+          "studentId": "std-1788923401753-1",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 14,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791393052893_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791393052893_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 700,
+          "totalCreditValue": 700,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-10-07T17:10:52.893Z",
+          "id": "sub-1791393052894",
+          "createdAt": "2026-10-07T17:10:52.894Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-10-07T17:10:52.894Z"
+    },
+    {
+      "id": "loan-3647",
+      "studentId": "std-1789400120427",
+      "principal": 650,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 715,
+      "amountRepaid": 715,
+      "loanType": "short",
+      "durationDays": 1,
+      "createdAt": "2026-09-30T14:51:43.647Z",
+      "dueDate": "2026-10-01T14:51:43.647Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-3647",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 15,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790963883913_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790963883913_15",
+              "verb": "In-class phrasal verb #15",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 750,
+          "totalCreditValue": 750,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-10-02T17:58:03.913Z",
+          "id": "sub-1790963883914",
+          "createdAt": "2026-10-02T17:58:03.914Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-10-02T17:58:03.914Z"
+    },
+    {
+      "id": "loan-3326",
+      "studentId": "std-1788923401753-27",
+      "principal": 600,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 660,
+      "amountRepaid": 660,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-29T16:13:13.326Z",
+      "dueDate": "2026-10-04T16:13:13.326Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-3326",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 14,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790781587631_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790781587631_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 700,
+          "totalCreditValue": 700,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-09-30T15:19:47.631Z",
+          "id": "sub-1790781587631",
+          "createdAt": "2026-09-30T15:19:47.631Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-30T15:19:47.631Z"
+    },
+    {
+      "id": "loan-5128",
+      "studentId": "std-1788923401753-21",
+      "principal": 600,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 660,
+      "amountRepaid": 660,
+      "loanType": "short",
+      "durationDays": 2,
+      "createdAt": "2026-09-29T16:11:35.128Z",
+      "dueDate": "2026-10-01T16:11:35.128Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-5128",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 14,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790780117009_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_12",
+              "verb": "In-class phrasal verb #12",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_13",
+              "verb": "In-class phrasal verb #13",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790780117009_14",
+              "verb": "In-class phrasal verb #14",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 700,
+          "totalCreditValue": 700,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-30T14:55:17.009Z",
+          "id": "sub-1790780117009",
+          "createdAt": "2026-09-30T14:55:17.009Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-30T14:55:17.009Z"
+    },
+    {
+      "id": "loan-3232",
+      "studentId": "std-1788923401753-10",
+      "principal": 300,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 330,
+      "amountRepaid": 330,
+      "loanType": "big",
+      "durationDays": 6,
+      "createdAt": "2026-09-22T17:35:53.232Z",
+      "dueDate": "2026-09-28T17:35:53.232Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-3232",
+          "studentId": "std-1788923401753-10",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 7,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790179248223_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179248223_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179248223_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179248223_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179248223_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179248223_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179248223_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 350,
+          "totalCreditValue": 350,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-23T16:00:48.223Z",
+          "id": "sub-1790179248223",
+          "createdAt": "2026-09-23T16:00:48.223Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-23T16:00:48.223Z"
+    },
+    {
+      "id": "loan-7862",
+      "studentId": "std-1788923401753-21",
+      "principal": 450,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 495,
+      "amountRepaid": 495,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-22T17:32:07.862Z",
+      "dueDate": "2026-09-27T17:32:07.862Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-7862",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 10,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790179107668_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179107668_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 500,
+          "totalCreditValue": 500,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-23T15:58:27.668Z",
+          "id": "sub-1790179107668",
+          "createdAt": "2026-09-23T15:58:27.668Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-23T15:58:27.668Z"
+    },
+    {
+      "id": "loan-0056",
+      "studentId": "std-1788923401753-19",
+      "principal": 150,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 165,
+      "amountRepaid": 165,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-22T17:31:10.056Z",
+      "dueDate": "2026-09-27T17:31:10.056Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-0056",
+          "studentId": "std-1788923401753-19",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 4,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1791225974081_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791225974081_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791225974081_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1791225974081_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 200,
+          "totalCreditValue": 200,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-10-05T18:46:14.081Z",
+          "id": "sub-1791225974081",
+          "createdAt": "2026-10-05T18:46:14.081Z"
+        }
+      ],
+      "notes": "pv ",
+      "paidAt": "2026-10-05T18:46:14.081Z"
+    },
+    {
+      "id": "loan-4612",
+      "studentId": "std-1788923401753-27",
+      "principal": 400,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 440,
+      "amountRepaid": 440,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-22T17:29:54.612Z",
+      "dueDate": "2026-09-27T17:29:54.612Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-4612",
+          "studentId": "std-1788923401753-27",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 9,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790179203071_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179203071_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 450,
+          "totalCreditValue": 450,
+          "hasDecoratedPresentation": true,
+          "scoreBonusAwarded": 35,
+          "status": "approved",
+          "reviewedAt": "2026-09-23T16:00:03.071Z",
+          "id": "sub-1790179203071",
+          "createdAt": "2026-09-23T16:00:03.071Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-23T16:00:03.071Z"
+    },
+    {
+      "id": "loan-3766",
+      "studentId": "std-1789400120427",
+      "principal": 600,
+      "baseInterestRate": 10,
+      "delayPenaltyRate": 2,
+      "delaysCount": 0,
+      "effectiveInterestRate": 10,
+      "totalDue": 660,
+      "amountRepaid": 660,
+      "loanType": "short",
+      "durationDays": 5,
+      "createdAt": "2026-09-22T17:28:53.766Z",
+      "dueDate": "2026-09-27T17:28:53.766Z",
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-3766",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 3,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790779790103_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790779790103_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790779790103_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 150,
+          "totalCreditValue": 150,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-30T14:49:50.103Z",
+          "id": "sub-1790779790103",
+          "createdAt": "2026-09-30T14:49:50.103Z"
+        },
+        {
+          "loanId": "loan-3766",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 11,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790179234390_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_10",
+              "verb": "In-class phrasal verb #10",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790179234390_11",
+              "verb": "In-class phrasal verb #11",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 550,
+          "totalCreditValue": 550,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-23T16:00:34.390Z",
+          "id": "sub-1790179234390",
+          "createdAt": "2026-09-23T16:00:34.390Z"
+        }
+      ],
+      "notes": "ph",
+      "paidAt": "2026-09-30T14:49:50.103Z"
+    },
+    {
       "id": "loan-7389",
       "studentId": "std-1789400120427",
       "principal": 500,
@@ -2732,14 +6755,177 @@
       "delaysCount": 0,
       "effectiveInterestRate": 10,
       "totalDue": 550,
-      "amountRepaid": 0,
+      "amountRepaid": 550,
       "loanType": "short",
       "durationDays": 1,
       "createdAt": "2026-09-21T15:21:17.389Z",
       "dueDate": "2026-09-22T15:21:17.389Z",
-      "status": "active",
-      "submissions": [],
-      "notes": ""
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-7389",
+          "studentId": "std-1789400120427",
+          "sentencesCount": 0,
+          "wordsCount": 28,
+          "phrasalVerbsCount": 0,
+          "sentences": [],
+          "words": [
+            {
+              "id": "word_1790098111401_1",
+              "word": "In-class vocabulary word #1",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_2",
+              "word": "In-class vocabulary word #2",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_3",
+              "word": "In-class vocabulary word #3",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_4",
+              "word": "In-class vocabulary word #4",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_5",
+              "word": "In-class vocabulary word #5",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_6",
+              "word": "In-class vocabulary word #6",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_7",
+              "word": "In-class vocabulary word #7",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_8",
+              "word": "In-class vocabulary word #8",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_9",
+              "word": "In-class vocabulary word #9",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_10",
+              "word": "In-class vocabulary word #10",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_11",
+              "word": "In-class vocabulary word #11",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_12",
+              "word": "In-class vocabulary word #12",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_13",
+              "word": "In-class vocabulary word #13",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_14",
+              "word": "In-class vocabulary word #14",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_15",
+              "word": "In-class vocabulary word #15",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_16",
+              "word": "In-class vocabulary word #16",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_17",
+              "word": "In-class vocabulary word #17",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_18",
+              "word": "In-class vocabulary word #18",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_19",
+              "word": "In-class vocabulary word #19",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_20",
+              "word": "In-class vocabulary word #20",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_21",
+              "word": "In-class vocabulary word #21",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_22",
+              "word": "In-class vocabulary word #22",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_23",
+              "word": "In-class vocabulary word #23",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_24",
+              "word": "In-class vocabulary word #24",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_25",
+              "word": "In-class vocabulary word #25",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_26",
+              "word": "In-class vocabulary word #26",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_27",
+              "word": "In-class vocabulary word #27",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790098111401_28",
+              "word": "In-class vocabulary word #28",
+              "contextOrMeaning": "Presented in physical reading book"
+            }
+          ],
+          "phrasalVerbs": [],
+          "sentencesCredit": 0,
+          "wordsCredit": 560,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 560,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-22T17:28:31.401Z",
+          "id": "sub-1790098111401",
+          "createdAt": "2026-09-22T17:28:31.401Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-22T17:28:31.401Z"
     },
     {
       "id": "loan-1940",
@@ -2750,14 +6936,162 @@
       "delaysCount": 0,
       "effectiveInterestRate": 10,
       "totalDue": 495,
-      "amountRepaid": 0,
+      "amountRepaid": 495,
       "loanType": "big",
       "durationDays": 7,
       "createdAt": "2026-09-21T14:45:31.940Z",
       "dueDate": "2026-09-28T14:45:31.940Z",
-      "status": "active",
-      "submissions": [],
-      "notes": "words"
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-1940",
+          "studentId": "std-1788923401753-1",
+          "sentencesCount": 0,
+          "wordsCount": 25,
+          "phrasalVerbsCount": 0,
+          "sentences": [],
+          "words": [
+            {
+              "id": "word_1790779926193_1",
+              "word": "In-class vocabulary word #1",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_2",
+              "word": "In-class vocabulary word #2",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_3",
+              "word": "In-class vocabulary word #3",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_4",
+              "word": "In-class vocabulary word #4",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_5",
+              "word": "In-class vocabulary word #5",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_6",
+              "word": "In-class vocabulary word #6",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_7",
+              "word": "In-class vocabulary word #7",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_8",
+              "word": "In-class vocabulary word #8",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_9",
+              "word": "In-class vocabulary word #9",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_10",
+              "word": "In-class vocabulary word #10",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_11",
+              "word": "In-class vocabulary word #11",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_12",
+              "word": "In-class vocabulary word #12",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_13",
+              "word": "In-class vocabulary word #13",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_14",
+              "word": "In-class vocabulary word #14",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_15",
+              "word": "In-class vocabulary word #15",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_16",
+              "word": "In-class vocabulary word #16",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_17",
+              "word": "In-class vocabulary word #17",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_18",
+              "word": "In-class vocabulary word #18",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_19",
+              "word": "In-class vocabulary word #19",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_20",
+              "word": "In-class vocabulary word #20",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_21",
+              "word": "In-class vocabulary word #21",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_22",
+              "word": "In-class vocabulary word #22",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_23",
+              "word": "In-class vocabulary word #23",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_24",
+              "word": "In-class vocabulary word #24",
+              "contextOrMeaning": "Presented in physical reading book"
+            },
+            {
+              "id": "word_1790779926193_25",
+              "word": "In-class vocabulary word #25",
+              "contextOrMeaning": "Presented in physical reading book"
+            }
+          ],
+          "phrasalVerbs": [],
+          "sentencesCredit": 0,
+          "wordsCredit": 500,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 500,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-30T14:52:06.193Z",
+          "id": "sub-1790779926193",
+          "createdAt": "2026-09-30T14:52:06.193Z"
+        }
+      ],
+      "notes": "words",
+      "paidAt": "2026-09-30T14:52:06.193Z"
     },
     {
       "id": "loan-4328",
@@ -2768,14 +7102,82 @@
       "delaysCount": 0,
       "effectiveInterestRate": 10,
       "totalDue": 440,
-      "amountRepaid": 0,
+      "amountRepaid": 440,
       "loanType": "short",
       "durationDays": 5,
       "createdAt": "2026-09-18T19:08:44.328Z",
       "dueDate": "2026-09-23T19:08:44.328Z",
-      "status": "active",
-      "submissions": [],
-      "notes": "pv"
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-4328",
+          "studentId": "std-1788923401753-21",
+          "sentencesCount": 0,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 9,
+          "sentences": [],
+          "words": [],
+          "phrasalVerbs": [
+            {
+              "id": "pv_1790098305424_1",
+              "verb": "In-class phrasal verb #1",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_2",
+              "verb": "In-class phrasal verb #2",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_3",
+              "verb": "In-class phrasal verb #3",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_4",
+              "verb": "In-class phrasal verb #4",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_5",
+              "verb": "In-class phrasal verb #5",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_6",
+              "verb": "In-class phrasal verb #6",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_7",
+              "verb": "In-class phrasal verb #7",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_8",
+              "verb": "In-class phrasal verb #8",
+              "exampleInNotebook": "Presented in physical notebook"
+            },
+            {
+              "id": "pv_1790098305424_9",
+              "verb": "In-class phrasal verb #9",
+              "exampleInNotebook": "Presented in physical notebook"
+            }
+          ],
+          "sentencesCredit": 0,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 450,
+          "totalCreditValue": 450,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-22T17:31:45.424Z",
+          "id": "sub-1790098305424",
+          "createdAt": "2026-09-22T17:31:45.424Z"
+        }
+      ],
+      "notes": "pv",
+      "paidAt": "2026-09-22T17:31:45.424Z"
     },
     {
       "id": "loan-4823",
@@ -2902,14 +7304,101 @@
       "delaysCount": 0,
       "effectiveInterestRate": 10,
       "totalDue": 467.5,
-      "amountRepaid": 0,
+      "amountRepaid": 467.5,
       "loanType": "big",
       "durationDays": 7,
       "createdAt": "2026-09-16T15:12:11.955Z",
       "dueDate": "2026-09-23T15:12:11.955Z",
-      "status": "active",
-      "submissions": [],
-      "notes": ""
+      "status": "paid",
+      "submissions": [
+        {
+          "loanId": "loan-1955",
+          "studentId": "std-1788923401753-28",
+          "sentencesCount": 16,
+          "wordsCount": 0,
+          "phrasalVerbsCount": 0,
+          "sentences": [
+            {
+              "id": "sent_1790727589332_1",
+              "sentence": "In-class physical sentence statement #1"
+            },
+            {
+              "id": "sent_1790727589332_2",
+              "sentence": "In-class physical sentence statement #2"
+            },
+            {
+              "id": "sent_1790727589332_3",
+              "sentence": "In-class physical sentence statement #3"
+            },
+            {
+              "id": "sent_1790727589332_4",
+              "sentence": "In-class physical sentence statement #4"
+            },
+            {
+              "id": "sent_1790727589332_5",
+              "sentence": "In-class physical sentence statement #5"
+            },
+            {
+              "id": "sent_1790727589332_6",
+              "sentence": "In-class physical sentence statement #6"
+            },
+            {
+              "id": "sent_1790727589332_7",
+              "sentence": "In-class physical sentence statement #7"
+            },
+            {
+              "id": "sent_1790727589332_8",
+              "sentence": "In-class physical sentence statement #8"
+            },
+            {
+              "id": "sent_1790727589332_9",
+              "sentence": "In-class physical sentence statement #9"
+            },
+            {
+              "id": "sent_1790727589332_10",
+              "sentence": "In-class physical sentence statement #10"
+            },
+            {
+              "id": "sent_1790727589332_11",
+              "sentence": "In-class physical sentence statement #11"
+            },
+            {
+              "id": "sent_1790727589332_12",
+              "sentence": "In-class physical sentence statement #12"
+            },
+            {
+              "id": "sent_1790727589332_13",
+              "sentence": "In-class physical sentence statement #13"
+            },
+            {
+              "id": "sent_1790727589332_14",
+              "sentence": "In-class physical sentence statement #14"
+            },
+            {
+              "id": "sent_1790727589332_15",
+              "sentence": "In-class physical sentence statement #15"
+            },
+            {
+              "id": "sent_1790727589332_16",
+              "sentence": "In-class physical sentence statement #16"
+            }
+          ],
+          "words": [],
+          "phrasalVerbs": [],
+          "sentencesCredit": 480,
+          "wordsCredit": 0,
+          "phrasalVerbsCredit": 0,
+          "totalCreditValue": 480,
+          "hasDecoratedPresentation": false,
+          "scoreBonusAwarded": 0,
+          "status": "approved",
+          "reviewedAt": "2026-09-30T00:19:49.332Z",
+          "id": "sub-1790727589332",
+          "createdAt": "2026-09-30T00:19:49.332Z"
+        }
+      ],
+      "notes": "",
+      "paidAt": "2026-09-30T00:19:49.332Z"
     },
     {
       "id": "loan-6604",
@@ -4143,9 +8632,9 @@
       "name": "Skip Homework",
       "subtitle": "Homework Privilege",
       "category": "privilege",
-      "basePrice": 1700,
+      "basePrice": 2500,
       "discountPercent": 0,
-      "stock": 2,
+      "stock": 14,
       "iconType": "skip-hw",
       "description": "Waives one standard English homework assignment without penalty."
     },
@@ -4154,9 +8643,9 @@
       "name": "Skip Lesson",
       "subtitle": "Classroom Privilege",
       "category": "privilege",
-      "basePrice": 3200,
+      "basePrice": 4000,
       "discountPercent": 0,
-      "stock": 3,
+      "stock": 10,
       "iconType": "skip-lesson",
       "description": "Excuses attendance or active participation for one English period."
     },
@@ -4165,9 +8654,9 @@
       "name": "3 Extra Points (HW)",
       "subtitle": "Academic Boost",
       "category": "academic",
-      "basePrice": 2200,
+      "basePrice": 2000,
       "discountPercent": 0,
-      "stock": 5,
+      "stock": 59,
       "iconType": "extra-points-hw",
       "description": "+3 bonus points added directly to your English homework grade."
     },
@@ -4176,9 +8665,9 @@
       "name": "Half Lesson",
       "subtitle": "Classroom Privilege",
       "category": "privilege",
-      "basePrice": 2900,
+      "basePrice": 3400,
       "discountPercent": 0,
-      "stock": 5,
+      "stock": 11,
       "iconType": "half-lesson",
       "description": "Leave half-lesson early or sit out for the second half of class."
     },
@@ -4187,44 +8676,22 @@
       "name": "A spin of the Lucky Draw",
       "subtitle": "Mystery Wheel",
       "category": "game",
-      "basePrice": 10500,
+      "basePrice": 10000,
       "discountPercent": 0,
-      "stock": 1,
+      "stock": 2,
       "iconType": "lucky-draw",
       "description": "One spin of the classroom prize wheel for legendary rewards."
-    },
-    {
-      "id": "store-super-mini-prize",
-      "name": "Super-mini Prize",
-      "subtitle": "Collectible Reward",
-      "category": "prize",
-      "basePrice": 2500,
-      "discountPercent": 0,
-      "stock": 5,
-      "iconType": "super-mini-prize",
-      "description": "Mini novelty toy, stationery, stickers, or classroom sweet treat."
     },
     {
       "id": "store-extra-points-lss",
       "name": "3 Extra Points (Lss)",
       "subtitle": "Academic Boost",
       "category": "academic",
-      "basePrice": 4200,
+      "basePrice": 1500,
       "discountPercent": 0,
-      "stock": 5,
+      "stock": 20,
       "iconType": "extra-points-lss",
       "description": "+3 bonus points added directly to your active Lesson / Exam evaluation."
-    },
-    {
-      "id": "store-mini-prize",
-      "name": "Mini Prize",
-      "subtitle": "Mystery Box",
-      "category": "prize",
-      "basePrice": 5000,
-      "discountPercent": 0,
-      "stock": 5,
-      "iconType": "mini-prize",
-      "description": "Mystery black dice reward box with curated school rewards."
     },
     {
       "id": "store-big-prize",
@@ -4236,6 +8703,20 @@
       "stock": 1,
       "iconType": "big-prize",
       "description": "Ultimate classroom grand prize mystery box for top savers."
+    },
+    {
+      "id": "store-custom-1791939213047",
+      "name": "1 point in any lesson",
+      "subtitle": "Classroom Reward",
+      "category": "privilege",
+      "basePrice": 600,
+      "discountPercent": 0,
+      "stock": 50,
+      "unlimitedStock": false,
+      "iconType": "custom",
+      "emoji": "⭐",
+      "isHidden": false,
+      "isCustom": true
     }
   ]
 }
