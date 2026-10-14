@@ -1,12 +1,51 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #42e5b0;
+  --color-primary-container: #00c896;
+  --color-on-primary: #003828;
+  --color-secondary: #4cd6fb;
+  --color-secondary-container: #00b2d6;
+  --color-tertiary: #ffc149;
+  --color-surface-dark: #0b0e14;
+  --color-surface-card-dark: #181d29;
+  --color-surface-card-hover: #1f2535;
+  --color-surface-light: #f4f6fb;
+  --color-surface-card-light: #ffffff;
+}
+
 @layer base {
-  body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #020617;
-    color: #f1f5f9;
-    min-height: 100vh;
+  :root {
+    --bg-app: #0b0e14;
+    --bg-card: #181d29;
+    --text-main: #e6edf3;
+    --text-muted: #94a3b8;
+    --border-glass: rgba(255, 255, 255, 0.08);
   }
+
+  .light {
+    --bg-app: #f4f6fb;
+    --bg-card: #ffffff;
+    --text-main: #0b1c30;
+    --text-muted: #64748b;
+    --border-glass: rgba(0, 0, 0, 0.08);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+.font-display {
+  font-family: 'Manrope', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.font-body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .font-mono-code {
@@ -15,29 +54,6 @@
 
 .font-serif-card {
   font-family: 'Cinzel', Georgia, serif;
-}
-
-/* Custom Webkit Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-slate-950);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-slate-800);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-slate-700);
-}
-
-::-webkit-scrollbar-corner {
-  background: var(--color-slate-950);
 }
 
 /* Print styles for classroom credit card didactic cutouts */

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
+import { TopHeader } from './components/TopHeader';
+import { ClassroomRulesModal } from './components/ClassroomRulesModal';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { StudentPortal } from './components/StudentPortal';
 import { PrintableCards } from './components/PrintableCards';
@@ -29,8 +31,6 @@ import {
 } from './utils/creditCalculator';
 import { loadStoreCatalog, saveStoreCatalog, calculateEffectiveItemPrice } from './data/storeCatalog';
 import { CheckCircle2, AlertTriangle, Sparkles, X, ShoppingBag } from 'lucide-react';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { Titlebar } from './components/Titlebar';
 
 interface Toast {
   id: string;
@@ -40,6 +40,28 @@ interface Toast {
 }
 
 export default function App() {
+  // Theme state with localStorage persistence ('dark' by default)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('esl_classroom_theme');
+      return saved === 'light' ? 'light' : 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try {
+        localStorage.setItem('esl_classroom_theme', next);
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
+
   // Local storage state initialization
   const [students, setStudents] = useState<Student[]>(() => {
     try {
@@ -73,8 +95,10 @@ export default function App() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
     students[0]?.id || 'std-1'
   );
+  const [selectedClassId, setSelectedClassId] = useState<string>('all');
   const [printTargetStudentId, setPrintTargetStudentId] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>(() => loadClassrooms());
 
@@ -112,29 +136,6 @@ export default function App() {
       console.error(e);
     }
   }, [settings]);
-
-  // Native Autosave
-  useEffect(() => {
-    // @ts-ignore
-    if (window.__TAURI_INTERNALS__) {
-      const payload = {
-        exportDate: new Date().toISOString(),
-        settings,
-        students,
-        loans,
-        classrooms,
-        storeCatalog,
-      };
-      
-      const timeoutId = setTimeout(() => {
-        import('@tauri-apps/api/core').then(({ invoke }) => {
-          invoke('autosave_backup', { content: JSON.stringify(payload, null, 2) })
-            .catch(e => console.error('Autosave failed:', e));
-        });
-      }, 2000); // 2 second debounce
-      return () => clearTimeout(timeoutId);
-    }
-  }, [students, loans, settings, storeCatalog, classrooms]);
 
   // Toast Helper
   const addToast = (type: 'success' | 'warning' | 'info', title: string, message: string) => {
@@ -894,16 +895,20 @@ export default function App() {
   };
 
   // Export Data JSON
-  const handleExportData = async () => {
+  const handleExportData = () => {
     const payload = {
       exportDate: new Date().toISOString(),
       settings,
       students,
       loans,
     };
-    const fileName = `english_classroom_credit_system_${new Date().toISOString().slice(0, 10)}.json`;
-    const { triggerDownload } = await import('./utils/downloadHelper');
-    await triggerDownload(fileName, JSON.stringify(payload, null, 2), 'json');
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `english_classroom_credit_system_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
     addToast('success', 'Data Exported', 'Classroom JSON file downloaded.');
   };
 
@@ -965,64 +970,32 @@ export default function App() {
     (l) => l.studentId === currentStudent?.id && (l.status === 'active' || l.status === 'pending_review')
   );
 
-  // Add/Deduct money to multiple students
-  const handleBulkBalanceAdjust = (
-    studentIds: string[],
-    amount: number,
-    type: 'increase' | 'reduce',
-    reason: string
-  ) => {
-    setStudents((prev) =>
-      prev.map((s) => {
-        if (studentIds.includes(s.id)) {
-          const effectiveAmount = Math.abs(amount);
-          const newBalance = type === 'increase'
-            ? s.currentBalance + effectiveAmount
-            : Math.max(0, s.currentBalance - effectiveAmount);
-            
-          const adjustmentTx: BalanceAdjustmentTransaction = {
-            id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-            amount: effectiveAmount,
-            type,
-            reason,
-            timestamp: new Date().toISOString(),
-          };
-
-          return {
-            ...s,
-            currentBalance: newBalance,
-            balanceAdjustmentsHistory: [adjustmentTx, ...(s.balanceAdjustmentsHistory || [])],
-          };
-        }
-        return s;
-      })
-    );
-    addToast(
-      'success',
-      'BULK TX SUCCESS',
-      `${type === 'increase' ? 'Added' : 'Deducted'} E$${amount} for ${studentIds.length} student(s).`
-    );
-  };
+  const viewTitle =
+    currentView === 'store'
+      ? 'The School Store • Privilege Market'
+      : currentView === 'student'
+      ? 'Student Cardholder Portal'
+      : currentView === 'print'
+      ? 'Debit Card Print Studio'
+      : 'ESL Central Terminal';
 
   return (
     <div
-      className={`min-h-screen font-sans antialiased text-slate-100 flex flex-col relative ${
-        currentView === 'teacher' ? 'bg-slate-950' : 'bg-[#0f172a]'
+      className={`min-h-screen font-sans flex transition-colors duration-200 selection:bg-emerald-500/20 selection:text-emerald-300 ${
+        theme === 'dark' ? 'bg-[#0b0e14] text-[#e6edf3]' : 'bg-[#f4f6fa] text-slate-900'
       }`}
     >
-      <ErrorBoundary>
-      <Titlebar />
-      {/* Toast Notifications */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+      {/* Toast notifications */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto max-w-sm w-full bg-slate-900 border shadow-2xl rounded-xl p-3 flex items-start gap-3 transform transition-all duration-300 animate-slide-up ${
+            className={`pointer-events-auto p-3.5 rounded-lg shadow-2xl border flex items-start gap-3 transition-all ${
               toast.type === 'success'
-                ? 'border-emerald-500/30'
+                ? 'bg-slate-900 border-emerald-500/40 text-white'
                 : toast.type === 'warning'
-                ? 'border-amber-500/30'
-                : 'border-slate-800'
+                ? 'bg-slate-900 border-amber-500/40 text-white'
+                : 'bg-slate-900 border-slate-700 text-white'
             }`}
           >
             {toast.type === 'success' ? (
@@ -1046,117 +1019,132 @@ export default function App() {
         ))}
       </div>
 
-      {/* Navigation */}
-      <Navbar
+      {/* macOS/WinUI Left Sidebar Navigation */}
+      <Sidebar
         currentView={currentView}
         onChangeView={setCurrentView}
         students={students}
-        selectedStudentId={selectedStudentId}
-        onSelectStudent={setSelectedStudentId}
+        classrooms={classrooms}
+        selectedClassId={selectedClassId}
+        onSelectClass={setSelectedClassId}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onResetData={handleResetData}
+        onOpenRules={() => setIsRulesOpen(true)}
         onExportData={handleExportData}
-        settings={settings}
+        onResetData={handleResetData}
+        theme={theme}
       />
 
-      {/* Main Views */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
-        {currentView === 'teacher' && (
-          <TeacherDashboard
-            students={students}
-            loans={loans}
-            settings={settings}
-            classrooms={classrooms}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            onOpenPrintStudio={() => {
-              setPrintTargetStudentId(null);
-              setCurrentView('print');
-            }}
-            onSwitchToStudentView={handleSwitchToStudentView}
-            onUpdateCreditLimit={handleUpdateCreditLimit}
-            onUpdatePaymentFrequency={handleUpdatePaymentFrequency}
-            onDelistStudent={handleDelistStudent}
-            onReinstateStudent={handleReinstateStudent}
-            onAddStudent={handleAddStudent}
-            onAddBulkStudents={handleAddBulkStudents}
-            onPrintStudentCard={(studentId) => {
-              setPrintTargetStudentId(studentId);
-              setCurrentView('print');
-            }}
-            onApplyDelayPenalty={handleApplyDelayPenalty}
-            onIssueLoan={handleIssueLoan}
-            onBulkAdjustBalance={handleBulkBalanceAdjust}
-            onApproveEnglishSubmission={handleApproveEnglishSubmission}
-            onRejectEnglishSubmission={handleRejectEnglishSubmission}
-            onGradeWorkDirectly={() => {}}
-            onSubmitEnglishWork={handleSubmitEnglishWork}
-            onAddDailyReward={handleAddDailyEnglishReward}
-            onDeleteStudent={handleDeleteStudent}
-            onReduceBalance={handleReduceStudentBalance}
-            onManualAdjustBalance={handleManualAdjustBalance}
-            onCreateClassroom={handleCreateClassroom}
-            onUpdateClassroom={handleUpdateClassroom}
-            onDeleteClassroom={handleDeleteClassroom}
-            onReassignStudents={handleReassignStudents}
-            storeCatalog={storeCatalog}
-            onUpdateCatalog={setStoreCatalog}
-            onOpenStore={() => setCurrentView('store')}
-            onGrantCreditLimitRaise={handleGrantCreditLimitRaise}
-            onRestoreBackup={handleRestoreBackup}
-            onSaveManualSnapshot={handleSaveManualSnapshot}
-          />
-        )}
+      {/* Main Work Area with Left Sidebar and Top Header Offsets */}
+      <div className="lg:pl-64 flex-1 flex flex-col min-w-0 min-h-screen">
+        <TopHeader
+          currentStudent={currentStudent}
+          students={students}
+          onSelectStudent={setSelectedStudentId}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          title={viewTitle}
+          subtitle="v1.1 Edition"
+        />
 
-        {currentView === 'student' && currentStudent && (
-          <StudentPortal
-            student={currentStudent}
-            students={students}
-            onSelectStudent={setSelectedStudentId}
-            activeLoan={studentActiveLoan}
-            loans={loans}
-            settings={settings}
-            onUpdatePaymentFrequency={handleUpdatePaymentFrequency}
-            onRequestLoan={(data) => handleIssueLoan(currentStudent.id, data)}
-            onSubmitEnglishWork={handleSubmitEnglishWork}
-            onPrintCard={(studentId) => {
-              setPrintTargetStudentId(studentId);
-              setCurrentView('print');
-            }}
-          />
-        )}
+        {/* Main Views */}
+        <main className="flex-1 pt-14 p-4 sm:p-6 lg:p-8 min-w-0">
+          {currentView === 'teacher' && (
+            <TeacherDashboard
+              students={students}
+              loans={loans}
+              settings={settings}
+              classrooms={classrooms}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              onOpenPrintStudio={() => {
+                setPrintTargetStudentId(null);
+                setCurrentView('print');
+              }}
+              onSwitchToStudentView={handleSwitchToStudentView}
+              onUpdateCreditLimit={handleUpdateCreditLimit}
+              onUpdatePaymentFrequency={handleUpdatePaymentFrequency}
+              onDelistStudent={handleDelistStudent}
+              onReinstateStudent={handleReinstateStudent}
+              onAddStudent={handleAddStudent}
+              onAddBulkStudents={handleAddBulkStudents}
+              onPrintStudentCard={(studentId) => {
+                setPrintTargetStudentId(studentId);
+                setCurrentView('print');
+              }}
+              onApplyDelayPenalty={handleApplyDelayPenalty}
+              onIssueLoan={handleIssueLoan}
+              onApproveEnglishSubmission={handleApproveEnglishSubmission}
+              onRejectEnglishSubmission={handleRejectEnglishSubmission}
+              onGradeWorkDirectly={() => {}}
+              onSubmitEnglishWork={handleSubmitEnglishWork}
+              onAddDailyReward={handleAddDailyEnglishReward}
+              onDeleteStudent={handleDeleteStudent}
+              onReduceBalance={handleReduceStudentBalance}
+              onManualAdjustBalance={handleManualAdjustBalance}
+              onCreateClassroom={handleCreateClassroom}
+              onUpdateClassroom={handleUpdateClassroom}
+              onDeleteClassroom={handleDeleteClassroom}
+              onReassignStudents={handleReassignStudents}
+              storeCatalog={storeCatalog}
+              onUpdateCatalog={setStoreCatalog}
+              onOpenStore={() => setCurrentView('store')}
+              onGrantCreditLimitRaise={handleGrantCreditLimitRaise}
+              onRestoreBackup={handleRestoreBackup}
+              onSaveManualSnapshot={handleSaveManualSnapshot}
+            />
+          )}
 
-        {currentView === 'store' && (
-          <ClassroomStoreView
-            students={students}
-            selectedStudentId={selectedStudentId}
-            onSelectStudent={setSelectedStudentId}
-            storeCatalog={storeCatalog}
-            onUpdateCatalog={setStoreCatalog}
-            onPurchaseItem={(studentId, amount, item, finalPrice) => {
-              handleReduceStudentBalance(studentId, finalPrice, item.name, {
-                itemId: item.id,
-                itemName: item.name,
-                originalPrice: item.basePrice,
-                discountPercent: item.discountPercent,
-              });
-            }}
-            onCustomDeduction={handleReduceStudentBalance}
-            isTeacher={true}
-          />
-        )}
+          {currentView === 'student' && currentStudent && (
+            <StudentPortal
+              student={currentStudent}
+              students={students}
+              onSelectStudent={setSelectedStudentId}
+              activeLoan={studentActiveLoan}
+              loans={loans}
+              settings={settings}
+              onUpdatePaymentFrequency={handleUpdatePaymentFrequency}
+              onRequestLoan={(data) => handleIssueLoan(currentStudent.id, data)}
+              onSubmitEnglishWork={handleSubmitEnglishWork}
+              onPrintCard={(studentId) => {
+                setPrintTargetStudentId(studentId);
+                setCurrentView('print');
+              }}
+            />
+          )}
 
-        {currentView === 'print' && (
-          <PrintableCards
-            students={students}
-            settings={settings}
-            initialSelectedStudentId={printTargetStudentId}
-            onBack={() => {
-              setPrintTargetStudentId(null);
-              setCurrentView('teacher');
-            }}
-          />
-        )}
-      </main>
+          {currentView === 'store' && (
+            <ClassroomStoreView
+              students={students}
+              selectedStudentId={selectedStudentId}
+              onSelectStudent={setSelectedStudentId}
+              storeCatalog={storeCatalog}
+              onUpdateCatalog={setStoreCatalog}
+              onPurchaseItem={(studentId, amount, item, finalPrice) => {
+                handleReduceStudentBalance(studentId, finalPrice, item.name, {
+                  itemId: item.id,
+                  itemName: item.name,
+                  originalPrice: item.basePrice,
+                  discountPercent: item.discountPercent,
+                });
+              }}
+              onCustomDeduction={handleReduceStudentBalance}
+              isTeacher={true}
+              theme={theme}
+            />
+          )}
+
+          {currentView === 'print' && (
+            <PrintableCards
+              students={students}
+              settings={settings}
+              initialSelectedStudentId={printTargetStudentId}
+              onBack={() => {
+                setPrintTargetStudentId(null);
+                setCurrentView('teacher');
+              }}
+            />
+          )}
+        </main>
+      </div>
 
       {/* Settings Modal */}
       {isSettingsOpen && (
@@ -1170,7 +1158,16 @@ export default function App() {
           }}
         />
       )}
-      </ErrorBoundary>
+
+      {/* Classroom Didactic Rules Reference Modal */}
+      {isRulesOpen && (
+        <ClassroomRulesModal
+          isOpen={isRulesOpen}
+          onClose={() => setIsRulesOpen(false)}
+          settings={settings}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

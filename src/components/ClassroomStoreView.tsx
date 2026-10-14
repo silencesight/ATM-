@@ -21,7 +21,11 @@ import {
   Pencil,
   Trash2,
   Eye,
-  EyeOff
+  EyeOff,
+  CreditCard,
+  Receipt,
+  CheckCircle2,
+  Filter
 } from 'lucide-react';
 import { Student, StoreItem, StorePurchaseTransaction } from '../types';
 import { StoreItemVisual } from './StoreItemVisual';
@@ -30,6 +34,7 @@ import {
   DEFAULT_STORE_ITEMS,
   resetDefaultStoreItems
 } from '../data/storeCatalog';
+import { getCreditTier } from '../utils/creditCalculator';
 import { StudentSelectorNav } from './StudentSelectorNav';
 
 interface ClassroomStoreViewProps {
@@ -46,6 +51,7 @@ interface ClassroomStoreViewProps {
   ) => void;
   onCustomDeduction?: (studentId: string, amount: number, note: string) => void;
   isTeacher?: boolean;
+  theme?: 'dark' | 'light';
 }
 
 export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
@@ -57,7 +63,10 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   onPurchaseItem,
   onCustomDeduction,
   isTeacher = true,
+  theme = 'dark',
 }) => {
+  const isDark = theme === 'dark';
+
   const [activeStudentId, setActiveStudentId] = useState<string>(
     selectedStudentId || students[0]?.id || ''
   );
@@ -67,11 +76,16 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       setActiveStudentId(selectedStudentId);
     }
   }, [selectedStudentId]);
+
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'privilege' | 'academic' | 'prize' | 'game'>('all');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [globalDiscountInput, setGlobalDiscountInput] = useState<number>(0);
+
+  // Selected item for the Settlement Drawer / Checkout
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
   // Unified Add / Edit Modal state
   const [isItemModalOpen, setIsItemModalOpen] = useState<boolean>(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
@@ -92,6 +106,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   const [formIsHidden, setFormIsHidden] = useState(false);
 
   const currentStudent = students.find((s) => s.id === activeStudentId) || students[0];
+  const tierInfo = currentStudent ? getCreditTier(currentStudent.creditScore) : null;
 
   // Filtered items (respects isHidden for students and non-edit mode)
   const filteredCatalog = storeCatalog.filter((item) => {
@@ -104,6 +119,23 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  // Default selected item for settlement panel
+  const activeSelectedItem =
+    filteredCatalog.find((i) => i.id === selectedItemId) ||
+    filteredCatalog[0] ||
+    null;
+
+  const selectedItemEffectivePrice = activeSelectedItem
+    ? calculateEffectiveItemPrice(activeSelectedItem)
+    : 0;
+
+  const canAffordSelected =
+    currentStudent && currentStudent.currentBalance >= selectedItemEffectivePrice;
+  const isSelectedOutOfStock =
+    activeSelectedItem &&
+    activeSelectedItem.stock <= 0 &&
+    !activeSelectedItem.unlimitedStock;
 
   // Stock update handler
   const handleUpdateStock = (itemId: string, delta: number) => {
@@ -223,6 +255,9 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       if (editingItemId === itemId) {
         setEditingItemId(null);
       }
+      if (selectedItemId === itemId) {
+        setSelectedItemId(null);
+      }
     }
   };
 
@@ -281,210 +316,188 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     setIsItemModalOpen(false);
   };
 
+  // Initials for avatar
+  const getInitials = (name?: string) => {
+    if (!name) return 'ES';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
-      {/* Top Graphic Banner matching 1st BGU.png */}
-      <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-800 bg-gradient-to-r from-stone-900 via-slate-900 to-emerald-950">
-        {/* Scenic Background elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.15),transparent_50%)]" />
-        <div className="relative px-6 py-8 sm:px-10 sm:py-10 flex flex-col md:flex-row items-center justify-between gap-6 z-10">
-          <div className="flex items-center gap-5">
-            {/* Mascot: Calico/Orange Cat badge inspired by the header photo */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-500/20 border-2 border-amber-400/40 p-2 flex items-center justify-center text-4xl shadow-lg shrink-0 relative overflow-hidden backdrop-blur-md">
-              <span className="transform -rotate-6 select-none" role="img" aria-label="Store Cat">
-                🐱
-              </span>
-              <div className="absolute -bottom-1 text-[9px] font-black uppercase tracking-wider text-amber-300 bg-amber-950/90 px-2 py-0.5 rounded-full border border-amber-500/40 font-mono">
-                Storekeeper
-              </div>
+    <div className="space-y-6 pb-16 transition-colors duration-200">
+      {/* ======================================================== */}
+      {/* 1. TOP CONTEXT BAR: STITCH APPLE WALLET ACTIVE CHIP & CONTROLS */}
+      {/* ======================================================== */}
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+        {/* Active Student Apple Wallet Glass Chip */}
+        {currentStudent ? (
+          <div
+            className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+              isDark
+                ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.35)] text-white'
+                : 'bg-white border-slate-200 shadow-sm text-slate-900'
+            }`}
+          >
+            {/* Initials Avatar */}
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#009b74] via-[#00c896] to-[#42e5b0] text-[#003828] flex items-center justify-center font-display text-base font-bold shadow-[0_0_14px_rgba(66,229,176,0.3)] shrink-0">
+              {getInitials(currentStudent.name)}
             </div>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                  Classroom Economy
+            {/* Student Info & Tiers */}
+            <div className="flex flex-col min-w-0 pr-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-display font-bold text-sm sm:text-base truncate">
+                  {currentStudent.name}
                 </span>
-                <span className="text-xs text-slate-400 font-mono">1st BGU Edition</span>
+                <span
+                  className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                    isDark
+                      ? 'bg-white/[0.06] text-slate-300 border-white/[0.08]'
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                  }`}
+                >
+                  #{currentStudent.studentIdNumber || currentStudent.cardNumber.slice(-4)}
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-[#4cd6fb] border border-cyan-500/20 font-semibold flex items-center gap-1">
+                  <Award className="w-3 h-3 text-[#4cd6fb]" />
+                  <span>{tierInfo?.name || 'Standard Tier'}</span>
+                </span>
               </div>
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-serif-card mt-1">
-                The Store
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl leading-relaxed">
-                Exchange your earned credit dollars for classroom privileges, test bonus points, and mystery prize boxes.
-              </p>
+
+              {/* Stats Sub-row */}
+              <div className="flex items-center gap-3 mt-1 text-xs font-mono">
+                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                  Score: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{currentStudent.creditScore}</strong>
+                </span>
+                <span className="w-1 h-1 rounded-full bg-slate-500" />
+                <span>
+                  Reserve: <strong className="text-[#42e5b0] font-bold">${currentStudent.currentBalance}.00</strong>
+                </span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-semibold flex items-center gap-0.5">
+                  <TrendingUp className="w-2.5 h-2.5" />
+                  +5 Boost
+                </span>
+              </div>
             </div>
-          </div>
 
-          {/* Active Shopper Badge & Credit Score Benefit */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col gap-3 min-w-[280px] shadow-xl backdrop-blur-md">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-slate-400">
-                Active Cardholder
-              </span>
-              <div className="flex items-center gap-1 text-emerald-400 text-xs font-mono font-bold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>+5 Score / Purchase</span>
-              </div>
-            </div>
-
-            {currentStudent ? (
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-bold text-white text-base leading-tight">{currentStudent.name}</p>
-                  <p className="text-[11px] text-slate-400 font-mono">
-                    Score: <strong className="text-blue-400">{currentStudent.creditScore}</strong> • Limit: ${currentStudent.maxLoanLimit}
-                  </p>
-                </div>
-                <div className="text-right bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-800/60">
-                  <span className="text-[9px] text-slate-400 uppercase font-mono block">Balance</span>
-                  <span className="text-lg font-mono font-bold text-emerald-300">
-                    ${currentStudent.currentBalance}.00
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400 italic">No student selected</p>
-            )}
-
-            {/* Switch Student Navigator */}
-            {students.length > 1 && (
-              <div className="pt-2 border-t border-slate-800/80">
+            {/* Switch Student Dropdown Navigation */}
+            {students.length > 1 && onSelectStudent && (
+              <div className="ml-auto pl-2 border-l border-white/[0.08]">
                 <StudentSelectorNav
                   students={students}
                   selectedStudentId={activeStudentId}
                   onSelectStudent={(id) => {
                     setActiveStudentId(id);
-                    if (onSelectStudent) onSelectStudent(id);
+                    onSelectStudent(id);
                   }}
                   label="Shopper"
                   variant="store"
                   showBalance={true}
-                  showCreditScore={true}
+                  showCreditScore={false}
                   showClassFilter={true}
-                  showShuffle={true}
                 />
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          <div className="text-xs text-slate-400 italic">No student selected</div>
+        )}
 
-        {/* Credit Score Benefit Banner */}
-        <div className="bg-emerald-950/40 border-t border-emerald-800/40 px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-emerald-200">
-          <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>
-              <strong>Credit Score Boost:</strong> Each store purchase increases the student's credit rating by <strong>+5 pts</strong> to reward responsible spending.
-            </span>
-          </div>
-          <span className="text-[11px] text-emerald-400/80">
-            Current Score: {currentStudent?.creditScore ?? 650} / 850
-          </span>
-        </div>
-      </div>
-
-      {/* Control Bar: Search, Category Filters, Sticky Shopper Switcher, and Teacher Management Mode */}
-      <div className="bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-2xl p-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shadow-md sticky top-16 z-20">
-        {/* Left: Search & Category */}
-        <div className="flex flex-wrap items-center gap-3 flex-1">
-          <div className="relative min-w-[180px] flex-1 max-w-xs">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search store catalog..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
-            />
-          </div>
-
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+        {/* Right Controls: Category Filters & Teacher Management Bar */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Category Switchers */}
+          <div
+            className={`inline-flex p-1 rounded-xl border ${
+              isDark ? 'bg-[#11151f] border-white/[0.06]' : 'bg-slate-100 border-slate-200'
+            }`}
+          >
             {(['all', 'privilege', 'academic', 'prize', 'game'] as const).map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setCategoryFilter(cat)}
-                className={`px-3 py-1 rounded-xl text-xs font-mono uppercase font-bold tracking-wider transition-colors ${
+                className={`px-3 py-1 rounded-lg text-xs font-display font-semibold transition-all ${
                   categoryFilter === cat
-                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    ? isDark
+                      ? 'bg-[#212736] text-white shadow-sm border border-white/[0.1]'
+                      : 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                    : isDark
+                    ? 'text-slate-400 hover:text-white'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                {cat === 'all' ? 'All Items' : cat}
+                {cat === 'all' ? 'All Privileges' : cat.charAt(0).toUpperCase() + cat.slice(1)}
               </button>
             ))}
           </div>
+
+          {/* Teacher Store Controls Toggle */}
+          {isTeacher && (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all border ${
+                  isEditMode
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20'
+                    : isDark
+                    ? 'bg-[#181d29] text-amber-300 border-amber-500/30 hover:bg-amber-500/10'
+                    : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>{isEditMode ? 'Exit Manage' : 'Manage Store'}</span>
+              </button>
+
+              {isEditMode && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleOpenAddModal}
+                    className="px-3 py-1.5 bg-[#42e5b0] hover:bg-[#34c495] text-[#003828] rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 transition-colors shadow-md shadow-[#42e5b0]/20"
+                  >
+                    <Plus className="w-3.5 h-3.5 font-bold" />
+                    <span>Add Item</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetCatalog}
+                    className={`p-2 rounded-xl text-xs font-mono transition-colors border ${
+                      isDark
+                        ? 'bg-[#181d29] hover:bg-[#212736] border-slate-700 text-slate-400 hover:text-white'
+                        : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-600'
+                    }`}
+                    title="Reset default items (preserves custom items)"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Middle/Center: Quick Shopper Switcher on Sticky Bar */}
-        {students.length > 1 && (
-          <div className="flex items-center justify-center border-t lg:border-t-0 lg:border-l border-slate-800 pt-2 lg:pt-0 lg:pl-3">
-            <StudentSelectorNav
-              students={students}
-              selectedStudentId={activeStudentId}
-              onSelectStudent={(id) => {
-                setActiveStudentId(id);
-                if (onSelectStudent) onSelectStudent(id);
-              }}
-              label="Shopper"
-              variant="navbar"
-              showBalance={true}
-              showCreditScore={false}
-              showClassFilter={true}
-            />
-          </div>
-        )}
-
-        {/* Right: Teacher Store Options (Edit Stock, Discounts, Price Adjustments) */}
-        {isTeacher && (
-          <div className="flex items-center gap-2 self-end md:self-center">
-            <button
-              type="button"
-              onClick={() => setIsEditMode(!isEditMode)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all border ${
-                isEditMode
-                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20'
-                  : 'bg-slate-950 text-amber-300 border-amber-500/40 hover:bg-amber-500/10'
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>{isEditMode ? 'Exit Edit Mode' : 'Manage Store (Stock/Price/Discounts)'}</span>
-            </button>
-
-            {isEditMode && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleOpenAddModal}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Item</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleResetCatalog}
-                  className="px-2.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-mono transition-colors"
-                  title="Reset to default 1st BGU store catalog"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Global Discount Flash Sale Bar (in edit mode) */}
       {isEditMode && (
-        <div className="p-4 bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/40 border border-amber-500/30 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+        <div
+          className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${
+            isDark
+              ? 'bg-gradient-to-r from-amber-950/40 via-[#181d29] to-amber-950/40 border-amber-500/30'
+              : 'bg-amber-50/80 border-amber-200 text-amber-900'
+          }`}
+        >
           <div className="flex items-center gap-2">
             <Percent className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-mono font-bold text-amber-200 uppercase tracking-wider">
+            <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
               Global Flash Sale:
             </span>
-            <span className="text-xs text-slate-300">
-              Apply a store-wide discount across all catalog items with one click:
+            <span className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              Apply a catalog-wide promotional discount with one click:
             </span>
           </div>
 
@@ -497,7 +510,9 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all border ${
                   globalDiscountInput === pct
                     ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
-                    : 'bg-slate-950 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                    : isDark
+                    ? 'bg-slate-950 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                    : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-100'
                 }`}
               >
                 {pct === 0 ? 'No Sale (0%)' : `-${pct}%`}
@@ -507,349 +522,416 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
         </div>
       )}
 
-      {/* Items Grid matching the 9 cards from 1st BGU.png */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCatalog.map((item) => {
-          const effectivePrice = calculateEffectiveItemPrice(item);
-          const hasDiscount = item.discountPercent > 0;
-          const isOutOfStock = item.stock <= 0 && !item.unlimitedStock;
-          const canAfford = currentStudent && currentStudent.currentBalance >= effectivePrice;
-          const isEditingThis = editingItemId === item.id;
+      {/* ======================================================== */}
+      {/* 2. MAIN WORKSPACE SPLIT: 8-COL GRID + 4-COL CHECKOUT SIDEBAR */}
+      {/* ======================================================== */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* Left & Center: 3x2 / Responsive Privileges Grid (8 cols) */}
+        <div className="xl:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredCatalog.map((item) => {
+            const effectivePrice = calculateEffectiveItemPrice(item);
+            const hasDiscount = item.discountPercent > 0;
+            const isOutOfStock = item.stock <= 0 && !item.unlimitedStock;
+            const canAfford = currentStudent && currentStudent.currentBalance >= effectivePrice;
+            const isSelected = activeSelectedItem?.id === item.id;
+            const isEditingThis = editingItemId === item.id;
+            const isReady = canAfford && !isOutOfStock;
 
-          return (
-            <div
-              key={item.id}
-              className={`bg-white text-slate-900 rounded-2xl border-2 transition-all flex flex-col justify-between overflow-hidden shadow-xl relative group ${
-                isOutOfStock
-                  ? 'opacity-65 border-slate-300'
-                  : 'border-slate-300 hover:border-emerald-500 hover:shadow-2xl'
-              }`}
-            >
-              {/* Card Top: Stock Header matching 1st BGU.png */}
-              <div className="pt-3 px-4 pb-2 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {item.isHidden && isTeacher && isEditMode && (
-                    <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-mono font-bold text-[10px] rounded uppercase tracking-wider shadow-sm">
-                      Inactive
+            return (
+              <div
+                key={item.id}
+                onClick={() => setSelectedItemId(item.id)}
+                className={`group relative flex flex-col justify-between rounded-2xl p-4 border transition-all cursor-pointer ${
+                  isSelected
+                    ? isDark
+                      ? 'bg-gradient-to-b from-[#1c2826] to-[#142023] border-[#42e5b0] shadow-[0_0_25px_rgba(66,229,176,0.25)] ring-1 ring-[#42e5b0]'
+                      : 'bg-emerald-50/80 border-[#42e5b0] shadow-md ring-1 ring-[#42e5b0]'
+                    : isDark
+                    ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] hover:bg-[#1f2535] hover:border-white/[0.14] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'
+                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
+                }`}
+              >
+                {/* Ready to purchase active badge */}
+                {isReady && !isSelected && (
+                  <div className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-[#42e5b0] text-[#003828] font-mono text-[9px] font-bold tracking-wide flex items-center gap-1 shadow-[0_0_10px_rgba(66,229,176,0.5)]">
+                    <CheckCircle2 className="w-3 h-3 font-bold" />
+                    <span>READY</span>
+                  </div>
+                )}
+
+                {/* Card Top: Category / Status Badges */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {item.isHidden && isTeacher && isEditMode && (
+                      <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-mono font-bold text-[9px] rounded uppercase tracking-wider">
+                        Inactive
+                      </span>
+                    )}
+                    <span
+                      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                        item.category === 'academic'
+                          ? 'bg-cyan-500/10 text-[#4cd6fb] border-cyan-500/30'
+                          : item.category === 'game'
+                          ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+                          : item.category === 'prize'
+                          ? 'bg-pink-500/10 text-pink-300 border-pink-500/30'
+                          : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                      }`}
+                    >
+                      {item.subtitle || item.category}
                     </span>
-                  )}
-                  <span
-                    className={`text-xs sm:text-sm font-bold font-sans tracking-wide ${
-                      item.unlimitedStock
-                        ? 'text-emerald-700 font-semibold'
-                        : isOutOfStock
-                        ? 'text-red-600'
-                        : item.stock <= 2
-                        ? 'text-amber-600'
-                        : 'text-slate-800'
+                  </div>
+
+                  {/* Stock or Status Badge */}
+                  <div>
+                    {item.unlimitedStock ? (
+                      <span className="text-[10px] font-mono font-semibold text-[#42e5b0]">
+                        ∞ Unlimited
+                      </span>
+                    ) : isOutOfStock ? (
+                      <span className="text-[10px] font-mono font-semibold text-red-400">
+                        Out of stock
+                      </span>
+                    ) : !canAfford ? (
+                      <span className="text-[10px] font-mono text-amber-400">
+                        Needs E${effectivePrice - (currentStudent?.currentBalance || 0)}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {item.stock} in stock
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card Center: Visual & Info */}
+                <div className="my-2 flex flex-col items-center">
+                  <StoreItemVisual iconType={item.iconType} emoji={item.emoji} className="w-full h-24 mb-2" />
+                  <h3
+                    className={`font-display font-bold text-sm tracking-tight text-center leading-snug ${
+                      isDark ? 'text-white' : 'text-slate-900'
                     }`}
                   >
-                    {item.unlimitedStock
-                      ? '∞ Unlimited'
-                      : isOutOfStock
-                      ? 'Out of stock'
-                      : `${item.stock} in stock`}
-                  </span>
-                  {item.stock <= 2 && !isOutOfStock && !item.unlimitedStock && (
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                    {item.name}
+                  </h3>
+                  {item.description && (
+                    <p className={`text-[11px] text-center mt-1 line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {item.description}
+                    </p>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  {hasDiscount && (
-                    <span className="px-2 py-0.5 bg-red-600 text-white font-mono font-bold text-[11px] rounded-full shadow-sm">
-                      -{item.discountPercent}% OFF
-                    </span>
-                  )}
+                {/* Card Bottom: Price, Stock, and Teacher Edit Actions */}
+                <div className="mt-3 pt-2.5 flex items-center justify-between border-t border-white/[0.06]">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-mono uppercase text-slate-400">Price</span>
+                    <div className="flex items-baseline gap-1 font-mono">
+                      {hasDiscount && (
+                        <span className="text-[10px] text-slate-500 line-through">
+                          ${item.basePrice}
+                        </span>
+                      )}
+                      <span className="text-base font-bold text-[#42e5b0]">
+                        E${effectivePrice}
+                      </span>
+                    </div>
+                  </div>
 
-                  {/* Card Edit & Delete Quick Actions (Manage Store Mode) */}
+                  {/* Teacher Inline Management Quick Actions */}
                   {isTeacher && isEditMode && (
-                    <div className="flex items-center gap-0.5 bg-white border border-slate-300 rounded-lg p-0.5 shadow-sm">
+                    <div className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-700 rounded-lg p-0.5 shadow-sm">
                       <button
                         type="button"
-                        onClick={() => handleOpenEditModal(item)}
-                        className="p-1 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
-                        title="Edit Item Details (Title, Price, Icon/Emoji, Stock, etc.)"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditModal(item);
+                        }}
+                        className="p-1 text-slate-300 hover:text-[#42e5b0] hover:bg-white/[0.08] rounded transition-colors"
+                        title="Edit Item Details"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleToggleHideItem(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleHideItem(item.id);
+                        }}
                         className={`p-1 rounded transition-colors ${
                           item.isHidden
-                            ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                            ? 'bg-amber-500/20 text-amber-300'
+                            : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
                         }`}
-                        title={item.isHidden ? 'Unhide item (Show to students)' : 'Hide item (Remove from student view)'}
+                        title={item.isHidden ? 'Unhide item' : 'Hide item'}
                       >
                         {item.isHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteItem(item.id, item.name)}
-                        className="p-1 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Permanently Delete Item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteItem(item.id, item.name);
+                        }}
+                        className="p-1 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Delete Item"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingItemId(isEditingThis ? null : item.id);
+                        }}
+                        className="p-1 text-slate-400 hover:text-amber-300 hover:bg-white/[0.08] rounded transition-colors"
+                        title="Quick Sliders (Stock/Price)"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* Card Center: Visual Illustration */}
-              <div className="p-4 flex flex-col items-center justify-center min-h-[140px]">
-                <StoreItemVisual iconType={item.iconType} emoji={item.emoji} className="w-full h-32" />
-                {item.description && (
-                  <p className="text-[11px] text-slate-600 text-center italic mt-1 line-clamp-2">
-                    {item.description}
-                  </p>
+                {/* Teacher Quick Inline Adjustment Drawer */}
+                {isTeacher && isEditMode && isEditingThis && (
+                  <div className="mt-3 pt-2.5 border-t border-amber-500/30 space-y-2 text-xs font-mono">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Stock: {item.stock}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateStock(item.id, -1);
+                          }}
+                          className="px-2 py-0.5 bg-slate-800 rounded hover:bg-slate-700"
+                        >
+                          -1
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateStock(item.id, 1);
+                          }}
+                          className="px-2 py-0.5 bg-slate-800 rounded hover:bg-slate-700"
+                        >
+                          +1
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Price: ${item.basePrice}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAdjustPrice(item.id, -100);
+                          }}
+                          className="px-1.5 py-0.5 bg-slate-800 text-rose-300 rounded hover:bg-slate-700"
+                        >
+                          -$100
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAdjustPrice(item.id, 100);
+                          }}
+                          className="px-1.5 py-0.5 bg-slate-800 text-emerald-300 rounded hover:bg-slate-700"
+                        >
+                          +$100
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
+            );
+          })}
+        </div>
 
-              {/* Card Bottom: Title & Green Curved Ribbon Tag matching 1st BGU.png */}
-              <div className="border-t border-slate-200 bg-slate-50/50 flex items-stretch justify-between relative min-h-[64px]">
-                {/* Left: Item Title & Subtitle */}
-                <div className="p-3.5 flex flex-col justify-center flex-1 pr-2">
-                  <h3 className="font-extrabold text-slate-900 text-base leading-snug">
-                    {item.name}
-                  </h3>
-                  {item.subtitle && (
-                    <span className="text-[11px] text-slate-500 font-mono">{item.subtitle}</span>
-                  )}
+        {/* ======================================================== */}
+        {/* Right Panel: Purchase Calculation & Checkout Sidebar (4 cols) */}
+        {/* ======================================================== */}
+        <div className="xl:col-span-4 flex flex-col gap-4">
+          {/* Apple Wallet Mini Ledger Preview Card */}
+          <div className="bg-gradient-to-br from-[#0c1f2e] via-[#0f343e] to-[#044c3c] text-white rounded-2xl p-5 border border-white/[0.12] shadow-[0_12px_36px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between h-52">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(66,229,176,0.18),transparent_60%)] pointer-events-none" />
+
+            {/* Top row */}
+            <div className="flex justify-between items-start z-10">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-300 font-mono">
+                  Institutional Debit Card
+                </div>
+                <div className="font-display font-semibold text-sm tracking-wide text-white">
+                  Didactic Classroom Reserve
+                </div>
+              </div>
+              <span className="text-[#4cd6fb] font-mono text-xl drop-shadow-[0_0_8px_rgba(76,214,251,0.5)]">
+                ))))
+              </span>
+            </div>
+
+            {/* Chip row */}
+            <div className="z-10 flex items-center gap-3">
+              <div className="w-8 h-6 rounded bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                <span className="text-[#ffc149] text-xs font-mono font-bold">▦</span>
+              </div>
+              <span className="font-mono text-xs tracking-widest text-slate-200">
+                •••• {currentStudent ? currentStudent.cardNumber.slice(-4) : '0000'}
+              </span>
+            </div>
+
+            {/* Bottom Card row */}
+            <div className="flex justify-between items-end z-10">
+              <div>
+                <div className="text-[9px] uppercase tracking-wider text-slate-300 font-mono">
+                  Cardholder
+                </div>
+                <div className="font-display font-bold text-sm truncate max-w-[150px] text-white">
+                  {currentStudent?.name || 'Student'}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] uppercase tracking-wider text-slate-300 font-mono">
+                  Available Balance
+                </div>
+                <div className="font-mono text-xl font-bold text-[#42e5b0] drop-shadow-[0_0_10px_rgba(66,229,176,0.4)]">
+                  ${currentStudent?.currentBalance || 0}.00
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Ledger Settlement & 1-Click Purchase Checkout Sheet */}
+          <div
+            className={`rounded-2xl p-5 border transition-all ${
+              isDark
+                ? 'bg-[#181d29]/85 backdrop-blur-xl border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.45)] text-white'
+                : 'bg-white border-slate-200 shadow-sm text-slate-900'
+            }`}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[#42e5b0]" />
+                <h2 className="font-display font-bold text-sm tracking-tight">Ledger Settlement</h2>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-bold">
+                Live Transaction
+              </span>
+            </div>
+
+            {activeSelectedItem ? (
+              <div className="space-y-4 pt-3 font-mono text-xs">
+                {/* Selected Item Summary */}
+                <div
+                  className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
+                    isDark ? 'bg-slate-950/60 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 truncate">
+                    <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                      <StoreItemVisual iconType={activeSelectedItem.iconType} emoji={activeSelectedItem.emoji} className="w-full h-full" />
+                    </div>
+                    <div className="truncate">
+                      <p className="font-bold truncate text-sm">{activeSelectedItem.name}</p>
+                      <p className="text-[10px] text-slate-400 truncate">
+                        {activeSelectedItem.subtitle || activeSelectedItem.category}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-[#42e5b0]">
+                    ${selectedItemEffectivePrice}
+                  </span>
                 </div>
 
-                {/* Right: Curved Green Price Tag (Signature aesthetic of 1st BGU.png) */}
-                <div className="relative flex items-center justify-center pl-6 pr-5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white font-mono font-bold shadow-md rounded-tl-3xl">
-                  {/* Subtle inner curve visual */}
-                  <div className="flex flex-col items-end">
-                    {hasDiscount && (
-                      <span className="text-[10px] text-emerald-200 line-through leading-none opacity-80">
-                        ${item.basePrice}
-                      </span>
-                    )}
-                    <span className="text-xl font-black leading-tight tracking-tight">
-                      ${effectivePrice}
+                {/* Calculation Breakdown */}
+                <div className="space-y-1.5 py-1 text-slate-400">
+                  <div className="flex justify-between">
+                    <span>Starting Balance:</span>
+                    <span className={isDark ? 'text-white' : 'text-slate-900'}>
+                      ${currentStudent?.currentBalance || 0}.00
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Item Price Deduction:</span>
+                    <span className="text-rose-400">-${selectedItemEffectivePrice}.00</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-400 font-semibold">
+                    <span>Credit Score Benefit:</span>
+                    <span>+5 Rating Pts</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-white/[0.08] font-bold text-sm">
+                    <span className={isDark ? 'text-white' : 'text-slate-900'}>Remaining Balance:</span>
+                    <span className="text-[#42e5b0]">
+                      ${Math.max(0, (currentStudent?.currentBalance || 0) - selectedItemEffectivePrice)}.00
                     </span>
                   </div>
                 </div>
-              </div>
 
-              {/* Purchase Action Button / Out of Stock Banner */}
-              <div className="p-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between gap-2">
+                {/* 1-Click Purchase Button */}
                 <button
                   type="button"
-                  disabled={!canAfford || isOutOfStock}
+                  disabled={!canAffordSelected || Boolean(isSelectedOutOfStock)}
                   onClick={() => {
-                    if (currentStudent && canAfford && !isOutOfStock) {
-                      onPurchaseItem(currentStudent.id, effectivePrice, item, effectivePrice);
+                    if (currentStudent && canAffordSelected && !isSelectedOutOfStock) {
+                      onPurchaseItem(
+                        currentStudent.id,
+                        selectedItemEffectivePrice,
+                        activeSelectedItem,
+                        selectedItemEffectivePrice
+                      );
                     }
                   }}
-                  className={`flex-1 py-2 px-3 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm ${
-                    isOutOfStock
-                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : !canAfford
-                      ? 'bg-amber-100 text-amber-800 border border-amber-300 cursor-not-allowed'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30 hover:shadow-md'
+                  className={`w-full py-3 px-4 rounded-xl font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg ${
+                    isSelectedOutOfStock
+                      ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                      : !canAffordSelected
+                      ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 cursor-not-allowed'
+                      : 'bg-[#42e5b0] hover:bg-[#34c495] text-[#003828] shadow-[#42e5b0]/25 hover:shadow-xl hover:scale-[1.01]'
                   }`}
                 >
-                  {isOutOfStock ? (
-                    <span>Sold Out</span>
-                  ) : !canAfford ? (
-                    <span>Needs ${effectivePrice - (currentStudent?.currentBalance || 0)} More</span>
+                  {isSelectedOutOfStock ? (
+                    <span>Item Sold Out</span>
+                  ) : !canAffordSelected ? (
+                    <span>Needs ${selectedItemEffectivePrice - (currentStudent?.currentBalance || 0)} More</span>
                   ) : (
                     <>
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Buy for {currentStudent?.name.split(' ')[0] || 'Student'} (+5 Score)</span>
+                      <ShoppingBag className="w-4 h-4 font-bold" />
+                      <span>Confirm Purchase (+5 Score)</span>
                     </>
                   )}
                 </button>
-
-                {isTeacher && isEditMode && (
-                  <button
-                    type="button"
-                    onClick={() => setEditingItemId(isEditingThis ? null : item.id)}
-                    className="p-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl transition-colors"
-                    title="Edit stock, price, and discount"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                )}
               </div>
-
-              {/* Teacher Edit Drawer (In Edit Mode) */}
-              {isTeacher && isEditMode && (
-                <div className="p-4 bg-slate-900 text-slate-100 border-t-2 border-amber-500 space-y-3 font-mono">
-                  <div className="flex items-center justify-between pb-1 border-b border-slate-800">
-                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                      <Sliders className="w-3 h-3" />
-                      Manage Item Controls
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setEditingItemId(null)}
-                      className="text-[10px] text-slate-400 hover:text-white"
-                    >
-                      Close
-                    </button>
-                  </div>
-
-                  {/* 1. Edit Stock */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Stock Quantity:</span>
-                      <strong className="text-white">{item.stock} available</strong>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateStock(item.id, -1)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-xs font-bold border border-slate-700"
-                        title="Reduce stock by 1"
-                      >
-                        -1
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateStock(item.id, 1)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-xs font-bold border border-slate-700"
-                        title="Add 1 to stock"
-                      >
-                        +1
-                      </button>
-                      <input
-                        type="number"
-                        min="0"
-                        value={item.stock}
-                        onChange={(e) => handleSetExactStock(item.id, Number(e.target.value))}
-                        className="w-16 px-2 py-0.5 bg-slate-950 border border-slate-700 rounded text-center text-xs text-white"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSetExactStock(item.id, 5)}
-                        className="px-2 py-1 bg-slate-800 text-[10px] text-slate-300 rounded hover:text-white border border-slate-700"
-                      >
-                        Set 5
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 2. Increase / Reduce Price */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Base Price ($):</span>
-                      <strong className="text-emerald-400">${item.basePrice}</strong>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustPrice(item.id, -500)}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-rose-300 rounded text-[11px] font-bold border border-slate-700"
-                      >
-                        -$500
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustPrice(item.id, -100)}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-rose-300 rounded text-[11px] font-bold border border-slate-700"
-                      >
-                        -$100
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustPrice(item.id, 100)}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded text-[11px] font-bold border border-slate-700"
-                      >
-                        +$100
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustPrice(item.id, 500)}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded text-[11px] font-bold border border-slate-700"
-                      >
-                        +$500
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        step="50"
-                        value={item.basePrice}
-                        onChange={(e) => handleSetExactPrice(item.id, Number(e.target.value))}
-                        className="w-20 px-2 py-0.5 bg-slate-950 border border-slate-700 rounded text-center text-xs text-white"
-                      />
-                    </div>
-                  </div>
-
-                  {/* 3. Add Discounts */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Discount:</span>
-                      <strong className="text-amber-400">
-                        {item.discountPercent > 0 ? `${item.discountPercent}% OFF ($${effectivePrice})` : 'Full Price'}
-                      </strong>
-                    </div>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {[0, 10, 20, 25, 50, 75].map((pct) => (
-                        <button
-                          key={pct}
-                          type="button"
-                          onClick={() => handleSetDiscount(item.id, pct)}
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors ${
-                            item.discountPercent === pct
-                              ? 'bg-amber-400 text-slate-950'
-                              : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700'
-                          }`}
-                        >
-                          {pct === 0 ? '0%' : `-${pct}%`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Footer Banner matching bottom of 1st BGU.png */}
-      <div className="rounded-2xl bg-[#1e4620] text-emerald-100 p-5 sm:p-6 shadow-xl border border-emerald-900/60 flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Left: Store Branding */}
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-300/40 p-2 flex items-center justify-center text-amber-300 text-2xl shadow-sm">
-            <ShoppingBag className="w-7 h-7" />
+            ) : (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Click any item card to review settlement
+              </div>
+            )}
           </div>
-          <div>
-            <h4 className="text-lg font-black uppercase tracking-wider text-white font-mono">
-              Your Store
-            </h4>
-            <p className="text-xs text-emerald-200/80 font-mono">1st BGU Didactic Reserve</p>
-          </div>
-        </div>
-
-        {/* Center/Right Tagline matching 1st BGU.png */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold tracking-wide text-white">
-          <span className="flex items-center gap-2">
-            <span>Every thing is possible</span>
-            <span className="text-amber-300 font-bold">|</span>
-          </span>
-          <span className="flex items-center gap-2">
-            <span>Everything is obtainable</span>
-            <span className="text-amber-300 font-bold">|</span>
-          </span>
         </div>
       </div>
 
-      {/* MODAL: ADD / EDIT STORE ITEM */}
+      {/* ======================================================== */}
+      {/* 3. MODAL: ADD / EDIT STORE ITEM (FROSTED GLASS THEME) */}
+      {/* ======================================================== */}
       {isItemModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl shadow-2xl p-6 text-slate-100 space-y-4 my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+          <div
+            className={`border rounded-2xl w-full max-w-xl shadow-2xl p-6 space-y-4 my-8 transition-colors ${
+              isDark
+                ? 'bg-[#11151f]/95 border-white/[0.12] text-slate-100'
+                : 'bg-white border-slate-300 text-slate-900'
+            }`}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <h3 className="text-base font-bold font-display uppercase tracking-wider flex items-center gap-2">
                 {modalMode === 'add' ? (
                   <>
-                    <Plus className="w-4 h-4 text-emerald-400" />
+                    <Plus className="w-4 h-4 text-[#42e5b0]" />
                     <span>Add New Store Item</span>
                   </>
                 ) : (
@@ -879,7 +961,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     placeholder="e.g. VIP Desk Pass, Free Snack"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -889,7 +971,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     placeholder="e.g. Privilege, Academic Boost"
                     value={formSubtitle}
                     onChange={(e) => setFormSubtitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                   />
                 </div>
               </div>
@@ -905,7 +987,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     required
                     value={formBasePrice}
                     onChange={(e) => setFormBasePrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                   />
                 </div>
 
@@ -917,7 +999,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     max="95"
                     value={formDiscountPercent}
                     onChange={(e) => setFormDiscountPercent(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                   />
                 </div>
 
@@ -926,7 +1008,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value as StoreItem['category'])}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                   >
                     <option value="privilege">Privilege / Pass</option>
                     <option value="academic">Academic Boost</option>
@@ -937,15 +1019,15 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               </div>
 
               {/* Stock and Unlimited Stock */}
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs text-slate-300 font-bold">Inventory / Stock</label>
-                  <label className="flex items-center gap-2 cursor-pointer text-xs text-emerald-400">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-[#42e5b0]">
                     <input
                       type="checkbox"
                       checked={formUnlimitedStock}
                       onChange={(e) => setFormUnlimitedStock(e.target.checked)}
-                      className="rounded border-slate-700 text-emerald-600 focus:ring-0"
+                      className="rounded border-slate-700 text-[#42e5b0] focus:ring-0"
                     />
                     <span>Unlimited Stock (Always Available)</span>
                   </label>
@@ -957,7 +1039,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                       min="0"
                       value={formStock}
                       onChange={(e) => setFormStock(Number(e.target.value))}
-                      className="w-32 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-32 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                     />
                     <span className="text-[11px] text-slate-400">units in stock</span>
                   </div>
@@ -965,7 +1047,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               </div>
 
               {/* Visual Card Appearance (Preset vs Custom Emoji) */}
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-3">
+              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs text-slate-300 font-bold">Visual Appearance</label>
                   <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
@@ -974,7 +1056,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                       onClick={() => setFormVisualType('emoji')}
                       className={`px-2.5 py-1 text-xs rounded transition-colors ${
                         formVisualType === 'emoji'
-                          ? 'bg-emerald-600 text-white font-bold'
+                          ? 'bg-[#42e5b0] text-[#003828] font-bold'
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
@@ -985,7 +1067,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                       onClick={() => setFormVisualType('preset')}
                       className={`px-2.5 py-1 text-xs rounded transition-colors ${
                         formVisualType === 'preset'
-                          ? 'bg-emerald-600 text-white font-bold'
+                          ? 'bg-[#42e5b0] text-[#003828] font-bold'
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
@@ -1003,7 +1085,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                         placeholder="🎁"
                         value={formEmoji}
                         onChange={(e) => setFormEmoji(e.target.value)}
-                        className="w-20 text-center text-2xl px-2 py-1 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500"
+                        className="w-20 text-center text-2xl px-2 py-1 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#42e5b0]"
                       />
                       <span className="text-[11px] text-slate-400">
                         Type any emoji or pick a classroom favorite below:
@@ -1019,7 +1101,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                           onClick={() => setFormEmoji(emo)}
                           className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-transform hover:scale-125 border ${
                             formEmoji === emo
-                              ? 'bg-emerald-500/30 border-emerald-400'
+                              ? 'bg-[#42e5b0]/30 border-[#42e5b0]'
                               : 'bg-slate-900 border-slate-800 hover:bg-slate-800'
                           }`}
                         >
@@ -1034,7 +1116,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     <select
                       value={formIconType}
                       onChange={(e) => setFormIconType(e.target.value as StoreItem['iconType'])}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                     >
                       <option value="skip-hw">Skip Homework (Notebook &amp; Fast Forward)</option>
                       <option value="skip-lesson">Skip Lesson (Classroom Blackboard)</option>
@@ -1060,15 +1142,15 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     />
                   </div>
                   <div className="text-[11px] text-slate-400 space-y-0.5">
-                    <strong className="text-white block font-sans">Preview:</strong>
+                    <strong className="text-white block font-sans">Live Preview:</strong>
                     <span>{formName || 'Item Title'}</span>
-                    <div className="text-emerald-400 font-bold">${formBasePrice}</div>
+                    <div className="text-[#42e5b0] font-bold">${formBasePrice}</div>
                   </div>
                 </div>
               </div>
 
               {/* Shelf Visibility Toggle (Inactive / Hidden) */}
-              <div className="flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              <div className="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800">
                 <div>
                   <p className="text-xs font-bold text-white">Shelf Visibility</p>
                   <p className="text-[10px] text-slate-400">
@@ -1096,7 +1178,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                   placeholder="Details of privilege, reward rules, or redemption notes"
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#42e5b0]"
                 />
               </div>
 
@@ -1111,7 +1193,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-colors shadow-md shadow-emerald-900/40"
+                  className="px-5 py-2 bg-[#42e5b0] hover:bg-[#34c495] text-[#003828] font-bold rounded-xl text-xs transition-colors shadow-md shadow-[#42e5b0]/20"
                 >
                   {modalMode === 'add' ? 'Add Item to Store' : 'Save Changes'}
                 </button>
