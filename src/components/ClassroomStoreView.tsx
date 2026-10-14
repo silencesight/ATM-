@@ -576,8 +576,10 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
 
                 {/* Card Top: Icon & Status */}
                 <div className="flex items-start justify-between">
-                  <div className="w-10 h-10 rounded-lg bg-[#11151f] border border-white/[0.08] flex items-center justify-center text-[#42e5b0] group-hover:scale-105 transition-transform shadow-inner text-xl">
-                    {item.emoji ? item.emoji : <StoreItemVisual iconType={item.iconType} className="w-6 h-6" />}
+                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all group-hover:scale-105 shadow-sm ${
+                    isDark ? 'bg-[#11151f] border-white/[0.08]' : 'bg-slate-100 border-slate-200'
+                  }`}>
+                    <StoreItemVisual iconType={item.iconType} emoji={item.emoji} category={item.category} className="w-5 h-5" />
                   </div>
 
                   {!isReady && (

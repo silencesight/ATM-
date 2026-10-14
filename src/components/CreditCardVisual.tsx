@@ -73,7 +73,8 @@ export const CreditCardVisual: React.FC<CreditCardVisualProps> = ({
 
       {/* Main 3D Card Container with Aspect Ratio standard 1.586 (85.6mm x 54mm) */}
       <div
-        className={`relative w-full aspect-[1.586/1] rounded-2xl p-6 text-white border shadow-2xl transition-all duration-500 overflow-hidden ${
+        data-credit-card-canvas="true"
+        className={`credit-card-surface relative w-full aspect-[1.586/1] rounded-2xl p-6 text-white border shadow-2xl transition-all duration-500 overflow-hidden ${
           isDelisted
             ? 'bg-gradient-to-br from-neutral-900 via-neutral-950 to-stone-900 border-red-900/60 shadow-red-950/20 grayscale-30'
             : `bg-gradient-to-br ${currentGradient}`

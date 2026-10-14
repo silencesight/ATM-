@@ -46,6 +46,7 @@ interface StudentPortalProps {
   }) => void;
   onSubmitEnglishWork: (submission: any) => void;
   onPrintCard?: (studentId: string) => void;
+  theme?: 'dark' | 'light';
 }
 
 export const StudentPortal: React.FC<StudentPortalProps> = ({
@@ -59,6 +60,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
   onRequestLoan,
   onSubmitEnglishWork,
   onPrintCard,
+  theme = 'dark',
 }) => {
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);

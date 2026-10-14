@@ -29,7 +29,7 @@ html.light {
   color-scheme: light;
   --bg-app: #f8f9ff;
   --bg-card: #ffffff;
-  --text-main: #0b1c30;
+  --text-main: #0f172a;
   --text-muted: #64748b;
   --border-glass: rgba(0, 0, 0, 0.08);
 }
@@ -58,7 +58,7 @@ html.dark body {
 
 html.light body {
   background-color: #f8f9ff;
-  color: #0b1c30;
+  color: #0f172a;
 }
 
 .font-display {
@@ -75,6 +75,222 @@ html.light body {
 
 .font-serif-card {
   font-family: 'Cinzel', Georgia, serif;
+}
+
+/* ==========================================================================
+   WINUI / MACOS SEAMLESS LIGHT THEME SYSTEM
+   Transforms all hardcoded dark palette utility classes when html.light is active
+   ========================================================================== */
+
+/* 1. Background Surfaces & Card Containers */
+html.light .bg-slate-900,
+html.light .bg-\[\#0b0e14\],
+html.light .bg-\[\#0e121b\],
+html.light .bg-\[\#121622\],
+html.light .bg-\[\#181d29\],
+html.light .bg-\[\#141926\],
+html.light .bg-slate-900\/80,
+html.light .bg-slate-900\/90,
+html.light .bg-slate-900\/95,
+html.light .bg-\[\#0f131c\]\/95,
+html.light .bg-\[\#11151f\]\/90,
+html.light .bg-\[\#181d29\]\/90,
+html.light .bg-\[\#181d29\]\/95 {
+  background-color: #ffffff !important;
+}
+
+/* 2. Inset Wells, Metric Boxes, and Table Headers */
+html.light .bg-slate-950,
+html.light .bg-\[\#11151f\],
+html.light .bg-\[\#0d1117\],
+html.light thead.bg-slate-950,
+html.light thead .bg-slate-950,
+html.light .bg-slate-950\/50,
+html.light .bg-slate-950\/80,
+html.light .bg-slate-950\/90 {
+  background-color: #f1f5f9 !important;
+}
+
+/* 3. Utility Button Backgrounds & Hover States */
+html.light .bg-slate-800,
+html.light .bg-slate-800\/50,
+html.light .bg-slate-800\/60,
+html.light .bg-slate-800\/80,
+html.light .bg-white\/\[0\.04\],
+html.light .bg-white\/\[0\.05\],
+html.light .bg-white\/\[0\.06\],
+html.light .bg-white\/\[0\.08\] {
+  background-color: #f8fafc !important;
+}
+
+html.light .hover\:bg-slate-800:hover,
+html.light .hover\:bg-slate-700:hover,
+html.light .hover\:bg-\[\#212736\]:hover,
+html.light .hover\:bg-\[\#1f2535\]:hover,
+html.light .hover\:bg-white\/\[0\.1\]:hover,
+html.light .hover\:bg-white\/\[0\.12\]:hover,
+html.light .hover\:bg-white\/\[0\.15\]:hover {
+  background-color: #e2e8f0 !important;
+}
+
+/* 4. Borders & Dividers */
+html.light .border-slate-800,
+html.light .border-slate-700,
+html.light .border-slate-800\/80,
+html.light .border-slate-800\/60,
+html.light .border-white\/\[0\.05\],
+html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.07\],
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.1\],
+html.light .border-white\/\[0\.12\] {
+  border-color: #e2e8f0 !important;
+}
+
+/* 5. Typography & High-Contrast Colors */
+html.light .text-white,
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400 {
+  color: #475569 !important;
+}
+
+html.light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Accents in Light Mode: Optimized for crisp readability against light backgrounds */
+html.light .text-emerald-400,
+html.light .text-emerald-300,
+html.light .text-\[\#42e5b0\] {
+  color: #047857 !important;
+}
+
+html.light .text-teal-300,
+html.light .text-teal-400 {
+  color: #0f766e !important;
+}
+
+html.light .text-amber-400,
+html.light .text-amber-300,
+html.light .text-amber-200 {
+  color: #b45309 !important;
+}
+
+html.light .text-sky-400,
+html.light .text-sky-300 {
+  color: #0369a1 !important;
+}
+
+html.light .text-purple-400,
+html.light .text-purple-300 {
+  color: #7e22ce !important;
+}
+
+html.light .text-rose-400,
+html.light .text-rose-300 {
+  color: #be123c !important;
+}
+
+/* 6. Form Controls & Inputs */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light textarea,
+html.light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]):focus,
+html.light textarea:focus,
+html.light select:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 1px #059669 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* 7. Modal Backdrops */
+html.light .bg-black\/80,
+html.light .bg-black\/75,
+html.light .bg-black\/70,
+html.light .bg-black\/60,
+html.light .bg-black\/50 {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* 8. Table Rows & Shadows */
+html.light tr:hover {
+  background-color: #f8fafc !important;
+}
+
+html.light .shadow-2xl,
+html.light .shadow-xl {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 9. Preserve Content inside Colored Action Buttons & Badges */
+html.light .bg-emerald-500,
+html.light .bg-emerald-600,
+html.light .bg-sky-600,
+html.light .bg-sky-500,
+html.light .bg-red-600,
+html.light .bg-red-500,
+html.light .bg-amber-500,
+html.light .bg-indigo-600,
+html.light .bg-purple-600,
+html.light .bg-emerald-500 .text-white,
+html.light .bg-emerald-600 .text-white,
+html.light .bg-sky-600 .text-white,
+html.light .bg-sky-500 .text-white,
+html.light .bg-red-600 .text-white,
+html.light .bg-red-500 .text-white,
+html.light .bg-amber-500 .text-white,
+html.light .bg-indigo-600 .text-white,
+html.light .bg-purple-600 .text-white {
+  color: #ffffff !important;
+}
+
+html.light .bg-emerald-500 .text-slate-950,
+html.light .bg-\[\#42e5b0\] .text-\[\#003828\] {
+  color: #003828 !important;
+}
+
+/* 10. EXCLUSION: Physical Simulated Credit Card */
+html.light .credit-card-surface,
+html.light [data-credit-card-canvas],
+html.light .credit-card-surface *,
+html.light [data-credit-card-canvas] * {
+  /* Prevent color inversion inside simulated bank cards */
+  color: inherit;
+}
+
+html.light .credit-card-surface .text-white {
+  color: #ffffff !important;
+}
+
+html.light .credit-card-surface .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+html.light .credit-card-surface .text-amber-200\/90 {
+  color: rgba(253, 230, 138, 0.9) !important;
 }
 
 /* Print styles for classroom credit card didactic cutouts */

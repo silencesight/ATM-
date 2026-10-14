@@ -1176,6 +1176,7 @@ export default function App() {
                 setPrintTargetStudentId(studentId);
                 setCurrentView('print');
               }}
+              theme={theme}
             />
           )}
 

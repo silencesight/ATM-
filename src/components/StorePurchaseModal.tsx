@@ -303,8 +303,8 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
 
                       {/* Mini Visual Preview & Name */}
                       <div className="flex items-center gap-2.5 my-1">
-                        <div className="w-12 h-10 shrink-0 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center p-1 overflow-hidden">
-                          <StoreItemVisual iconType={item.iconType} emoji={item.emoji} className="w-full h-full" />
+                        <div className="w-10 h-10 shrink-0 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center p-1 overflow-hidden">
+                          <StoreItemVisual iconType={item.iconType} emoji={item.emoji} category={item.category} className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-white text-xs truncate leading-snug">
