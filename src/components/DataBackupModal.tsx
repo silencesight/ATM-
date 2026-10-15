@@ -59,7 +59,7 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
   // Generate complete backup payload
   const createBackupPayload = () => {
     return {
-      version: '2.0.0',
+      version: '2.1.0',
       exportedAt: new Date().toISOString(),
       metadata: {
         studentsCount: students.length,
@@ -77,12 +77,19 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
   };
 
   // Download backup JSON file
-  const handleExportBackup = async () => {
+  const handleExportBackup = () => {
     const payload = createBackupPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
     const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const fileName = `student_credit_app_backup_${dateStr}.json`;
-    const { triggerDownload } = await import('../utils/downloadHelper');
-    await triggerDownload(fileName, JSON.stringify(payload, null, 2), 'json');
+    link.download = `student_credit_app_backup_${dateStr}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Save manual snapshot to local storage
