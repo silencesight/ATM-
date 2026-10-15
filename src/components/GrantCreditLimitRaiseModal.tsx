@@ -17,8 +17,9 @@ import { StudentSelectorNav } from './StudentSelectorNav';
 interface GrantCreditLimitRaiseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  students: Student[];
+  students?: Student[];
   selectedStudent?: Student;
+  student?: Student;
   onGrantRaise: (
     studentId: string,
     newLimit: number,
@@ -41,22 +42,27 @@ const PRESET_REASONS = [
 export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProps> = ({
   isOpen,
   onClose,
-  students,
+  students = [],
   selectedStudent,
+  student,
   onGrantRaise,
 }) => {
-  const activeStudents = students.filter((s) => s.cardStatus === 'active');
+  const activeTargetStudent = selectedStudent || student;
+  const safeStudents = Array.isArray(students) && students.length > 0 
+    ? students 
+    : activeTargetStudent ? [activeTargetStudent] : [];
+  const activeStudents = safeStudents.filter((s) => s.cardStatus === 'active');
   const [studentId, setStudentId] = useState<string>(
-    selectedStudent?.id || activeStudents[0]?.id || ''
+    activeTargetStudent?.id || activeStudents[0]?.id || ''
   );
 
   useEffect(() => {
-    if (selectedStudent) {
-      setStudentId(selectedStudent.id);
+    if (activeTargetStudent) {
+      setStudentId(activeTargetStudent.id);
     }
-  }, [selectedStudent]);
+  }, [activeTargetStudent]);
 
-  const currentStudent = students.find((s) => s.id === studentId);
+  const currentStudent = safeStudents.find((s) => s.id === studentId) || activeTargetStudent;
   const currentLimit = currentStudent?.maxLoanLimit || 50;
 
   // Calculation mode: 'increment' (+E$) or 'exact' (target new limit)

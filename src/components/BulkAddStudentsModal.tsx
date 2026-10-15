@@ -18,8 +18,9 @@ interface BulkAddStudentsModalProps {
   onClose: () => void;
   onAddBulkStudents: (students: Omit<Student, 'id'>[]) => void;
   settings: TeacherSettings;
-  existingStudentCount: number;
+  existingStudentCount?: number;
   classrooms?: Classroom[];
+  theme?: 'dark' | 'light';
 }
 
 const THEME_OPTIONS: Array<{ key: Student['cardDesignTheme']; label: string; color: string }> = [
@@ -44,9 +45,11 @@ export const BulkAddStudentsModal: React.FC<BulkAddStudentsModalProps> = ({
   onClose,
   onAddBulkStudents,
   settings,
-  existingStudentCount,
+  existingStudentCount = 0,
   classrooms = [],
+  theme = 'dark',
 }) => {
+  const isDark = theme === 'dark';
   const [namesInput, setNamesInput] = useState('');
   const [selectedClassId, setSelectedClassId] = useState<string>(
     classrooms[0]?.id || ''

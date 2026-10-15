@@ -148,7 +148,7 @@ interface TeacherDashboardProps {
   onReassignStudents?: (fromClassId: string, toClassId: string) => void;
   storeCatalog?: StoreItem[];
   onUpdateCatalog?: (newCatalog: StoreItem[]) => void;
-  onOpenStore?: () => void;
+  onOpenStore?: (studentId?: string) => void;
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
@@ -219,6 +219,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [studentForRaise, setStudentForRaise] = useState<Student | null>(null);
   const [studentForHistory, setStudentForHistory] = useState<Student | null>(null);
   const [studentForDelete, setStudentForDelete] = useState<Student | null>(null);
+  const [studentForNewLoan, setStudentForNewLoan] = useState<Student | null>(null);
 
   // Add Student Form State
   const [newStudentName, setNewStudentName] = useState('');
@@ -351,14 +352,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         }`}
       >
         {/* Cohort Filter Segmented Pill Group */}
-        <div className="flex items-center gap-1.5 p-1 bg-black/30 border border-white/[0.06] rounded-xl overflow-x-auto scrollbar-none">
+        <div className={`flex items-center gap-1.5 p-1 rounded-xl overflow-x-auto scrollbar-none border ${
+          isDark ? 'bg-black/30 border-white/[0.06]' : 'bg-slate-100 border-slate-200'
+        }`}>
           <button
             type="button"
             onClick={() => setSelectedClassFilter('all')}
             className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 shrink-0 ${
               selectedClassFilter === 'all'
-                ? 'bg-white/[0.14] text-white border border-white/[0.15] shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? isDark
+                  ? 'bg-white/[0.14] text-white border border-white/[0.15] shadow-sm'
+                  : 'bg-white text-slate-900 border border-slate-300 shadow-xs'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#00c896] shadow-[0_0_8px_rgba(0,200,150,0.9)] animate-pulse" />
@@ -377,8 +384,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 onClick={() => setSelectedClassFilter(cls.id)}
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all shrink-0 ${
                   isSelected
-                    ? 'bg-white/[0.14] text-white border border-white/[0.15] shadow-sm font-bold'
-                    : 'text-slate-400 hover:text-white'
+                    ? isDark
+                      ? 'bg-white/[0.14] text-white border border-white/[0.15] shadow-sm font-bold'
+                      : 'bg-white text-slate-900 border border-slate-300 shadow-xs font-bold'
+                    : isDark
+                    ? 'text-slate-400 hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <span>{cls.name}</span>
@@ -443,6 +454,23 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             <span>Classrooms</span>
           </button>
 
+          {/* Add students in bulk (re-added prominent button) */}
+          {onAddBulkStudents && (
+            <button
+              type="button"
+              onClick={() => setIsBulkAddOpen(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-semibold transition-all shadow-sm ${
+                isDark
+                  ? 'bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-500/30 text-emerald-300'
+                  : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-800'
+              }`}
+              title="Add students in bulk / import classroom roster"
+            >
+              <Users className="w-3.5 h-3.5 text-[#00c896]" />
+              <span>Bulk Add</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setIsAddStudentOpen(true)}
@@ -472,7 +500,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-bold">
                 Reserve Vault Liquidity
               </div>
-              <div className="font-display text-2xl lg:text-3xl font-extrabold tracking-tight text-white font-mono">
+              <div className={`font-display text-2xl lg:text-3xl font-extrabold tracking-tight font-mono ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 E${classLiquidity.toLocaleString()}.00
               </div>
             </div>
@@ -509,9 +539,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-bold">
                 Active Institutional Loans
               </div>
-              <div className="flex items-baseline gap-2 font-display text-2xl lg:text-3xl font-extrabold tracking-tight text-white font-mono">
+              <div className={`flex items-baseline gap-2 font-display text-2xl lg:text-3xl font-extrabold tracking-tight font-mono ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 <span>{activeLoans.length}</span>
-                <span className="text-base text-slate-400 font-normal">/ {activeStudents.length}</span>
+                <span className={`text-base font-normal ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>/ {activeStudents.length}</span>
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 shadow-sm">
@@ -524,7 +556,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               isDark ? 'bg-[#0d1017]/70 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
             }`}
           >
-            <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-300 font-semibold">
+            <div className={`flex items-center gap-1.5 font-mono text-[10px] font-semibold ${
+              isDark ? 'text-slate-300' : 'text-slate-700'
+            }`}>
               <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
               <span>
                 {activeStudents.length > 0
@@ -551,9 +585,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-bold">
                 Avg Class Credit Index
               </div>
-              <div className="flex items-baseline gap-2 font-display text-2xl lg:text-3xl font-extrabold tracking-tight text-white font-mono">
+              <div className={`flex items-baseline gap-2 font-display text-2xl lg:text-3xl font-extrabold tracking-tight font-mono ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 <span>{avgCreditScore}</span>
-                <span className="text-base text-slate-400 font-normal">/ 850 Max</span>
+                <span className={`text-base font-normal ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>/ 850 Max</span>
               </div>
             </div>
             <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[#00c896] shadow-sm">
@@ -597,16 +633,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   Focused Cardholder
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.8)]" />
-                <span className="font-mono text-[11px] text-slate-400">
+                <span className={`font-mono text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   ID: #{focusedDockStudent.studentIdNumber || focusedDockStudent.cardNumber.slice(-4)}
                 </span>
               </div>
-              <div className="font-display font-semibold text-sm truncate tracking-tight text-white">
+              <div className={`font-display font-semibold text-sm truncate tracking-tight ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
                 {focusedDockStudent.name}
               </div>
-              <div className="font-mono text-[11px] text-slate-400">
+              <div className={`font-mono text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 Balance: <span className="font-bold text-[#00c896]">E${focusedDockStudent.currentBalance}.00</span>
-                {' '}&bull; Available Limit: <span className="text-slate-300">E${focusedDockStudent.maxLoanLimit}.00</span>
+                {' '}&bull; Available Limit: <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>E${focusedDockStudent.maxLoanLimit}.00</span>
               </div>
             </div>
           </div>
@@ -614,7 +652,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           {/* Fast Currency Buttons & Badges */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Direct Denomination Disbursers */}
-            <div className="flex items-center gap-1 bg-[#0b0e14]/80 border border-white/[0.06] p-1 rounded-xl shadow-inner">
+            <div className={`flex items-center gap-1 border p-1 rounded-xl shadow-inner ${
+              isDark ? 'bg-[#0b0e14]/80 border-white/[0.06]' : 'bg-slate-100 border-slate-200'
+            }`}>
               {[10, 25, 50, 100].map((amt) => (
                 <button
                   key={amt}
@@ -623,7 +663,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   className={`px-2.5 py-1 rounded-lg font-mono text-xs font-bold transition-all ${
                     dockAmount === amt
                       ? 'bg-[#00c896] text-[#052e22] shadow-sm'
-                      : 'bg-[#181d2a] hover:bg-[#222a3a] text-slate-200'
+                      : isDark
+                      ? 'bg-[#181d2a] hover:bg-[#222a3a] text-slate-200'
+                      : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-xs'
                   }`}
                 >
                   +E${amt}
@@ -746,10 +788,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       </div>
 
       {/* ======================================================== */}
-      {/* 5. CARDHOLDER MATRIX (macOS Tahoe 3-Column Desktop Grid) */}
+      {/* 5. CARDHOLDER MATRIX (Sleek High-Density Tahoe Grid) */}
       {/* ======================================================== */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3.5">
           {filteredStudents.map((st) => {
             const tier = getCreditTier(st.creditScore);
             const studentLoan = loans.find(
@@ -762,47 +804,47 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <div
                 key={st.id}
                 onClick={() => setDockSelectedStudentId(st.id)}
-                className={`group relative flex flex-col justify-between rounded-2xl p-4 border transition-all cursor-pointer ${
+                className={`group relative flex flex-col justify-between rounded-2xl p-3 sm:p-3.5 border transition-all cursor-pointer ${
                   isFocused
                     ? isDark
-                      ? 'bg-[#131722]/85 backdrop-blur-xl border-[#00c896]/50 shadow-[0_8px_32px_rgba(0,200,150,0.18)] ring-1 ring-[#00c896]/30'
-                      : 'bg-emerald-50 border-2 border-[#00c896] shadow-md ring-1 ring-[#00c896]'
+                      ? 'bg-[#131722]/90 backdrop-blur-xl border-[#00c896]/60 shadow-[0_8px_32px_rgba(0,200,150,0.18)] ring-1 ring-[#00c896]/30'
+                      : 'bg-emerald-50/70 border-2 border-[#00c896] shadow-sm ring-1 ring-[#00c896]'
                     : isDark
                     ? 'bg-[#131722]/85 backdrop-blur-xl border-white/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:border-white/[0.18] hover:shadow-[0_12px_36px_rgba(0,0,0,0.55)]'
-                    : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'
+                    : 'bg-white border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-md text-slate-900'
                 }`}
               >
-                {/* Stitch Apple Wallet Micro-Reserve Card Preview */}
+                {/* Sleek Apple Wallet Micro-Reserve Card Preview */}
                 <div
-                  className={`relative w-full aspect-[1.586/1] rounded-xl overflow-hidden p-3.5 flex flex-col justify-between shadow-xl mb-3.5 text-white border border-white/[0.15] bg-gradient-to-br ${getCardThemeGradient(
+                  className={`relative w-full h-24 sm:h-26 rounded-xl overflow-hidden p-2.5 flex flex-col justify-between shadow-md mb-2.5 text-white border border-white/[0.15] bg-gradient-to-br ${getCardThemeGradient(
                     st.cardDesignTheme
                   )}`}
                 >
                   <div className="flex items-start justify-between">
-                    <div>
-                      <div className="font-mono text-[9px] tracking-wider uppercase text-cyan-200/80 font-bold">
+                    <div className="min-w-0 pr-1">
+                      <div className="font-mono text-[8px] sm:text-[9px] tracking-wider uppercase text-cyan-200/90 font-bold truncate">
                         {st.className || '2nd BGU'} &bull; ESL Reserve
                       </div>
-                      <div className="font-display font-bold text-sm tracking-tight text-white truncate max-w-[170px]">
+                      <div className="font-display font-bold text-xs sm:text-sm tracking-tight text-white truncate max-w-[150px]">
                         {st.name}
                       </div>
                     </div>
                     {/* Translucent Chip Insignia */}
-                    <div className="w-7 h-5 rounded-md bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-sm">
-                      <Radio className="w-3 h-3 text-cyan-300 rotate-90" />
+                    <div className="w-6 h-4.5 rounded bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xs shrink-0">
+                      <Radio className="w-2.5 h-2.5 text-cyan-300 rotate-90" />
                     </div>
                   </div>
 
-                  <div className="flex items-end justify-between font-mono text-[10px]">
+                  <div className="flex items-end justify-between font-mono text-[9px]">
                     <div>
-                      <div className="text-[8px] uppercase text-cyan-200/70 font-bold">Card Serial</div>
-                      <div className="tracking-widest font-semibold text-white">
+                      <div className="text-[7.5px] uppercase text-cyan-200/70 font-bold">Serial</div>
+                      <div className="tracking-widest font-semibold text-white text-[10px]">
                         •••• {st.cardNumber.slice(-4)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[8px] uppercase text-cyan-200/70 font-bold">Solvency Tier</div>
-                      <div className="font-bold text-emerald-300 uppercase">
+                      <div className="text-[7.5px] uppercase text-cyan-200/70 font-bold">Tier</div>
+                      <div className="font-bold text-emerald-300 uppercase text-[10px]">
                         {isDelisted ? 'REVOKED' : tier.name}
                       </div>
                     </div>
@@ -811,17 +853,23 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
                 {/* Financial Metrics & Ledger Snapshot */}
                 <div className="space-y-2 flex-1">
-                  <div className="flex items-center justify-between pb-1">
-                    <div className="min-w-0 pr-2">
-                      <div className="font-display font-semibold text-sm text-white truncate">
+                  <div className="flex items-center justify-between pb-0.5">
+                    <div className="min-w-0 pr-1.5">
+                      <div className={`font-display font-semibold text-xs sm:text-sm truncate ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}>
                         {st.name}
                       </div>
-                      <div className="font-mono text-[10px] text-slate-400">
-                        Class Seat: #{st.studentIdNumber || st.cardNumber.slice(-4)}
+                      <div className={`font-mono text-[10px] ${
+                        isDark ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
+                        #{st.studentIdNumber || st.cardNumber.slice(-4)}
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-mono font-bold text-sm text-white">{st.creditScore}</div>
+                      <div className={`font-mono font-bold text-xs sm:text-sm ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}>{st.creditScore}</div>
                       <div className="font-mono text-[10px] text-[#00c896] font-semibold">
                         {tier.name}
                       </div>
@@ -829,81 +877,150 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   </div>
 
                   {/* Metric Table Box */}
-                  <div className="grid grid-cols-2 gap-2 bg-[#0b0e14]/70 border border-white/[0.06] p-2.5 rounded-xl">
+                  <div className={`grid grid-cols-2 gap-1.5 p-2 rounded-xl border ${
+                    isDark ? 'bg-[#0b0e14]/70 border-white/[0.06]' : 'bg-slate-50 border-slate-200/80'
+                  }`}>
                     <div>
-                      <span className="font-mono text-[9px] text-slate-400 block uppercase font-bold">
-                        Reserve Balance
+                      <span className={`font-mono text-[8.5px] uppercase font-bold block ${
+                        isDark ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
+                        Reserve
                       </span>
                       <span className="font-mono font-bold text-[#00c896] text-xs">
                         E${st.currentBalance}.00
                       </span>
                     </div>
                     <div>
-                      <span className="font-mono text-[9px] text-slate-400 block uppercase font-bold">
-                        Loan Cap Limit
+                      <span className={`font-mono text-[8.5px] uppercase font-bold block ${
+                        isDark ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
+                        Loan Cap
                       </span>
-                      <span className="font-mono font-semibold text-slate-200 text-xs">
+                      <span className={`font-mono font-semibold text-xs ${
+                        isDark ? 'text-slate-200' : 'text-slate-700'
+                      }`}>
                         E${st.maxLoanLimit}.00
                       </span>
                     </div>
-                    <div className="col-span-2 flex items-center justify-between pt-1 border-t border-white/[0.04] text-[10px] font-mono">
+                    <div className={`col-span-2 flex items-center justify-between pt-1 border-t text-[9.5px] font-mono ${
+                      isDark ? 'border-white/[0.04]' : 'border-slate-200'
+                    }`}>
                       <div className="flex items-center gap-1 text-[#00c896] font-semibold">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>{st.punctualPaymentsCount} On-Time Settle</span>
+                        <CheckCircle2 className="w-2.5 h-2.5" />
+                        <span>{st.punctualPaymentsCount} Settle</span>
                       </div>
                       {studentLoan ? (
-                        <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                        <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
                           Debt: E${studentLoan.totalDue - studentLoan.amountRepaid}
                         </span>
                       ) : (
-                        <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold">
-                          No Debt
+                        <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold">
+                          Clear
                         </span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Card-Level Operational Actions */}
+                {/* Card-Level Operational Actions with Fast Access buttons */}
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="mt-3 pt-2.5 flex items-center gap-1.5 border-t border-white/[0.06]"
+                  className={`mt-2.5 pt-2 flex flex-col gap-1.5 border-t ${
+                    isDark ? 'border-white/[0.06]' : 'border-slate-200'
+                  }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStudentForAdjustBalance(st);
-                    }}
-                    className="flex-1 py-1 px-2 rounded-lg bg-[#00c896] hover:bg-[#00dfa7] text-[#052e22] font-mono text-[11px] font-bold shadow-[0_0_12px_rgba(0,200,150,0.25)] transition-all text-center"
-                  >
-                    + Award E$
-                  </button>
+                  {/* Row 1: Primary E$ Operations */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setStudentForAdjustBalance(st)}
+                      className="flex-1 py-1 px-2 rounded-lg bg-[#00c896] hover:bg-[#00dfa7] text-[#052e22] font-mono text-[11px] font-bold shadow-xs transition-all text-center flex items-center justify-center gap-1"
+                      title="Quick award or adjust Eurodollars"
+                    >
+                      <Zap className="w-3 h-3" />
+                      <span>+ Award E$</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setStudentForRaise(st)}
-                    className="py-1 px-2 rounded-lg bg-[#181d2a] hover:bg-[#222a3a] border border-white/[0.08] text-slate-200 font-mono text-[11px] font-medium transition-all"
-                  >
-                    Raise Cap
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setStudentForRaise(st)}
+                      className={`py-1 px-2 rounded-lg border font-mono text-[11px] font-medium transition-all ${
+                        isDark
+                          ? 'bg-[#181d2a] hover:bg-[#222a3a] border-white/[0.08] text-slate-200 hover:text-white'
+                          : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                      }`}
+                      title="Raise borrowing cap limit"
+                    >
+                      Raise Cap
+                    </button>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setStudentForLoans(st)}
-                    className="p-1.5 rounded-lg bg-[#181d2a] hover:bg-[#222a3a] border border-white/[0.08] text-slate-400 hover:text-white transition-all"
-                    title="View Student Loans & English History"
-                  >
-                    <Receipt className="w-3.5 h-3.5" />
-                  </button>
+                  {/* Row 2: Fast Navigation (Loan, Store, Portal, Delete) */}
+                  <div className="flex items-center gap-1">
+                    {/* Fast Access: Student Loans */}
+                    <button
+                      type="button"
+                      onClick={() => setStudentForLoans(st)}
+                      className={`flex-1 py-1 px-1.5 rounded-lg border font-mono text-[10.5px] font-semibold flex items-center justify-center gap-1 transition-all ${
+                        isDark
+                          ? 'bg-[#181d2a] hover:bg-[#222a3a] border-white/[0.08] text-amber-300 hover:text-amber-200'
+                          : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-800'
+                      }`}
+                      title="Open student loans ledger & agreements"
+                    >
+                      <Receipt className="w-3 h-3 text-amber-400" />
+                      <span>Loan</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => onSwitchToStudentView(st.id)}
-                    className="p-1.5 rounded-lg bg-[#181d2a] hover:bg-[#222a3a] border border-white/[0.08] text-sky-400 hover:text-sky-300 transition-all"
-                    title="Open Student Portal"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
+                    {/* Fast Access: School Store */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onOpenStore) {
+                          onOpenStore(st.id);
+                        }
+                      }}
+                      className={`flex-1 py-1 px-1.5 rounded-lg border font-mono text-[10.5px] font-semibold flex items-center justify-center gap-1 transition-all ${
+                        isDark
+                          ? 'bg-[#181d2a] hover:bg-[#222a3a] border-white/[0.08] text-sky-300 hover:text-sky-200'
+                          : 'bg-sky-50 hover:bg-sky-100 border-sky-200 text-sky-800'
+                      }`}
+                      title="Open school store with this student selected"
+                    >
+                      <ShoppingBag className="w-3 h-3 text-sky-400" />
+                      <span>Store</span>
+                    </button>
+
+                    {/* Fast Access: Student Portal */}
+                    <button
+                      type="button"
+                      onClick={() => onSwitchToStudentView(st.id)}
+                      className={`p-1.5 rounded-lg border transition-all ${
+                        isDark
+                          ? 'bg-[#181d2a] hover:bg-[#222a3a] border-white/[0.08] text-slate-300 hover:text-white'
+                          : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Open Student Portal"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+
+                    {/* Delete / Delist Student */}
+                    {onDeleteStudent && (
+                      <button
+                        type="button"
+                        onClick={() => setStudentForDelete(st)}
+                        className={`p-1.5 rounded-lg border transition-all ${
+                          isDark
+                            ? 'bg-[#181d2a] hover:bg-red-950/40 border-white/[0.08] text-red-400 hover:border-red-500/40'
+                            : 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600'
+                        }`}
+                        title="Delete student from classroom"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -1127,6 +1244,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           onAddBulkStudents={onAddBulkStudents}
           classrooms={classrooms}
           settings={settings}
+          existingStudentCount={students.length}
+          theme={theme}
         />
       )}
 
@@ -1187,6 +1306,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           isOpen={!!studentForAdjustBalance}
           onClose={() => setStudentForAdjustBalance(null)}
           student={studentForAdjustBalance}
+          students={students}
           onAdjustBalance={onManualAdjustBalance}
         />
       )}
@@ -1197,7 +1317,33 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           isOpen={!!studentForRaise}
           onClose={() => setStudentForRaise(null)}
           student={studentForRaise}
+          selectedStudent={studentForRaise}
+          students={students}
           onGrantRaise={onGrantCreditLimitRaise}
+        />
+      )}
+
+      {/* Delete Student Modal */}
+      {studentForDelete && onDeleteStudent && (
+        <DeleteStudentModal
+          isOpen={!!studentForDelete}
+          onClose={() => setStudentForDelete(null)}
+          student={studentForDelete}
+          onConfirmDelete={onDeleteStudent}
+        />
+      )}
+
+      {/* Loan Request Modal (Direct issue) */}
+      {studentForNewLoan && (
+        <LoanRequestModal
+          isOpen={!!studentForNewLoan}
+          onClose={() => setStudentForNewLoan(null)}
+          student={studentForNewLoan}
+          settings={settings}
+          onIssueLoan={(loanData) => {
+            onIssueLoan(studentForNewLoan.id, loanData);
+            setStudentForNewLoan(null);
+          }}
         />
       )}
 
@@ -1233,7 +1379,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               loans={loans}
               settings={settings}
               onOpenEnglishWork={() => {}}
-              onRequestNewLoan={() => {}}
+              onRequestNewLoan={() => {
+                const target = studentForLoans;
+                setStudentForLoans(null);
+                setStudentForNewLoan(target);
+              }}
             />
           </div>
         </div>

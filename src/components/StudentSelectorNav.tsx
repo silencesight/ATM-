@@ -30,7 +30,7 @@ export interface StudentSelectorNavProps {
 }
 
 export const StudentSelectorNav: React.FC<StudentSelectorNavProps> = ({
-  students,
+  students = [],
   selectedStudentId,
   onSelectStudent,
   label = 'Student',
@@ -48,13 +48,14 @@ export const StudentSelectorNav: React.FC<StudentSelectorNavProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const activeStudents = students.filter((s) => s.cardStatus === 'active');
-  const currentStudent = students.find((s) => s.id === selectedStudentId) || students[0];
-  const currentIndex = students.findIndex((s) => s.id === selectedStudentId);
+  const safeStudents = Array.isArray(students) ? students : [];
+  const activeStudents = safeStudents.filter((s) => s.cardStatus === 'active');
+  const currentStudent = safeStudents.find((s) => s.id === selectedStudentId) || safeStudents[0];
+  const currentIndex = safeStudents.findIndex((s) => s.id === selectedStudentId);
 
   // Extract unique classes if any
   const availableClasses = Array.from(
-    new Set(students.map((s) => s.className).filter(Boolean) as string[])
+    new Set(safeStudents.map((s) => s.className).filter(Boolean) as string[])
   );
 
   // Focus search input when modal opens

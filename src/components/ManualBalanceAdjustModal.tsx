@@ -54,7 +54,7 @@ export const ManualBalanceAdjustModal: React.FC<ManualBalanceAdjustModalProps> =
   isOpen,
   onClose,
   student,
-  students,
+  students = [],
   onSelectStudent,
   onAdjustBalance,
 }) => {
@@ -66,17 +66,19 @@ export const ManualBalanceAdjustModal: React.FC<ManualBalanceAdjustModalProps> =
   const [selectedStudentId, setSelectedStudentId] = useState<string>(student?.id || '');
   const [showHistory, setShowHistory] = useState<boolean>(false);
 
+  const safeStudents = Array.isArray(students) ? students : student ? [student] : [];
+
   useEffect(() => {
     if (student) {
       setSelectedStudentId(student.id);
-    } else if (students.length > 0 && !selectedStudentId) {
-      setSelectedStudentId(students[0].id);
+    } else if (safeStudents.length > 0 && !selectedStudentId) {
+      setSelectedStudentId(safeStudents[0].id);
     }
-  }, [student, students]);
+  }, [student, safeStudents]);
 
   if (!isOpen) return null;
 
-  const currentStudent = students.find((s) => s.id === selectedStudentId) || student;
+  const currentStudent = safeStudents.find((s) => s.id === selectedStudentId) || student;
   if (!currentStudent) return null;
 
   const amount = Math.max(0, parseFloat(amountStr) || 0);

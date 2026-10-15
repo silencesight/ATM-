@@ -1224,7 +1224,7 @@ export default function App() {
           theme={theme}
           onToggleTheme={toggleTheme}
           title={viewTitle}
-          subtitle="v3.0 Native Shell"
+          subtitle="v3.1 Native Shell"
         />
 
         {/* Main Views */}
@@ -1269,7 +1269,12 @@ export default function App() {
               onReassignStudents={handleReassignStudents}
               storeCatalog={storeCatalog}
               onUpdateCatalog={setStoreCatalog}
-              onOpenStore={() => setCurrentView('store')}
+              onOpenStore={(studentId) => {
+                if (studentId) {
+                  setSelectedStudentId(studentId);
+                }
+                setCurrentView('store');
+              }}
               onGrantCreditLimitRaise={handleGrantCreditLimitRaise}
               onRestoreBackup={handleRestoreBackup}
               onSaveManualSnapshot={handleSaveManualSnapshot}
