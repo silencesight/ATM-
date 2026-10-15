@@ -217,7 +217,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 isDark ? 'text-slate-400' : 'text-slate-500'
               }`}
             >
-              Terminal
+              Terminal v3.0
             </span>
           </div>
 

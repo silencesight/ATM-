@@ -59,7 +59,7 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
   // Generate complete backup payload
   const createBackupPayload = () => {
     return {
-      version: '2.1.0',
+      version: '3.0.0',
       exportedAt: new Date().toISOString(),
       metadata: {
         studentsCount: students.length,

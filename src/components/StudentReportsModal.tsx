@@ -147,15 +147,23 @@ export const StudentReportsModal: React.FC<StudentReportsModalProps> = ({
   };
 
   // Download CSV
-  const handleDownloadCSV = async () => {
+  const handleDownloadCSV = () => {
     const csvContent = generateCSV();
-    const fileName = `student_credit_dossier_${new Date().toISOString().slice(0, 10)}.csv`;
-    const { triggerDownload } = await import('../utils/downloadHelper');
-    await triggerDownload(fileName, csvContent, 'csv');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `student_credit_dossier_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Download JSON
-  const handleDownloadJSON = async () => {
+  const handleDownloadJSON = () => {
     const reportData = targetedStudents.map((s) => {
       const stLoans = loans.filter((l) => l.studentId === s.id);
       return {
@@ -166,13 +174,29 @@ export const StudentReportsModal: React.FC<StudentReportsModalProps> = ({
       };
     });
 
-    const fileName = `student_full_audit_dossier_${new Date().toISOString().slice(0, 10)}.json`;
-    const { triggerDownload } = await import('../utils/downloadHelper');
-    await triggerDownload(fileName, JSON.stringify(reportData, null, 2), 'json');
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `student_full_audit_dossier_${new Date().toISOString().slice(0, 10)}.json`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Generate & Print/Save Full Printable HTML Report
   const handlePrintHTML = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to generate the printable student report.');
+      return;
+    }
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -443,22 +467,9 @@ export const StudentReportsModal: React.FC<StudentReportsModalProps> = ({
       </html>
     `;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    
-    const iframeWindow = iframe.contentWindow;
-    if (iframeWindow) {
-      iframeWindow.document.open();
-      iframeWindow.document.write(htmlContent);
-      iframeWindow.document.close();
-      
-      setTimeout(() => {
-        iframeWindow.focus();
-        iframeWindow.print();
-        setTimeout(() => document.body.removeChild(iframe), 2000);
-      }, 500);
-    }
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   return (

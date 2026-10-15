@@ -1224,7 +1224,7 @@ export default function App() {
           theme={theme}
           onToggleTheme={toggleTheme}
           title={viewTitle}
-          subtitle="v2.1 Native Shell"
+          subtitle="v3.0 Native Shell"
         />
 
         {/* Main Views */}

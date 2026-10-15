@@ -20,7 +20,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   theme,
   onToggleTheme,
   title = 'ESL Reserve Terminal',
-  subtitle = 'v2.1 Native Shell',
+  subtitle = 'v3.0 Native Shell',
   onOpenSidebar,
 }) => {
   const isDark = theme === 'dark';
