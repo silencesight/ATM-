@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   ShoppingBag,
+  ShoppingCart,
   Sliders,
   Tag,
   Plus,
@@ -29,9 +30,12 @@ import {
   Users,
   X,
   CheckSquare,
-  Square
+  Square,
+  School,
+  Globe,
+  Building2,
 } from 'lucide-react';
-import { Student, StoreItem, StorePurchaseTransaction } from '../types';
+import { Student, StoreItem, StorePurchaseTransaction, Classroom } from '../types';
 import { StoreItemVisual } from './StoreItemVisual';
 import {
   calculateEffectiveItemPrice,
@@ -46,11 +50,18 @@ interface ClassroomStoreViewProps {
   onSelectStudent?: (studentId: string) => void;
   storeCatalog: StoreItem[];
   onUpdateCatalog: (newCatalog: StoreItem[]) => void;
+  classrooms?: Classroom[];
+  selectedClassId?: string;
   onPurchaseItem: (
     studentId: string,
     amount: number,
     item: StoreItem,
-    finalPrice: number
+    finalPrice: number,
+    quantity?: number
+  ) => void;
+  onCheckoutCart?: (
+    studentId: string,
+    cartItems: { item: StoreItem; quantity: number; effectiveUnitPrice: number }[]
   ) => void;
   onCustomDeduction?: (studentId: string, amount: number, note: string) => void;
   isTeacher?: boolean;
@@ -63,7 +74,10 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   onSelectStudent,
   storeCatalog,
   onUpdateCatalog,
+  classrooms = [],
+  selectedClassId,
   onPurchaseItem,
+  onCheckoutCart,
   onCustomDeduction,
   isTeacher = true,
   theme = 'dark',
@@ -80,10 +94,23 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     }
   }, [selectedStudentId]);
 
+  const currentStudent = students.find((s) => s.id === activeStudentId) || students[0];
+  const tierInfo = currentStudent ? getCreditTier(currentStudent.creditScore) : null;
+
+  // Course store scoping filter
+  const [selectedStoreClassId, setSelectedStoreClassId] = useState<string>(
+    selectedClassId || currentStudent?.classId || 'all'
+  );
+
+  useEffect(() => {
+    if (selectedClassId) {
+      setSelectedStoreClassId(selectedClassId);
+    }
+  }, [selectedClassId]);
+
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'privilege' | 'academic' | 'prize' | 'game'>('all');
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [globalDiscountInput, setGlobalDiscountInput] = useState<number>(0);
 
   // Dedicated Shopper Picker Modal (prevents any UI collision)
@@ -91,8 +118,13 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   const [shopperSearch, setShopperSearch] = useState('');
   const [shopperClassFilter, setShopperClassFilter] = useState('all');
 
-  // Selected item for the Settlement Drawer / Checkout
+  // Selected item for Settlement Drawer
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [singleQty, setSingleQty] = useState<number>(1);
+
+  // Multi-item Shopping Cart state
+  const [cart, setCart] = useState<Record<string, number>>({});
+  const [settlementTab, setSettlementTab] = useState<'single' | 'cart'>('single');
 
   // Unified Add / Edit Modal state
   const [isItemModalOpen, setIsItemModalOpen] = useState<boolean>(false);
@@ -112,14 +144,23 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
   const [formEmoji, setFormEmoji] = useState('🎁');
   const [formDesc, setFormDesc] = useState('');
   const [formIsHidden, setFormIsHidden] = useState(false);
+  const [formClassroomId, setFormClassroomId] = useState<string>('all');
 
-  const currentStudent = students.find((s) => s.id === activeStudentId) || students[0];
-  const tierInfo = currentStudent ? getCreditTier(currentStudent.creditScore) : null;
+  // Reset single quantity when active item changes
+  useEffect(() => {
+    setSingleQty(1);
+  }, [selectedItemId]);
 
-  // Filtered items (respects isHidden for students and non-edit mode)
+  // Filtered items (respects isHidden, category, search, and course store)
   const filteredCatalog = storeCatalog.filter((item) => {
     if (item.isHidden && (!isTeacher || !isEditMode)) {
       return false;
+    }
+    // Course store filtering:
+    if (selectedStoreClassId !== 'all') {
+      const isUniversal = !item.classroomId || item.classroomId === 'all';
+      const isMatch = item.classroomId === selectedStoreClassId;
+      if (!isUniversal && !isMatch) return false;
     }
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -138,12 +179,81 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     ? calculateEffectiveItemPrice(activeSelectedItem)
     : 0;
 
-  const canAffordSelected =
-    currentStudent && currentStudent.currentBalance >= selectedItemEffectivePrice;
+  const singleTotalCost = selectedItemEffectivePrice * singleQty;
+  const canAffordSingle =
+    currentStudent && currentStudent.currentBalance >= singleTotalCost;
   const isSelectedOutOfStock =
     activeSelectedItem &&
-    activeSelectedItem.stock <= 0 &&
+    activeSelectedItem.stock < singleQty &&
     !activeSelectedItem.unlimitedStock;
+
+  // Shopping Cart items and totals
+  const cartItemsList = useMemo(() => {
+    return Object.entries(cart)
+      .map(([itemId, rawQty]) => {
+        const quantity = Number(rawQty) || 0;
+        const item = storeCatalog.find((i) => i.id === itemId);
+        if (!item || quantity <= 0) return null;
+        const effectiveUnitPrice = calculateEffectiveItemPrice(item);
+        return {
+          item,
+          quantity,
+          effectiveUnitPrice,
+          subtotal: effectiveUnitPrice * quantity,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+  }, [cart, storeCatalog]);
+
+  const totalCartCount = useMemo(() => {
+    return cartItemsList.reduce((sum, item) => sum + item.quantity, 0);
+  }, [cartItemsList]);
+
+  const totalCartCost = useMemo(() => {
+    return cartItemsList.reduce((sum, item) => sum + item.subtotal, 0);
+  }, [cartItemsList]);
+
+  const canAffordCart = currentStudent && currentStudent.currentBalance >= totalCartCost;
+
+  // Cart operations
+  const handleAddToCart = (item: StoreItem, qtyToAdd: number = 1) => {
+    setCart((prev) => {
+      const currentInCart = prev[item.id] || 0;
+      const maxAvailable = item.unlimitedStock ? 9999 : item.stock;
+      const targetQty = Math.min(maxAvailable, currentInCart + qtyToAdd);
+      return {
+        ...prev,
+        [item.id]: targetQty,
+      };
+    });
+  };
+
+  const handleUpdateCartItemQty = (itemId: string, newQty: number) => {
+    const item = storeCatalog.find((i) => i.id === itemId);
+    if (!item) return;
+    if (newQty <= 0) {
+      handleRemoveFromCart(itemId);
+      return;
+    }
+    const maxAvailable = item.unlimitedStock ? 9999 : item.stock;
+    const clampedQty = Math.min(maxAvailable, newQty);
+    setCart((prev) => ({
+      ...prev,
+      [itemId]: clampedQty,
+    }));
+  };
+
+  const handleRemoveFromCart = (itemId: string) => {
+    setCart((prev) => {
+      const updated = { ...prev };
+      delete updated[itemId];
+      return updated;
+    });
+  };
+
+  const handleClearCart = () => {
+    setCart({});
+  };
 
   // Filtered students for shopper picker modal
   const filteredShoppers = useMemo(() => {
@@ -167,28 +277,11 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     onUpdateCatalog(updated);
   };
 
-  const handleSetExactStock = (itemId: string, newStock: number) => {
-    const updated = storeCatalog.map((item) => {
-      if (item.id !== itemId) return item;
-      return { ...item, stock: Math.max(0, newStock) };
-    });
-    onUpdateCatalog(updated);
-  };
-
   const handleUpdateItemPrice = (itemId: string, delta: number) => {
     const updated = storeCatalog.map((item) => {
       if (item.id !== itemId) return item;
       const newPrice = Math.max(0, item.basePrice + delta);
       return { ...item, basePrice: newPrice };
-    });
-    onUpdateCatalog(updated);
-  };
-
-  const handleUpdateItemDiscount = (itemId: string, newDiscount: number) => {
-    const clamped = Math.max(0, Math.min(100, newDiscount));
-    const updated = storeCatalog.map((item) => {
-      if (item.id !== itemId) return item;
-      return { ...item, discountPercent: clamped };
     });
     onUpdateCatalog(updated);
   };
@@ -208,6 +301,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       if (selectedItemId === item.id) {
         setSelectedItemId(null);
       }
+      handleRemoveFromCart(item.id);
     }
   };
 
@@ -226,6 +320,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     setFormEmoji('🎁');
     setFormDesc('');
     setFormIsHidden(false);
+    setFormClassroomId(selectedStoreClassId !== 'all' ? selectedStoreClassId : 'all');
     setIsItemModalOpen(true);
   };
 
@@ -248,12 +343,15 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     }
     setFormDesc(item.description || '');
     setFormIsHidden(!!item.isHidden);
+    setFormClassroomId(item.classroomId || 'all');
     setIsItemModalOpen(true);
   };
 
   const handleSaveItemModal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || formBasePrice < 0) return;
+
+    const assignedClassroom = formClassroomId === 'all' ? undefined : formClassroomId;
 
     if (modalMode === 'add') {
       const newItem: StoreItem = {
@@ -266,6 +364,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
         discountPercent: Math.max(0, Math.min(100, formDiscountPercent)),
         stock: formUnlimitedStock ? 999 : Math.max(0, formStock),
         unlimitedStock: formUnlimitedStock,
+        classroomId: assignedClassroom,
         iconType: formVisualType === 'preset' ? formIconType : 'custom',
         emoji: formVisualType === 'emoji' ? formEmoji : undefined,
         isHidden: formIsHidden,
@@ -285,6 +384,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
           discountPercent: Math.max(0, Math.min(100, formDiscountPercent)),
           stock: formUnlimitedStock ? 999 : Math.max(0, formStock),
           unlimitedStock: formUnlimitedStock,
+          classroomId: assignedClassroom,
           iconType: formVisualType === 'preset' ? formIconType : 'custom',
           emoji: formVisualType === 'emoji' ? formEmoji : undefined,
           isHidden: formIsHidden,
@@ -312,27 +412,48 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     }
   };
 
+  // Execute single item purchase with quantity
   const handleExecutePurchase = () => {
     if (!activeSelectedItem || !currentStudent) return;
     if (isSelectedOutOfStock) {
-      alert('This item is currently out of stock.');
+      alert(`This item only has ${activeSelectedItem.stock} in stock (requested ${singleQty}).`);
       return;
     }
-    if (!canAffordSelected) {
-      alert(`Insufficient funds. Student has E$${currentStudent.currentBalance}, but this item costs E$${selectedItemEffectivePrice}.`);
+    if (!canAffordSingle) {
+      alert(`Insufficient funds. Student has E$${currentStudent.currentBalance}, but this purchase costs E$${singleTotalCost}.`);
       return;
     }
 
     onPurchaseItem(
       currentStudent.id,
-      selectedItemEffectivePrice,
+      singleTotalCost,
       activeSelectedItem,
-      selectedItemEffectivePrice
+      selectedItemEffectivePrice,
+      singleQty
     );
 
-    if (!activeSelectedItem.unlimitedStock) {
-      handleUpdateStock(activeSelectedItem.id, -1);
+    setSingleQty(1);
+  };
+
+  // Execute multi-item cart batch checkout
+  const handleExecuteCartCheckout = () => {
+    if (!currentStudent || cartItemsList.length === 0) return;
+    if (!canAffordCart) {
+      alert(`Insufficient funds. Student has E$${currentStudent.currentBalance}, but cart total is E$${totalCartCost}.`);
+      return;
     }
+
+    if (onCheckoutCart) {
+      onCheckoutCart(
+        currentStudent.id,
+        cartItemsList.map((c) => ({
+          item: c.item,
+          quantity: c.quantity,
+          effectiveUnitPrice: c.effectiveUnitPrice,
+        }))
+      );
+    }
+    setCart({});
   };
 
   const getInitials = (name?: string) => {
@@ -401,7 +522,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               </div>
             </div>
 
-            {/* Dedicated Switch Shopper Button (Never collides with anything) */}
+            {/* Dedicated Switch Shopper Button */}
             {students.length > 1 && onSelectStudent && (
               <button
                 type="button"
@@ -498,6 +619,72 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
         </div>
       </div>
 
+      {/* ======================================================== */}
+      {/* 2. COURSE-SPECIFIC STORE SELECTOR BAR */}
+      {/* ======================================================== */}
+      <div
+        className={`p-2.5 rounded-2xl border flex items-center gap-2 overflow-x-auto scrollbar-none ${
+          isDark
+            ? 'bg-[#181d29]/60 backdrop-blur-md border-white/[0.06]'
+            : 'bg-white border-slate-200 shadow-sm'
+        }`}
+      >
+        <div className="flex items-center gap-1.5 pl-2 pr-2 border-r border-white/[0.08] shrink-0">
+          <School className="w-4 h-4 text-[#42e5b0]" />
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
+            Course Store:
+          </span>
+        </div>
+
+        {/* Shared / Universal Catalog Tab */}
+        <button
+          type="button"
+          onClick={() => setSelectedStoreClassId('all')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold shrink-0 transition-all border flex items-center gap-1.5 ${
+            selectedStoreClassId === 'all'
+              ? 'bg-[#42e5b0] text-[#003828] border-[#42e5b0] shadow-sm font-bold'
+              : isDark
+              ? 'bg-[#11151f] text-slate-300 border-white/[0.08] hover:bg-[#181d29]'
+              : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>All Stores (Universal)</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/15 font-mono">
+            {storeCatalog.length}
+          </span>
+        </button>
+
+        {/* Distinct Classrooms */}
+        {classrooms.map((cls) => {
+          const isSelected = selectedStoreClassId === cls.id;
+          const count = storeCatalog.filter(
+            (i) => i.classroomId === cls.id || !i.classroomId || i.classroomId === 'all'
+          ).length;
+
+          return (
+            <button
+              key={cls.id}
+              type="button"
+              onClick={() => setSelectedStoreClassId(cls.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold shrink-0 transition-all border flex items-center gap-1.5 ${
+                isSelected
+                  ? 'bg-[#42e5b0] text-[#003828] border-[#42e5b0] shadow-sm font-bold'
+                  : isDark
+                  ? 'bg-[#11151f] text-slate-300 border-white/[0.08] hover:bg-[#181d29]'
+                  : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{cls.name}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/15 font-mono">
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Global Discount Flash Sale Bar (in edit mode) */}
       {isEditMode && (
         <div
@@ -539,192 +726,252 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       )}
 
       {/* ======================================================== */}
-      {/* 2. MAIN WORKSPACE SPLIT: 8-COL GRID + 4-COL CHECKOUT SIDEBAR */}
+      {/* 3. MAIN WORKSPACE SPLIT: 8-COL GRID + 4-COL CHECKOUT SIDEBAR */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left & Center: 3x2 / Responsive Privileges Grid (8 cols) */}
-        <div className="xl:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCatalog.map((item) => {
-            const effectivePrice = calculateEffectiveItemPrice(item);
-            const hasDiscount = item.discountPercent > 0;
-            const isOutOfStock = item.stock <= 0 && !item.unlimitedStock;
-            const canAfford = currentStudent && currentStudent.currentBalance >= effectivePrice;
-            const isSelected = activeSelectedItem?.id === item.id;
-            const isReady = canAfford && !isOutOfStock;
+        <div className="xl:col-span-8">
+          {filteredCatalog.length === 0 ? (
+            <div
+              className={`p-12 text-center rounded-2xl border ${
+                isDark ? 'bg-[#181d29]/40 border-white/[0.06] text-slate-400' : 'bg-white border-slate-200 text-slate-500'
+              }`}
+            >
+              <Package className="w-10 h-10 mx-auto text-slate-500 mb-3 opacity-60" />
+              <h3 className="font-display font-semibold text-sm">No items found for this course store</h3>
+              <p className="text-xs mt-1 font-mono text-slate-500">
+                Switch to &quot;All Stores (Universal)&quot; or use &quot;Manage Store &rarr; Add Item&quot; to stock items for this class.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCatalog.map((item) => {
+                const effectivePrice = calculateEffectiveItemPrice(item);
+                const hasDiscount = item.discountPercent > 0;
+                const isOutOfStock = item.stock <= 0 && !item.unlimitedStock;
+                const canAfford = currentStudent && currentStudent.currentBalance >= effectivePrice;
+                const isSelected = activeSelectedItem?.id === item.id;
+                const isReady = canAfford && !isOutOfStock;
+                const inCartQty = cart[item.id] || 0;
+                const assignedClass = classrooms.find((c) => c.id === item.classroomId);
 
-            return (
-              <div
-                key={item.id}
-                onClick={() => setSelectedItemId(item.id)}
-                className={`group relative flex flex-col justify-between rounded-xl p-4 border transition-all cursor-pointer ${
-                  isReady && isSelected
-                    ? isDark
-                      ? 'bg-gradient-to-b from-[#1c2826] to-[#142023] border-2 border-[#42e5b0]/80 shadow-[0_0_25px_rgba(66,229,176,0.25)] ring-1 ring-[#42e5b0]'
-                      : 'bg-emerald-50 border-2 border-[#42e5b0] shadow-md ring-1 ring-[#42e5b0]'
-                    : isDark
-                    ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-[#1f2535] hover:border-white/[0.14] hover:shadow-[0_8px_28px_rgba(0,0,0,0.45)]'
-                    : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'
-                }`}
-              >
-                {/* READY TO PURCHASE GLOW BADGE (Exact Stitch Style) */}
-                {isReady && (
-                  <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#42e5b0] text-[#003828] font-mono text-[9px] font-bold tracking-wide flex items-center gap-1 shadow-[0_0_12px_rgba(66,229,176,0.6)]">
-                    <CheckCircle2 className="w-3 h-3 font-bold" />
-                    <span>READY TO PURCHASE</span>
-                  </div>
-                )}
-
-                {/* Card Top: Icon & Status */}
-                <div className="flex items-start justify-between">
-                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all group-hover:scale-105 shadow-sm ${
-                    isDark ? 'bg-[#11151f] border-white/[0.08]' : 'bg-slate-100 border-slate-200'
-                  }`}>
-                    <StoreItemVisual iconType={item.iconType} emoji={item.emoji} category={item.category} className="w-5 h-5" />
-                  </div>
-
-                  {!isReady && (
-                    <div>
-                      {item.isHidden && isTeacher && isEditMode ? (
-                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
-                          Inactive
-                        </span>
-                      ) : isOutOfStock ? (
-                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-semibold">
-                          Out of stock
-                        </span>
-                      ) : !canAfford ? (
-                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-red-950/60 text-red-300 border border-red-500/30 font-semibold shadow-[0_0_8px_rgba(239,68,68,0.2)]">
-                          Needs E${effectivePrice - (currentStudent?.currentBalance || 0)}
-                        </span>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-
-                {/* Card Center: Titles & Description */}
-                <div className="mt-3.5">
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold truncate">
-                    {item.subtitle || item.category}
-                  </div>
-                  <h3 className={`font-display font-semibold text-sm mt-0.5 truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {item.name}
-                  </h3>
-                  <p className={`text-xs mt-1 line-clamp-2 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {item.description || 'Standard non-summative classroom privilege authorization.'}
-                  </p>
-                </div>
-
-                {/* Card Bottom: Cost Rate & Stock */}
-                <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-white/[0.05]">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-mono text-slate-400">Cost Rate</span>
-                    <div className="flex items-baseline gap-1 font-mono">
-                      {hasDiscount && (
-                        <span className="text-[10px] text-slate-500 line-through">
-                          E${item.basePrice}
-                        </span>
-                      )}
-                      <span className="font-semibold text-sm text-[#42e5b0]">
-                        E${effectivePrice}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 font-mono text-[10px] text-slate-300 bg-white/[0.05] border border-white/[0.06] px-2 py-1 rounded">
-                    <Package className="w-3 h-3 text-slate-400" />
-                    <span>{item.unlimitedStock ? 'Unlimited' : `${item.stock} in stock`}</span>
-                  </div>
-                </div>
-
-                {/* In Edit Mode: Teacher In-Card Controls */}
-                {isTeacher && isEditMode && (
+                return (
                   <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-3 pt-2.5 border-t border-amber-500/20 bg-amber-500/5 -mx-4 -mb-4 p-3 rounded-b-xl space-y-2 text-xs font-mono"
+                    key={item.id}
+                    onClick={() => {
+                      setSelectedItemId(item.id);
+                      setSettlementTab('single');
+                    }}
+                    className={`group relative flex flex-col justify-between rounded-xl p-4 border transition-all cursor-pointer ${
+                      isReady && isSelected
+                        ? isDark
+                          ? 'bg-gradient-to-b from-[#1c2826] to-[#142023] border-2 border-[#42e5b0]/80 shadow-[0_0_25px_rgba(66,229,176,0.25)] ring-1 ring-[#42e5b0]'
+                          : 'bg-emerald-50 border-2 border-[#42e5b0] shadow-md ring-1 ring-[#42e5b0]'
+                        : isDark
+                        ? 'bg-[#181d29]/80 backdrop-blur-xl border-white/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-[#1f2535] hover:border-white/[0.14] hover:shadow-[0_8px_28px_rgba(0,0,0,0.45)]'
+                        : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md'
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateItemPrice(item.id, -100)}
-                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold"
-                          title="Reduce price $100"
-                        >
-                          -
-                        </button>
-                        <span className="px-1 text-[11px] text-white font-bold">Price</span>
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateItemPrice(item.id, 100)}
-                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold"
-                          title="Increase price $100"
-                        >
-                          +
-                        </button>
+                    {/* READY TO PURCHASE GLOW BADGE */}
+                    {isReady && (
+                      <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-[#42e5b0] text-[#003828] font-mono text-[9px] font-bold tracking-wide flex items-center gap-1 shadow-[0_0_12px_rgba(66,229,176,0.6)]">
+                        <CheckCircle2 className="w-3 h-3 font-bold" />
+                        <span>READY TO PURCHASE</span>
+                      </div>
+                    )}
+
+                    {/* Card Top: Icon & Status / Scope Badge */}
+                    <div className="flex items-start justify-between">
+                      <div
+                        className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all group-hover:scale-105 shadow-sm ${
+                          isDark ? 'bg-[#11151f] border-white/[0.08]' : 'bg-slate-100 border-slate-200'
+                        }`}
+                      >
+                        <StoreItemVisual iconType={item.iconType} emoji={item.emoji} category={item.category} className="w-5 h-5" />
                       </div>
 
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateStock(item.id, -1)}
-                          disabled={item.unlimitedStock}
-                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
-                          title="Reduce stock"
-                        >
-                          -
-                        </button>
-                        <span className="px-1 text-[11px] text-white font-bold">Stock</span>
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateStock(item.id, 1)}
-                          disabled={item.unlimitedStock}
-                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
-                          title="Increase stock"
-                        >
-                          +
-                        </button>
+                      <div className="flex flex-col items-end gap-1">
+                        {/* Course scope badge */}
+                        {assignedClass ? (
+                          <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-[#4cd6fb] border border-cyan-500/30 font-semibold flex items-center gap-1">
+                            <Building2 className="w-2.5 h-2.5" />
+                            <span>{assignedClass.name}</span>
+                          </span>
+                        ) : (
+                          <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-full bg-white/[0.05] text-slate-400 border border-white/[0.08]">
+                            Universal
+                          </span>
+                        )}
+
+                        {!isReady && (
+                          <div>
+                            {item.isHidden && isTeacher && isEditMode ? (
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
+                                Inactive
+                              </span>
+                            ) : isOutOfStock ? (
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-semibold">
+                                Out of stock
+                              </span>
+                            ) : !canAfford ? (
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-red-950/60 text-red-300 border border-red-500/30 font-semibold shadow-[0_0_8px_rgba(239,68,68,0.2)]">
+                                Needs E${effectivePrice - (currentStudent?.currentBalance || 0)}
+                              </span>
+                            ) : null}
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-white/[0.05]">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleHideItem(item.id)}
-                        className="flex items-center gap-1 text-[11px] text-amber-300 hover:underline"
-                      >
-                        {item.isHidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                        <span>{item.isHidden ? 'Show on shelf' : 'Hide / Inactive'}</span>
-                      </button>
+                    {/* Card Center: Titles & Description */}
+                    <div className="mt-3.5">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold truncate">
+                        {item.subtitle || item.category}
+                      </div>
+                      <h3 className={`font-display font-semibold text-sm mt-0.5 truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        {item.name}
+                      </h3>
+                      <p className={`text-xs mt-1 line-clamp-2 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {item.description || 'Standard non-summative classroom privilege authorization.'}
+                      </p>
+                    </div>
+
+                    {/* Card Bottom: Cost Rate & Quick Add to Cart */}
+                    <div className="mt-3.5 pt-2.5 flex items-center justify-between border-t border-white/[0.05]">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-mono text-slate-400">Cost Rate</span>
+                        <div className="flex items-baseline gap-1 font-mono">
+                          {hasDiscount && (
+                            <span className="text-[10px] text-slate-500 line-through">
+                              E${item.basePrice}
+                            </span>
+                          )}
+                          <span className="font-semibold text-sm text-[#42e5b0]">
+                            E${effectivePrice}
+                          </span>
+                        </div>
+                      </div>
 
                       <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1 font-mono text-[10px] text-slate-300 bg-white/[0.05] border border-white/[0.06] px-2 py-1 rounded">
+                          <Package className="w-3 h-3 text-slate-400" />
+                          <span>{item.unlimitedStock ? '∞' : `${item.stock}`}</span>
+                        </div>
+
+                        {/* Quick Add to Cart Button */}
                         <button
                           type="button"
-                          onClick={() => handleOpenEditModal(item)}
-                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200"
-                          title="Edit complete details"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(item, 1);
+                          }}
+                          disabled={isOutOfStock}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold flex items-center gap-1 transition-all border ${
+                            inCartQty > 0
+                              ? 'bg-emerald-500/20 text-[#42e5b0] border-[#42e5b0]/40'
+                              : isDark
+                              ? 'bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 hover:text-white border-white/[0.08]'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                          } disabled:opacity-30 disabled:cursor-not-allowed`}
+                          title="Add item to shopping cart"
                         >
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteItem(item)}
-                          className="p-1 rounded bg-rose-900/60 hover:bg-rose-800 text-rose-300"
-                          title="Delete item"
-                        >
-                          <Trash2 className="w-3 h-3" />
+                          <ShoppingCart className="w-3 h-3" />
+                          <span>{inCartQty > 0 ? `+1 (${inCartQty})` : '+ Cart'}</span>
                         </button>
                       </div>
                     </div>
+
+                    {/* In Edit Mode: Teacher In-Card Controls */}
+                    {isTeacher && isEditMode && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-3 pt-2.5 border-t border-amber-500/20 bg-amber-500/5 -mx-4 -mb-4 p-3 rounded-b-xl space-y-2 text-xs font-mono"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItemPrice(item.id, -100)}
+                              className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold"
+                              title="Reduce price $100"
+                            >
+                              -
+                            </button>
+                            <span className="px-1 text-[11px] text-white font-bold">Price</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItemPrice(item.id, 100)}
+                              className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold"
+                              title="Increase price $100"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStock(item.id, -1)}
+                              disabled={item.unlimitedStock}
+                              className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
+                              title="Reduce stock"
+                            >
+                              -
+                            </button>
+                            <span className="px-1 text-[11px] text-white font-bold">Stock</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStock(item.id, 1)}
+                              disabled={item.unlimitedStock}
+                              className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
+                              title="Increase stock"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1 border-t border-white/[0.05]">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleHideItem(item.id)}
+                            className="flex items-center gap-1 text-[11px] text-amber-300 hover:underline"
+                          >
+                            {item.isHidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                            <span>{item.isHidden ? 'Show on shelf' : 'Hide / Inactive'}</span>
+                          </button>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditModal(item)}
+                              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200"
+                              title="Edit complete details"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteItem(item)}
+                              className="p-1 rounded bg-rose-900/60 hover:bg-rose-800 text-rose-300"
+                              title="Delete item"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Right Panel: Purchase Calculation & Checkout Glass Panel (4 cols) */}
+        {/* Right Panel: Purchase Calculation & Multi-Item Checkout (4 cols) */}
         <div className="xl:col-span-4 flex flex-col gap-4">
-          {/* Apple Wallet Mini Ledger Preview Card (Exact Stitch Style) */}
+          {/* Apple Wallet Mini Ledger Preview Card */}
           <div className="bg-gradient-to-br from-[#0c1f2e] via-[#0f343e] to-[#044c3c] text-white rounded-2xl p-5 border border-white/[0.12] shadow-[0_12px_36px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between h-48">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(66,229,176,0.18),transparent_60%)] pointer-events-none" />
             <div className="flex justify-between items-start z-10">
@@ -770,7 +1017,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
             </div>
           </div>
 
-          {/* Checkout Sheet (Exact Stitch Style) */}
+          {/* Checkout & Settlement Sheet with Mode Switcher */}
           <div
             className={`rounded-2xl p-5 border flex flex-col ${
               isDark
@@ -778,91 +1025,309 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                 : 'bg-white border-slate-200 shadow-xl text-slate-900'
             }`}
           >
+            {/* Settlement Drawer Mode Selector: Single Item vs Cart */}
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[#42e5b0]" />
-                <h2 className="font-display font-semibold text-sm">Ledger Settlement</h2>
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-black/20 border border-white/[0.06]">
+                <button
+                  type="button"
+                  onClick={() => setSettlementTab('single')}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                    settlementTab === 'single'
+                      ? 'bg-[#42e5b0] text-[#003828] shadow-sm'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Quick Item
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettlementTab('cart')}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+                    settlementTab === 'cart'
+                      ? 'bg-[#42e5b0] text-[#003828] shadow-sm'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  <span>Cart ({totalCartCount})</span>
+                </button>
               </div>
-              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-semibold shadow-[0_0_8px_rgba(66,229,176,0.2)]">
-                {canAffordSelected && !isSelectedOutOfStock ? 'Ready' : 'Pending'}
-              </span>
+
+              {settlementTab === 'cart' && totalCartCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearCart}
+                  className="text-[10px] font-mono text-rose-400 hover:underline flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Clear</span>
+                </button>
+              )}
             </div>
 
-            {/* Dynamic Balance Breakdown */}
-            <div className="space-y-2.5 py-4 text-xs">
-              <div className="flex justify-between items-center text-slate-400 font-mono">
-                <span>Opening Available Reserve</span>
-                <span className="font-semibold text-white">
-                  E${currentStudent?.currentBalance || 0}.00
-                </span>
-              </div>
+            {/* TAB 1: SINGLE ITEM SETTLEMENT WITH QUANTITY COUNTER */}
+            {settlementTab === 'single' && (
+              <div className="space-y-3.5 py-4 text-xs">
+                <div className="flex justify-between items-center text-slate-400 font-mono">
+                  <span>Opening Available Reserve</span>
+                  <span className="font-semibold text-white">
+                    E${currentStudent?.currentBalance || 0}.00
+                  </span>
+                </div>
 
-              {activeSelectedItem ? (
+                {activeSelectedItem ? (
+                  <div
+                    className={`p-3 rounded-xl border space-y-2.5 ${
+                      isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col pr-2 min-w-0">
+                        <span className="font-semibold truncate text-sm">{activeSelectedItem.name}</span>
+                        <span className="text-[10px] text-slate-400 truncate">
+                          {activeSelectedItem.subtitle || activeSelectedItem.category} &bull; Unit: E${selectedItemEffectivePrice}
+                        </span>
+                      </div>
+                      <span className="font-mono font-bold text-rose-400 drop-shadow-[0_0_6px_rgba(255,107,107,0.3)] shrink-0">
+                        -E${singleTotalCost}.00
+                      </span>
+                    </div>
+
+                    {/* Quantity Stepper for Single Product */}
+                    <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+                      <span className="text-[11px] font-mono text-slate-400 font-semibold">
+                        Purchase Quantity:
+                      </span>
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <button
+                          type="button"
+                          onClick={() => setSingleQty(Math.max(1, singleQty - 1))}
+                          disabled={singleQty <= 1}
+                          className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
+                        >
+                          -
+                        </button>
+                        <span className="w-7 text-center font-bold text-xs">
+                          {singleQty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!activeSelectedItem.unlimitedStock && singleQty >= activeSelectedItem.stock) return;
+                            setSingleQty(singleQty + 1);
+                          }}
+                          disabled={!activeSelectedItem.unlimitedStock && singleQty >= activeSelectedItem.stock}
+                          className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold disabled:opacity-30"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-slate-500 italic">No item selected from catalog</div>
+                )}
+
+                <div className="flex justify-between items-center pt-2 border-t border-white/[0.06] font-mono">
+                  <span className="font-semibold">Projected Net Reserve</span>
+                  <span className="font-bold text-base text-[#42e5b0] drop-shadow-[0_0_10px_rgba(66,229,176,0.4)]">
+                    E${Math.max(0, (currentStudent?.currentBalance || 0) - singleTotalCost)}.00
+                  </span>
+                </div>
+
+                {/* Credit Metric Boost Indicator */}
                 <div
-                  className={`flex justify-between items-start p-2.5 rounded-xl border ${
+                  className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
                     isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
                   }`}
                 >
-                  <div className="flex flex-col pr-2 min-w-0">
-                    <span className="font-semibold truncate">{activeSelectedItem.name}</span>
-                    <span className="text-[10px] text-slate-400 truncate">
-                      {activeSelectedItem.subtitle || activeSelectedItem.category} &bull; 1 Authorization
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#ffc149] drop-shadow-[0_0_6px_rgba(255,193,73,0.5)]" />
+                    <div>
+                      <div className="font-semibold text-[11px]">Credit Trajectory</div>
+                      <div className="text-[10px] text-slate-400">Punctual settlement merit</div>
+                    </div>
                   </div>
-                  <span className="font-mono font-bold text-rose-400 drop-shadow-[0_0_6px_rgba(255,107,107,0.3)] shrink-0">
-                    -E${selectedItemEffectivePrice}.00
-                  </span>
+                  <span className="font-mono text-[10px] font-bold text-[#42e5b0]">+5 pts</span>
                 </div>
-              ) : (
-                <div className="text-center py-4 text-slate-500 italic">No item selected from catalog</div>
-              )}
 
-              <div className="flex justify-between items-center pt-2 border-t border-white/[0.06] font-mono">
-                <span className="font-semibold">Projected Net Reserve</span>
-                <span className="font-bold text-base text-[#42e5b0] drop-shadow-[0_0_10px_rgba(66,229,176,0.4)]">
-                  E${Math.max(0, (currentStudent?.currentBalance || 0) - selectedItemEffectivePrice)}.00
-                </span>
-              </div>
-            </div>
+                {/* Actions: Purchase Single Item + Add to Cart */}
+                <div className="space-y-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleExecutePurchase}
+                    disabled={!activeSelectedItem || isSelectedOutOfStock || !canAffordSingle}
+                    className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>
+                      {isSelectedOutOfStock
+                        ? 'Insufficient Stock'
+                        : !canAffordSingle
+                        ? 'Insufficient Reserve'
+                        : `Instant Buy • E$${singleTotalCost} (x${singleQty})`}
+                    </span>
+                  </button>
 
-            {/* Credit Metric Boost Indicator */}
-            <div
-              className={`p-3 rounded-xl border mb-4 flex items-center justify-between text-xs ${
-                isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#ffc149] drop-shadow-[0_0_6px_rgba(255,193,73,0.5)]" />
-                <div>
-                  <div className="font-semibold text-[11px]">Credit Trajectory</div>
-                  <div className="text-[10px] text-slate-400">Punctual settlement merit</div>
+                  {activeSelectedItem && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleAddToCart(activeSelectedItem, singleQty);
+                        setSettlementTab('cart');
+                      }}
+                      disabled={isSelectedOutOfStock}
+                      className={`w-full py-2.5 rounded-xl border text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        isDark
+                          ? 'bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 border-white/[0.08]'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                      }`}
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <span>Add {singleQty} to Cart & Review</span>
+                    </button>
+                  )}
                 </div>
               </div>
-              <span className="font-mono text-[10px] font-bold text-[#42e5b0]">+5 pts</span>
-            </div>
+            )}
 
-            {/* 1-Click Purchase CTA Button */}
-            <button
-              type="button"
-              onClick={handleExecutePurchase}
-              disabled={!activeSelectedItem || isSelectedOutOfStock || !canAffordSelected}
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
-            >
-              <Check className="w-4 h-4 stroke-[3]" />
-              <span>
-                {isSelectedOutOfStock
-                  ? 'Item Out of Stock'
-                  : !canAffordSelected
-                  ? 'Insufficient Reserve'
-                  : `Complete Settlement (E$${selectedItemEffectivePrice})`}
-              </span>
-            </button>
+            {/* TAB 2: MULTI-ITEM SHOPPING CART CHECKOUT */}
+            {settlementTab === 'cart' && (
+              <div className="space-y-3 py-3 text-xs">
+                {cartItemsList.length === 0 ? (
+                  <div className="py-8 text-center text-slate-400 font-mono space-y-2">
+                    <ShoppingCart className="w-8 h-8 mx-auto text-slate-500 opacity-60" />
+                    <p className="text-xs">Your shopping cart is currently empty.</p>
+                    <p className="text-[11px] text-slate-500">
+                      Click &quot;+ Cart&quot; on any store privilege cards to build a multi-item checkout bundle!
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Itemized Cart List */}
+                    <div className="max-h-[220px] overflow-y-auto space-y-2 pr-1">
+                      {cartItemsList.map((c) => (
+                        <div
+                          key={c.item.id}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 ${
+                            isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-7 h-7 rounded-lg bg-black/20 flex items-center justify-center text-sm shrink-0">
+                              {c.item.emoji || '🎁'}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-xs truncate max-w-[130px]">{c.item.name}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">
+                                E${c.effectiveUnitPrice} ea
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {/* Quantity Adjuster */}
+                            <div className="flex items-center gap-1 font-mono">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCartItemQty(c.item.id, c.quantity - 1)}
+                                className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold text-xs"
+                              >
+                                -
+                              </button>
+                              <span className="w-5 text-center font-bold text-xs">{c.quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCartItemQty(c.item.id, c.quantity + 1)}
+                                disabled={!c.item.unlimitedStock && c.quantity >= c.item.stock}
+                                className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold text-xs disabled:opacity-30"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            {/* Subtotal */}
+                            <span className="font-mono font-bold text-rose-400 text-xs w-16 text-right">
+                              -E${c.subtotal}
+                            </span>
+
+                            {/* Remove button */}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFromCart(c.item.id)}
+                              className="text-slate-400 hover:text-rose-400 p-1"
+                              title="Remove item"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Financial Breakdown */}
+                    <div className="space-y-1.5 pt-2 border-t border-white/[0.06] font-mono text-[11px]">
+                      <div className="flex justify-between text-slate-400">
+                        <span>Items in Bundle</span>
+                        <span className="font-semibold text-white">
+                          {totalCartCount} item{totalCartCount > 1 ? 's' : ''} ({cartItemsList.length} unique)
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Total Checkout Cost</span>
+                        <span className="font-bold text-rose-400">-E${totalCartCost}.00</span>
+                      </div>
+                      <div className="flex justify-between pt-1 border-t border-white/[0.06] text-xs">
+                        <span className="font-semibold">Projected Net Reserve</span>
+                        <span className="font-bold text-base text-[#42e5b0]">
+                          E${Math.max(0, (currentStudent?.currentBalance || 0) - totalCartCost)}.00
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Credit Boost Bonus for Cart */}
+                    <div
+                      className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
+                        isDark ? 'bg-[#11151f]/90 border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-[#ffc149]" />
+                        <span className="text-[11px] font-semibold">Multi-Item Loyalty Bonus</span>
+                      </div>
+                      <span className="font-mono text-[10px] font-bold text-[#42e5b0]">
+                        +{Math.min(25, 5 * cartItemsList.length)} pts
+                      </span>
+                    </div>
+
+                    {/* Batch Checkout CTA */}
+                    <button
+                      type="button"
+                      onClick={handleExecuteCartCheckout}
+                      disabled={cartItemsList.length === 0 || !canAffordCart}
+                      className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-display font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>
+                        {!canAffordCart
+                          ? 'Insufficient Reserve for Cart'
+                          : `Checkout All (${totalCartCount} items • E$${totalCartCost})`}
+                      </span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* ======================================================== */}
-      {/* 3. DEDICATED SHOPPER PICKER MODAL (ZERO COLLISION) */}
+      {/* 4. DEDICATED SHOPPER PICKER MODAL (ZERO COLLISION) */}
       {/* ======================================================== */}
       {isShopperPickerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
@@ -871,9 +1336,11 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               isDark ? 'bg-[#121622] border-white/[0.1] text-white' : 'bg-white border-slate-200 text-slate-900'
             }`}
           >
-            <div className={`p-4 border-b flex items-center justify-between ${
-              isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-200 bg-slate-50'
-            }`}>
+            <div
+              className={`p-4 border-b flex items-center justify-between ${
+                isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-200 bg-slate-50'
+              }`}
+            >
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#42e5b0]">
                   <Users className="w-4 h-4" />
@@ -965,7 +1432,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       )}
 
       {/* ======================================================== */}
-      {/* 4. FROSTED GLASS ADD / EDIT ITEM MODAL */}
+      {/* 5. FROSTED GLASS ADD / EDIT ITEM MODAL */}
       {/* ======================================================== */}
       {isItemModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
@@ -974,9 +1441,11 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
               isDark ? 'bg-[#121622] border-white/[0.1] text-white' : 'bg-white border-slate-200 text-slate-900'
             }`}
           >
-            <div className={`p-4 border-b flex items-center justify-between ${
-              isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-200 bg-slate-50'
-            }`}>
+            <div
+              className={`p-4 border-b flex items-center justify-between ${
+                isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-200 bg-slate-50'
+              }`}
+            >
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#42e5b0]">
                   {modalMode === 'add' ? <Plus className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
@@ -986,7 +1455,7 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                     {modalMode === 'add' ? 'Add Store Privilege Item' : 'Edit Store Item'}
                   </h3>
                   <p className="text-[11px] text-slate-400 font-mono">
-                    Configure privilege title, pricing, stock and visuals
+                    Configure course scoping, title, pricing, stock and visuals
                   </p>
                 </div>
               </div>
@@ -1004,6 +1473,32 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
             </div>
 
             <form onSubmit={handleSaveItemModal} className="p-4 space-y-3.5 overflow-y-auto text-xs">
+              {/* Course Assignment Dropdown */}
+              <div>
+                <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
+                  Course Store Assignment
+                </label>
+                <select
+                  value={formClassroomId}
+                  onChange={(e) => setFormClassroomId(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-1 focus:ring-[#42e5b0] ${
+                    isDark
+                      ? 'bg-[#181d29] border-white/[0.1] text-white'
+                      : 'bg-slate-100 border-slate-300 text-slate-900'
+                  }`}
+                >
+                  <option value="all">🌐 Universal (Shared across all courses)</option>
+                  {classrooms.map((cls) => (
+                    <option key={cls.id} value={cls.id}>
+                      🏫 {cls.name} {cls.section ? `(${cls.section})` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-400 font-mono mt-1">
+                  Universal items show in all courses; course items only display in their dedicated course store.
+                </p>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-mono font-bold uppercase text-slate-400 mb-1">
                   Item Title
@@ -1202,13 +1697,16 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                         : 'bg-slate-100 border-slate-300 text-slate-900'
                     }`}
                   >
-                    <option value="skip_hw">Skip Homework Card</option>
-                    <option value="skip_lesson">Skip Lesson Pass</option>
-                    <option value="extra_points">3 Extra Points Booster</option>
-                    <option value="half_lesson">Half Lesson Waiver</option>
-                    <option value="spin_wheel">Lucky Spin Wheel</option>
-                    <option value="mystery_box">Mystery Box Vault</option>
-                    <option value="gift">Gift / Prize</option>
+                    <option value="skip-hw">Skip Homework Card</option>
+                    <option value="skip-lesson">Skip Lesson Pass</option>
+                    <option value="extra-points-hw">3 Extra Points Booster</option>
+                    <option value="half-lesson">Half Lesson Waiver</option>
+                    <option value="lucky-draw">Lucky Draw Spin</option>
+                    <option value="super-mini-prize">Super Mini Prize</option>
+                    <option value="extra-points-lss">3 Extra Points Lesson</option>
+                    <option value="mini-prize">Mini Prize Box</option>
+                    <option value="big-prize">Big Prize Vault</option>
+                    <option value="custom">Generic Privilege</option>
                   </select>
                 )}
               </div>

@@ -327,6 +327,7 @@ export default function App() {
       itemName: string;
       originalPrice: number;
       discountPercent: number;
+      quantity?: number;
     }
   ) => {
     const student = students.find((s) => s.id === studentId);
@@ -354,13 +355,15 @@ export default function App() {
     const newScore = Math.min(850, oldScore + scoreBonus);
     const newTier = getCreditTier(newScore);
 
-    // If purchase was tied to a catalog item with limited stock, decrement stock by 1
+    const qty = storeDetails?.quantity || 1;
+
+    // If purchase was tied to a catalog item with limited stock, decrement stock by quantity
     if (storeDetails?.itemId) {
       setStoreCatalog((prevCatalog) =>
         prevCatalog.map((item) => {
           if (item.id !== storeDetails.itemId) return item;
           if (item.unlimitedStock) return item;
-          return { ...item, stock: Math.max(0, item.stock - 1) };
+          return { ...item, stock: Math.max(0, item.stock - qty) };
         })
       );
     }
@@ -370,10 +373,11 @@ export default function App() {
       studentId: student.id,
       studentName: student.name,
       itemId: storeDetails?.itemId,
-      itemName: storeDetails?.itemName || reason || 'Classroom Store Purchase',
+      itemName: `${storeDetails?.itemName || reason || 'Classroom Store Purchase'}${qty > 1 ? ` (x${qty})` : ''}`,
       pricePaid: amountToDeduct,
-      originalPrice: storeDetails?.originalPrice || amountToDeduct,
+      originalPrice: (storeDetails?.originalPrice || amountToDeduct),
       discountPercent: storeDetails?.discountPercent || 0,
+      quantity: qty,
       creditScoreBonusAwarded: scoreBonus,
       timestamp: new Date().toISOString(),
     };
@@ -385,7 +389,7 @@ export default function App() {
               ...s,
               currentBalance: newBalance,
               creditScore: newScore,
-              totalStorePurchasesCount: (s.totalStorePurchasesCount || 0) + 1,
+              totalStorePurchasesCount: (s.totalStorePurchasesCount || 0) + qty,
               storePurchasesHistory: [purchaseRecord, ...(s.storePurchasesHistory || [])],
             }
           : s
@@ -396,6 +400,91 @@ export default function App() {
       'success',
       'Store Purchase Charged (+5 Credit Score)',
       `Charged E$${amountToDeduct}.00 from ${student.name} for ${purchaseRecord.itemName}. Credit score increased: ${oldScore} → ${newScore} (+${scoreBonus} pts)!`
+    );
+  };
+
+  // Multi-item Cart Checkout Handler (Batch purchasing multiple items / quantities at once)
+  const handleCheckoutCart = (
+    studentId: string,
+    cartItems: {
+      item: StoreItem;
+      quantity: number;
+      effectiveUnitPrice: number;
+    }[]
+  ) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return;
+
+    const totalAmount = cartItems.reduce(
+      (sum, c) => sum + c.effectiveUnitPrice * c.quantity,
+      0
+    );
+    const totalItemsCount = cartItems.reduce((sum, c) => sum + c.quantity, 0);
+
+    if (totalAmount <= 0 || totalItemsCount <= 0) {
+      addToast('warning', 'Cart Empty', 'Please select items to purchase.');
+      return;
+    }
+
+    if (student.currentBalance < totalAmount) {
+      addToast(
+        'warning',
+        'Insufficient Balance',
+        `${student.name} needs E$${totalAmount}.00 but only has E$${student.currentBalance}.00 available.`
+      );
+      return;
+    }
+
+    const newBalance = student.currentBalance - totalAmount;
+    const scoreBonus = Math.min(25, 5 * cartItems.length); // +5 per item type up to 25
+    const oldScore = student.creditScore;
+    const newScore = Math.min(850, oldScore + scoreBonus);
+
+    // Decrement stock for all cart items
+    setStoreCatalog((prevCatalog) =>
+      prevCatalog.map((catItem) => {
+        const inCart = cartItems.find((c) => c.item.id === catItem.id);
+        if (!inCart || catItem.unlimitedStock) return catItem;
+        return {
+          ...catItem,
+          stock: Math.max(0, catItem.stock - inCart.quantity),
+        };
+      })
+    );
+
+    const timestamp = new Date().toISOString();
+    const purchaseRecords: StorePurchaseTransaction[] = cartItems.map((c) => ({
+      id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      studentId: student.id,
+      studentName: student.name,
+      itemId: c.item.id,
+      itemName: `${c.item.name}${c.quantity > 1 ? ` (x${c.quantity})` : ''}`,
+      pricePaid: c.effectiveUnitPrice * c.quantity,
+      originalPrice: c.item.basePrice * c.quantity,
+      discountPercent: c.item.discountPercent || 0,
+      quantity: c.quantity,
+      creditScoreBonusAwarded: 5,
+      timestamp,
+    }));
+
+    setStudents((prev) =>
+      prev.map((s) =>
+        s.id === studentId
+          ? {
+              ...s,
+              currentBalance: newBalance,
+              creditScore: newScore,
+              totalStorePurchasesCount: (s.totalStorePurchasesCount || 0) + totalItemsCount,
+              storePurchasesHistory: [...purchaseRecords, ...(s.storePurchasesHistory || [])],
+            }
+          : s
+      )
+    );
+
+    addToast(
+      'success',
+      'Cart Checkout Complete (+Credit Score)',
+      `Purchased ${totalItemsCount} item(s) for E$${totalAmount}.00 from ${student.name}. Score increased: ${oldScore} → ${newScore} (+${scoreBonus} pts)!`
     );
   };
 
@@ -640,15 +729,41 @@ export default function App() {
       notes: data.notes,
     };
 
+    const prevBalance = student.currentBalance;
+    const newBalance = prevBalance + data.principal;
+
+    const disbursementTx: BalanceAdjustmentTransaction = {
+      id: `loan_disb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      studentId: student.id,
+      studentName: student.name,
+      type: 'increase',
+      amount: data.principal,
+      previousBalance: prevBalance,
+      newBalance,
+      reason: `Loan Disbursement: Instant cash for ${data.loanType} loan (${data.durationDays}d term)`,
+      category: 'other',
+      creditScoreChange: 0,
+      timestamp: now.toISOString(),
+    };
+
     setLoans((prev) => [newLoan, ...prev]);
     setStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, activeLoanId: loanId } : s))
+      prev.map((s) =>
+        s.id === studentId
+          ? {
+              ...s,
+              currentBalance: newBalance,
+              activeLoanId: loanId,
+              balanceAdjustmentsHistory: [disbursementTx, ...(s.balanceAdjustmentsHistory || [])],
+            }
+          : s
+      )
     );
 
     addToast(
       'success',
-      'Loan Issued',
-      `Issued $${data.principal} loan (${data.loanType} loan, ${data.durationDays}d term) with 10% base interest.`
+      'Loan Approved & Disbursed Instantly',
+      `E$${data.principal}.00 added instantly to ${student.name}'s balance! Total repayment due: E$${totalDue}.00 (${data.durationDays} days).`
     );
   };
 
@@ -1051,7 +1166,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen font-sans flex transition-colors duration-200 selection:bg-emerald-500/20 selection:text-emerald-300 ${
-        theme === 'dark' ? 'bg-[#0b0e14] text-[#e6edf3]' : 'bg-[#f4f6fa] text-slate-900'
+        theme === 'dark' ? 'bg-[#0b0e14] text-[#e6edf3]' : 'bg-[#f0f2f8] text-[#1e293b]'
       }`}
     >
       {/* Toast notifications */}
@@ -1187,14 +1302,18 @@ export default function App() {
               onSelectStudent={setSelectedStudentId}
               storeCatalog={storeCatalog}
               onUpdateCatalog={setStoreCatalog}
-              onPurchaseItem={(studentId, amount, item, finalPrice) => {
-                handleReduceStudentBalance(studentId, finalPrice, item.name, {
+              classrooms={classrooms}
+              selectedClassId={selectedClassId}
+              onPurchaseItem={(studentId, amount, item, finalPrice, quantity) => {
+                handleReduceStudentBalance(studentId, amount, item.name, {
                   itemId: item.id,
                   itemName: item.name,
                   originalPrice: item.basePrice,
                   discountPercent: item.discountPercent,
+                  quantity: quantity || 1,
                 });
               }}
+              onCheckoutCart={handleCheckoutCart}
               onCustomDeduction={handleReduceStudentBalance}
               isTeacher={true}
               theme={theme}

@@ -172,6 +172,7 @@ export interface StoreItem {
   discountPercent: number; // 0 to 90
   stock: number;
   unlimitedStock?: boolean;
+  classroomId?: string; // Course ID (e.g. 'class-1st-a') or undefined / 'all' for shared catalog
   iconType:
     | 'skip-hw'
     | 'skip-lesson'
@@ -198,6 +199,7 @@ export interface StorePurchaseTransaction {
   pricePaid: number;
   originalPrice: number;
   discountPercent: number;
+  quantity?: number;
   creditScoreBonusAwarded: number; // e.g. +5 pts
   timestamp: string;
 }

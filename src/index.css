@@ -12,7 +12,7 @@
   --color-surface-dark: #0b0e14;
   --color-surface-card-dark: #181d29;
   --color-surface-card-hover: #1f2535;
-  --color-surface-light: #f8f9ff;
+  --color-surface-light: #f0f2f8;
   --color-surface-card-light: #ffffff;
 }
 
@@ -27,7 +27,7 @@
 
 html.light {
   color-scheme: light;
-  --bg-app: #f8f9ff;
+  --bg-app: #f0f2f8;
   --bg-card: #ffffff;
   --text-main: #0f172a;
   --text-muted: #64748b;
@@ -57,7 +57,7 @@ html.dark body {
 }
 
 html.light body {
-  background-color: #f8f9ff;
+  background-color: #f0f2f8;
   color: #0f172a;
 }
 
@@ -79,7 +79,7 @@ html.light body {
 
 /* ==========================================================================
    WINUI / MACOS SEAMLESS LIGHT THEME SYSTEM
-   Transforms all hardcoded dark palette utility classes when html.light is active
+   Natural, warm, ergonomic light mode with rich contrast and vibrant chips
    ========================================================================== */
 
 /* 1. Background Surfaces & Card Containers */
@@ -108,7 +108,7 @@ html.light thead .bg-slate-950,
 html.light .bg-slate-950\/50,
 html.light .bg-slate-950\/80,
 html.light .bg-slate-950\/90 {
-  background-color: #f1f5f9 !important;
+  background-color: #e9ecf4 !important;
 }
 
 /* 3. Utility Button Backgrounds & Hover States */
@@ -120,7 +120,7 @@ html.light .bg-white\/\[0\.04\],
 html.light .bg-white\/\[0\.05\],
 html.light .bg-white\/\[0\.06\],
 html.light .bg-white\/\[0\.08\] {
-  background-color: #f8fafc !important;
+  background-color: #f4f6fa !important;
 }
 
 html.light .hover\:bg-slate-800:hover,
@@ -130,7 +130,7 @@ html.light .hover\:bg-\[\#1f2535\]:hover,
 html.light .hover\:bg-white\/\[0\.1\]:hover,
 html.light .hover\:bg-white\/\[0\.12\]:hover,
 html.light .hover\:bg-white\/\[0\.15\]:hover {
-  background-color: #e2e8f0 !important;
+  background-color: #e2e6ef !important;
 }
 
 /* 4. Borders & Dividers */
@@ -144,7 +144,7 @@ html.light .border-white\/\[0\.07\],
 html.light .border-white\/\[0\.08\],
 html.light .border-white\/\[0\.1\],
 html.light .border-white\/\[0\.12\] {
-  border-color: #e2e8f0 !important;
+  border-color: #dbe0eb !important;
 }
 
 /* 5. Typography & High-Contrast Colors */
@@ -166,7 +166,7 @@ html.light .text-slate-500 {
   color: #64748b !important;
 }
 
-/* Accents in Light Mode: Optimized for crisp readability against light backgrounds */
+/* Accents in Light Mode: Vibrant, crisp, highly legible */
 html.light .text-emerald-400,
 html.light .text-emerald-300,
 html.light .text-\[\#42e5b0\] {
@@ -199,7 +199,72 @@ html.light .text-rose-300 {
   color: #be123c !important;
 }
 
-/* 6. Form Controls & Inputs */
+/* 6. Vibrant Status Chips & Badges in Light Mode (No muddiness or opaque graying) */
+html.light .bg-emerald-500\/15,
+html.light .bg-emerald-500\/20,
+html.light .bg-emerald-950\/20,
+html.light .bg-emerald-950\/40 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html.light .bg-amber-500\/15,
+html.light .bg-amber-500\/20,
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/60 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #b45309 !important;
+}
+
+html.light .bg-red-500\/15,
+html.light .bg-red-500\/20,
+html.light .bg-red-950\/60,
+html.light .bg-red-950\/40,
+html.light .bg-red-950\/20 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #b91c1c !important;
+}
+
+html.light .bg-sky-500\/15,
+html.light .bg-sky-500\/20,
+html.light .bg-sky-950\/20,
+html.light .bg-cyan-500\/10 {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+  color: #0369a1 !important;
+}
+
+html.light .bg-purple-500\/15,
+html.light .bg-purple-500\/20,
+html.light .bg-purple-950\/20 {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+  color: #7e22ce !important;
+}
+
+/* Ensure child icons inside status chips carry the crisp accent color */
+html.light .bg-emerald-500\/15 *,
+html.light .bg-emerald-500\/20 * {
+  color: #047857 !important;
+}
+html.light .bg-amber-500\/20 *,
+html.light .bg-amber-950\/60 * {
+  color: #b45309 !important;
+}
+html.light .bg-red-950\/60 *,
+html.light .bg-red-500\/20 * {
+  color: #b91c1c !important;
+}
+html.light .bg-sky-500\/20 *,
+html.light .bg-cyan-500\/10 * {
+  color: #0369a1 !important;
+}
+
+/* 7. Form Controls & Inputs */
 html.light input:not([type="checkbox"]):not([type="radio"]),
 html.light textarea,
 html.light select {
@@ -225,7 +290,7 @@ html.light select option {
   color: #0f172a !important;
 }
 
-/* 7. Modal Backdrops */
+/* 8. Modal Backdrops */
 html.light .bg-black\/80,
 html.light .bg-black\/75,
 html.light .bg-black\/70,
@@ -235,17 +300,21 @@ html.light .bg-black\/50 {
   backdrop-filter: blur(8px) !important;
 }
 
-/* 8. Table Rows & Shadows */
+/* 9. Table Rows & Shadows */
 html.light tr:hover {
   background-color: #f8fafc !important;
 }
 
 html.light .shadow-2xl,
 html.light .shadow-xl {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
 }
 
-/* 9. Preserve Content inside Colored Action Buttons & Badges */
+html.light .shadow-sm {
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* 10. Preserve Content inside Colored Action Buttons */
 html.light .bg-emerald-500,
 html.light .bg-emerald-600,
 html.light .bg-sky-600,
@@ -272,7 +341,7 @@ html.light .bg-\[\#42e5b0\] .text-\[\#003828\] {
   color: #003828 !important;
 }
 
-/* 10. EXCLUSION: Physical Simulated Credit Card */
+/* 11. EXCLUSION: Physical Simulated Credit Card */
 html.light .credit-card-surface,
 html.light [data-credit-card-canvas],
 html.light .credit-card-surface *,
