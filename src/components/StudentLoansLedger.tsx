@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
 import {
-  CreditCard,
   Clock,
   CheckCircle2,
-  AlertTriangle,
-  FileText,
-  DollarSign,
-  ChevronRight,
   BookOpen,
-  Calendar,
   Sparkles,
   Layers,
-  ArrowRight
 } from 'lucide-react';
 import { Student, Loan, TeacherSettings } from '../types';
-import { getDaysDifference, formatCurrency } from '../utils/creditCalculator';
+import { getDaysDifference } from '../utils/creditCalculator';
 
 interface StudentLoansLedgerProps {
   student: Student;
@@ -28,20 +21,14 @@ interface StudentLoansLedgerProps {
 export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
   student,
   loans,
-  settings,
   onOpenEnglishWork,
   onRequestNewLoan,
   isTeacherView = false,
 }) => {
   const [filterTab, setFilterTab] = useState<'all' | 'pendant' | 'paid'>('all');
 
-  // Filter loans belonging to this student
   const studentLoans = loans.filter((l) => l.studentId === student.id);
-  
-  // Pendant (pending / active / unpaid) loans
   const pendantLoans = studentLoans.filter((l) => l.status !== 'paid');
-  
-  // Paid (settled) loans
   const paidLoans = studentLoans.filter((l) => l.status === 'paid');
 
   const displayedLoans =
@@ -52,35 +39,34 @@ export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
       : studentLoans;
 
   return (
-    <div className="bg-slate-900 rounded-xl border border-slate-800 p-5 space-y-4">
-      {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+    <div className="glass-panel rounded-3xl p-6 space-y-5 specular-edge">
+      {/* Header & Segmented Filter Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/20">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-primary-container/15 border border-primary-container/30 flex items-center justify-center text-primary-container">
             <Layers className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold font-mono uppercase tracking-wider text-white flex items-center gap-2">
-              Loans Ledger: Pendant &amp; Paid
-              <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono font-normal">
+            <h3 className="text-sm font-bold font-headline uppercase tracking-wider text-on-surface flex items-center gap-2">
+              Loans Ledger: Pendant &amp; Settled
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full glass-well text-on-surface-variant font-mono font-normal">
                 {student.name}
               </span>
             </h3>
-            <p className="text-xs text-slate-400">
-              Complete chronological ledger of active pending borrowings and settled debts.
+            <p className="text-xs text-on-surface-variant">
+              Chronological micro-loan agreements, active obligations, and settled English contracts.
             </p>
           </div>
         </div>
 
-        {/* Tab Filters */}
-        <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-mono">
+        <div className="flex items-center glass-well p-1 rounded-full text-xs font-mono">
           <button
             type="button"
             onClick={() => setFilterTab('all')}
-            className={`px-3 py-1 rounded transition-colors font-bold ${
+            className={`px-3.5 py-1 rounded-full transition-all font-bold ${
               filterTab === 'all'
-                ? 'bg-slate-800 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             All ({studentLoans.length})
@@ -88,25 +74,25 @@ export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
           <button
             type="button"
             onClick={() => setFilterTab('pendant')}
-            className={`px-3 py-1 rounded transition-colors font-bold flex items-center gap-1.5 ${
+            className={`px-3.5 py-1 rounded-full transition-all font-bold flex items-center gap-1.5 ${
               filterTab === 'pendant'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
             Pendant ({pendantLoans.length})
           </button>
           <button
             type="button"
             onClick={() => setFilterTab('paid')}
-            className={`px-3 py-1 rounded transition-colors font-bold flex items-center gap-1.5 ${
+            className={`px-3.5 py-1 rounded-full transition-all font-bold flex items-center gap-1.5 ${
               filterTab === 'paid'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-tertiary-container/20 text-tertiary-fixed-dim border border-tertiary-container/40 shadow-sm'
+                : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container" />
             Paid ({paidLoans.length})
           </button>
         </div>
@@ -114,188 +100,221 @@ export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
 
       {/* Content List */}
       {displayedLoans.length === 0 ? (
-        <div className="py-8 text-center bg-slate-950/60 rounded-lg border border-slate-800/80 p-6 space-y-2 font-mono">
+        <div className="py-10 text-center glass-well rounded-2xl p-6 space-y-2.5 font-mono">
           {filterTab === 'pendant' ? (
             <>
-              <div className="w-10 h-10 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <div className="w-11 h-11 mx-auto rounded-2xl bg-tertiary-container/15 border border-tertiary-container/30 flex items-center justify-center text-tertiary-fixed-dim">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
-              <p className="text-slate-300 font-bold text-sm">No Pendant Loans!</p>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                {student.name} currently has zero outstanding debt. Ready to request a new classroom credit loan!
+              <p className="text-on-surface font-bold text-sm font-headline">
+                Zero Pendant Obligations!
+              </p>
+              <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
+                {student.name} currently has zero outstanding debt. Eligible for immediate classroom credit advance!
               </p>
               {onRequestNewLoan && student.cardStatus === 'active' && (
                 <button
                   type="button"
                   onClick={onRequestNewLoan}
-                  className="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded transition-colors"
+                  className="mt-2 px-4 py-2 liquid-button-primary font-bold text-xs rounded-full transition-all"
                 >
-                  + Request New Loan
+                  + Request Liquidity Advance
                 </button>
               )}
             </>
           ) : filterTab === 'paid' ? (
             <>
-              <div className="w-10 h-10 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+              <div className="w-11 h-11 mx-auto rounded-2xl glass-pill flex items-center justify-center text-on-surface-variant">
                 <Clock className="w-5 h-5" />
               </div>
-              <p className="text-slate-300 font-bold text-sm">No Settled Loans Yet</p>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Once {student.name} completes full repayment through English statement presentations, paid records will be archived here.
+              <p className="text-on-surface font-bold text-sm font-headline">No Settled Loans Yet</p>
+              <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
+                Once {student.name} completes full repayment through English statement presentations, settled contracts are archived here.
               </p>
             </>
           ) : (
             <>
-              <p className="text-slate-400 text-xs">No loans on record for {student.name}.</p>
+              <p className="text-on-surface-variant text-xs">
+                No micro-loan contracts on record for {student.name}.
+              </p>
               {onRequestNewLoan && student.cardStatus === 'active' && (
                 <button
                   type="button"
                   onClick={onRequestNewLoan}
-                  className="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded transition-colors"
+                  className="mt-2 px-4 py-2 liquid-button-primary font-bold text-xs rounded-full transition-all"
                 >
-                  + Issue First Loan
+                  + Issue First Micro-Loan
                 </button>
               )}
             </>
           )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {displayedLoans.map((loan) => {
             const isPaid = loan.status === 'paid';
             const remaining = Math.max(0, loan.totalDue - loan.amountRepaid);
-            const percentPaid = Math.min(100, Math.round((loan.amountRepaid / loan.totalDue) * 100));
+            const percentPaid = Math.min(
+              100,
+              Math.round((loan.amountRepaid / loan.totalDue) * 100)
+            );
             const daysInfo = getDaysDifference(loan.dueDate);
             const isOverdue = daysInfo.isOverdue && !isPaid;
-
-            // Gather submissions statistics
             const totalSubmissions = loan.submissions?.length || 0;
-            const approvedSubmissions = loan.submissions?.filter((s) => s.status === 'approved') || [];
-            const pendingSubmissions = loan.submissions?.filter((s) => s.status === 'pending') || [];
 
             return (
               <div
                 key={loan.id}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   isPaid
-                    ? 'bg-slate-950/70 border-emerald-500/30 hover:border-emerald-500/50'
+                    ? 'glass-well border-tertiary-container/30'
                     : isOverdue
-                    ? 'bg-red-950/20 border-red-500/50 hover:border-red-500/70'
-                    : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                    ? 'bg-error-container/15 border-error/40'
+                    : 'glass-card-interactive'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
-                  {/* Left info: Type & ID */}
                   <div className="space-y-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5 font-mono">
+                    <div className="flex flex-wrap items-center gap-2 font-mono">
                       {isPaid ? (
-                        <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold uppercase flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span className="px-2.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary-fixed-dim border border-tertiary-container/40 text-[10px] font-bold uppercase flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
                           Settled &amp; Paid
                         </span>
                       ) : (
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border flex items-center gap-1 ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border flex items-center gap-1 ${
                             isOverdue
-                              ? 'bg-red-500/20 text-red-300 border-red-500/40 animate-pulse'
+                              ? 'bg-error-container/40 text-error border-error/50 animate-pulse'
                               : loan.status === 'pending_review'
                               ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                              : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                              : 'bg-primary-container/15 text-primary-container border-primary-container/35'
                           }`}
                         >
                           <Clock className="w-3 h-3" />
-                          {isOverdue ? 'Pendant (Overdue)' : loan.status === 'pending_review' ? 'Pendant (In Review)' : 'Pendant (Active)'}
+                          {isOverdue
+                            ? 'Pendant (Overdue)'
+                            : loan.status === 'pending_review'
+                            ? 'Pendant (In Review)'
+                            : 'Pendant (Active)'}
                         </span>
                       )}
 
-                      <span className="text-xs font-bold text-slate-200">
-                        {loan.loanType === 'short' ? 'Short Loan (≤ 5 Days)' : 'Big Loan (≤ 3 Weeks)'}
+                      <span className="text-xs font-bold text-on-surface font-headline">
+                        {loan.loanType === 'short'
+                          ? 'Short Liquidity Advance (≤ 5 Days)'
+                          : 'Extended Term Loan (≤ 3 Weeks)'}
                       </span>
-                      <span className="text-[10px] text-slate-500">ID: {loan.id}</span>
+                      <span className="text-[10px] text-outline">ID: {loan.id}</span>
                     </div>
 
-                    <p className="text-xs text-slate-400 flex flex-wrap items-center gap-1.5 font-mono">
-                      <span>Borrowed: {new Date(loan.createdAt).toLocaleDateString()}</span>
+                    <p className="text-xs text-on-surface-variant flex flex-wrap items-center gap-1.5 font-mono">
+                      <span>Issued: {new Date(loan.createdAt).toLocaleDateString()}</span>
                       <span>•</span>
                       {isPaid ? (
-                        <span className="text-emerald-400">
-                          Settled: {loan.paidAt ? new Date(loan.paidAt).toLocaleDateString() : 'Paid in full'}
+                        <span className="text-tertiary-fixed-dim">
+                          Settled:{' '}
+                          {loan.paidAt
+                            ? new Date(loan.paidAt).toLocaleDateString()
+                            : 'Paid in full'}
                         </span>
                       ) : (
-                        <span className={isOverdue ? 'text-red-400 font-bold' : 'text-slate-300'}>
-                          Due: {new Date(loan.dueDate).toLocaleDateString()} ({daysInfo.isOverdue ? `${Math.abs(daysInfo.days)}d overdue` : `${daysInfo.days}d left`})
+                        <span className={isOverdue ? 'text-error font-bold' : 'text-on-surface'}>
+                          Maturity: {new Date(loan.dueDate).toLocaleDateString()} (
+                          {daysInfo.isOverdue
+                            ? `${Math.abs(daysInfo.days)}d overdue`
+                            : `${daysInfo.days}d left`}
+                          )
                         </span>
                       )}
                     </p>
                   </div>
 
-                  {/* Financial figures */}
-                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 font-mono bg-slate-900/80 p-2 sm:p-2.5 rounded-lg border border-slate-800/80 shrink-0">
+                  {/* Financial Figures */}
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 font-mono glass-well p-2.5 rounded-xl shrink-0">
                     <div>
-                      <span className="text-[9px] text-slate-500 uppercase tracking-widest block">Principal + Rate</span>
-                      <p className="text-xs text-slate-300 font-bold">
-                        ${loan.principal}.00 <span className="text-[10px] text-slate-400">({loan.effectiveInterestRate}%)</span>
+                      <span className="text-[9px] text-on-surface-variant uppercase tracking-widest block">
+                        Principal + Rate
+                      </span>
+                      <p className="text-xs text-on-surface font-bold">
+                        E$ {loan.principal}.00{' '}
+                        <span className="text-[10px] text-on-surface-variant">
+                          ({loan.effectiveInterestRate}%)
+                        </span>
                       </p>
                     </div>
 
-                    <div className="pl-2.5 border-l border-slate-800">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-widest block">Total Repaid</span>
-                      <p className="text-xs text-slate-300 font-bold">${loan.amountRepaid}.00</p>
+                    <div className="pl-2.5 border-l border-outline-variant/30">
+                      <span className="text-[9px] text-on-surface-variant uppercase tracking-widest block">
+                        Repaid
+                      </span>
+                      <p className="text-xs text-on-surface font-bold">
+                        E$ {loan.amountRepaid}.00
+                      </p>
                     </div>
 
-                    <div className="pl-2.5 border-l border-slate-800">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-widest block">
+                    <div className="pl-2.5 border-l border-outline-variant/30">
+                      <span className="text-[9px] text-on-surface-variant uppercase tracking-widest block">
                         {isPaid ? 'Balance' : 'Remaining'}
                       </span>
-                      <p className={`text-sm sm:text-base font-black whitespace-nowrap ${isPaid ? 'text-emerald-400' : 'text-amber-400'}`}>
-                        ${remaining}.00
+                      <p
+                        className={`text-sm sm:text-base font-black whitespace-nowrap ${
+                          isPaid ? 'text-tertiary-fixed-dim' : 'text-amber-400'
+                        }`}
+                      >
+                        E$ {remaining}.00
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="mt-3 space-y-1">
-                  <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+                {/* Progress Bar */}
+                <div className="mt-3.5 space-y-1.5">
+                  <div className="w-full glass-well h-2 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
                         isPaid
-                          ? 'bg-emerald-500'
+                          ? 'bg-tertiary-container'
                           : percentPaid > 50
-                          ? 'bg-blue-500'
-                          : 'bg-amber-500'
+                          ? 'bg-primary-container'
+                          : 'bg-amber-400'
                       }`}
                       style={{ width: `${percentPaid}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant">
                     <span>
-                      {percentPaid}% Repaid (${loan.amountRepaid} / ${loan.totalDue})
+                      {percentPaid}% Repaid (E$ {loan.amountRepaid} / E$ {loan.totalDue})
                     </span>
                     <span>
                       {loan.delaysCount > 0 && (
-                        <span className="text-amber-400 mr-2">⚠️ {loan.delaysCount} delay penalty</span>
+                        <span className="text-amber-400 mr-2">
+                          ⚠️ {loan.delaysCount} delay penalty
+                        </span>
                       )}
                       {totalSubmissions > 0 && (
-                        <span className="text-slate-300">
-                          📝 {totalSubmissions} presentation {totalSubmissions === 1 ? 'record' : 'records'}
+                        <span className="text-on-surface">
+                          📝 {totalSubmissions} presentation{' '}
+                          {totalSubmissions === 1 ? 'record' : 'records'}
                         </span>
                       )}
                     </span>
                   </div>
                 </div>
 
-                {/* Footnote notes and action button */}
-                <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
-                  <div className="text-[11px] text-slate-400 truncate">
+                {/* Footnote & Action */}
+                <div className="mt-3 pt-2.5 border-t border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                  <div className="text-[11px] text-on-surface-variant truncate">
                     {loan.notes ? (
                       <span>Note: {loan.notes}</span>
                     ) : isPaid ? (
-                      <span className="text-emerald-400 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> Debt fully liquidated. Credit limit standing affirmed.
+                      <span className="text-tertiary-fixed-dim flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Obligation liquidated. Credit standing affirmed.
                       </span>
                     ) : (
-                      <span>Settle by presenting verified sentences ($25), words ($5), or phrasal verbs ($50).</span>
+                      <span>
+                        Settle via English sentences (E$25), vocabulary words (E$5), or phrasal verbs (E$50).
+                      </span>
                     )}
                   </div>
 
@@ -303,7 +322,7 @@ export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenEnglishWork(loan)}
-                      className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded text-xs font-bold transition-colors flex items-center gap-1 self-start sm:self-auto shrink-0 shadow-sm"
+                      className="px-3.5 py-1.5 liquid-button-emerald rounded-full text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-auto shrink-0"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       {isTeacherView ? 'Verify Statements' : 'Present English Work'}

@@ -125,26 +125,26 @@ export const ClassManagerModal: React.FC<ClassManagerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+      <div className="glass-panel specular-edge rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col text-on-surface">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/95 backdrop-blur z-10">
+        <div className="p-5 border-b border-outline-variant/20 flex items-center justify-between sticky top-0 bg-surface-container-lowest/80 backdrop-blur-xl z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-2xl bg-primary-container/15 border border-primary-container/30 flex items-center justify-center text-primary-container">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-slate-100 tracking-tight">
+              <h2 className="text-lg font-black text-on-surface font-headline tracking-tight">
                 Classroom Management
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-on-surface-variant">
                 Organize students into distinct classes (e.g., 1st BGU, 2nd BGU)
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-on-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

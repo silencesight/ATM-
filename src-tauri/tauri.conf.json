@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "ATM 3.1",
-  "version": "3.1.0",
+  "productName": "ATM 4.0",
+  "version": "4.0.0",
   "identifier": "com.atm.desktop",
   "build": {
     "frontendDist": "../dist",
@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "ATM 3.1",
-        "width": 800,
-        "height": 600,
+        "title": "ATM 4.0",
+        "width": 1280,
+        "height": 820,
         "resizable": true,
         "fullscreen": false,
         "decorations": false

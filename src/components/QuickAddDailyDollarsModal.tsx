@@ -57,18 +57,18 @@ export const QuickAddDailyDollarsModal: React.FC<QuickAddDailyDollarsModalProps>
     e.preventDefault();
     if (!canSubmit) return;
     const res = onAddDailyReward(student.id, effectiveAmount, effectiveReason);
-    if (res.success) {
+    if (!res || res.success) {
       onClose();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+      <div className="glass-panel rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl specular-edge animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div className="p-5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm font-mono font-bold text-base">
+            <div className="w-10 h-10 rounded-xl bg-tertiary-container/20 border border-tertiary-container/40 flex items-center justify-center text-tertiary-fixed-dim shadow-sm font-mono font-bold text-base">
               E$
             </div>
             <div>

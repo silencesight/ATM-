@@ -106,15 +106,15 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
+      <div className="glass-panel rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl specular-edge animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-tertiary-container/20 border border-tertiary-container/40 flex items-center justify-center text-tertiary-fixed-dim shadow-sm">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>

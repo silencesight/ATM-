@@ -1,106 +1,127 @@
 import React, { useState } from 'react';
 import {
-  LayoutDashboard,
   CreditCard,
-  ShoppingBag,
-  Printer,
-  Sliders,
-  Sparkles,
-  Users,
-  ShieldCheck,
-  ChevronDown,
+  GraduationCap,
   BookOpen,
-  Download,
   RotateCcw,
+  Settings,
+  Printer,
+  ShoppingBag,
+  Sun,
+  Moon,
   Pin,
   PinOff,
-  Menu,
+  Landmark,
+  LayoutDashboard,
+  Sparkles,
+  BarChart3,
+  Database,
+  FolderKanban,
   ChevronRight,
-  Minus,
-  Square,
-  X as CloseIcon
+  ShieldCheck,
 } from 'lucide-react';
-import { Student, Classroom } from '../types';
+import { Classroom } from '../types';
+
+export type ActiveAppView = 'teacher' | 'student' | 'store' | 'grants' | 'print';
 
 interface SidebarProps {
-  currentView: 'teacher' | 'student' | 'print' | 'store';
-  onChangeView: (view: 'teacher' | 'student' | 'print' | 'store') => void;
-  students: Student[];
-  classrooms?: Classroom[];
-  selectedClassId?: string;
-  onSelectClass?: (classId: string) => void;
+  activeView: ActiveAppView;
+  onSelectView: (view: ActiveAppView) => void;
+  studentsCount: number;
+  activeLoansCount: number;
+  pendingReviewsCount: number;
+  storeItemsCount: number;
   onOpenSettings: () => void;
-  onOpenRules?: () => void;
-  onExportData?: () => void;
-  onResetData?: () => void;
-  theme?: 'dark' | 'light';
+  onOpenRules: () => void;
+  onResetDemo: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
+  classrooms?: Classroom[];
+  selectedClassFilter?: string;
+  onSelectClassFilter?: (filter: string) => void;
+  totalCirculation?: number;
+  schoolName?: string;
+  onOpenClassManager?: () => void;
+  onOpenBackup?: () => void;
+  onOpenReports?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  currentView,
-  onChangeView,
-  students,
-  classrooms = [],
-  selectedClassId = 'all',
-  onSelectClass,
+  activeView,
+  onSelectView,
+  studentsCount,
+  activeLoansCount,
+  pendingReviewsCount,
+  storeItemsCount,
   onOpenSettings,
   onOpenRules,
-  onExportData,
-  onResetData,
-  theme = 'dark',
+  onResetDemo,
+  theme,
+  onToggleTheme,
+  classrooms = [],
+  selectedClassFilter = 'all',
+  onSelectClassFilter,
+  totalCirculation = 0,
+  schoolName = 'Oxford English Academy',
+  onOpenClassManager,
+  onOpenBackup,
+  onOpenReports,
 }) => {
+  const [isPinned, setIsPinned] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
 
-  const isDark = theme === 'dark';
+  const isExpanded = isPinned || isHovered;
 
-  // Calculate cohort metrics
-  const activeStudents =
-    selectedClassId === 'all'
-      ? students
-      : students.filter((s) => s.classId === selectedClassId);
-
-  const totalBalance = activeStudents.reduce((sum, s) => sum + s.currentBalance, 0);
-  const activeClass = classrooms.find((c) => c.id === selectedClassId);
-  const cohortName = activeClass ? activeClass.name : 'All Cohorts • 1st & 2nd BGU';
-
-  // Active loan solvency rate
-  const solventCount = activeStudents.filter((s) => s.cardStatus === 'active').length;
-  const solvencyRate = activeStudents.length > 0
-    ? Math.round((solventCount / activeStudents.length) * 100)
-    : 100;
-
-  const navItems = [
+  const navItems: {
+    id: ActiveAppView;
+    label: string;
+    sublabel: string;
+    icon: React.FC<{ className?: string }>;
+    badge?: number | string;
+    badgeTone?: 'cyan' | 'emerald' | 'amber';
+  }[] = [
     {
       id: 'teacher',
       label: 'Teacher Hub',
+      sublabel: 'Ledger & Cohort Control',
       icon: LayoutDashboard,
-      badge: `${activeStudents.length}`,
+      badge: pendingReviewsCount > 0 ? `${pendingReviewsCount} due` : activeLoansCount > 0 ? activeLoansCount : undefined,
+      badgeTone: pendingReviewsCount > 0 ? 'amber' : 'cyan',
     },
     {
       id: 'student',
       label: 'Student Portal',
+      sublabel: 'Virtual Card & Advances',
       icon: CreditCard,
-      badge: 'Cards',
+      badge: studentsCount,
+      badgeTone: 'cyan',
     },
     {
       id: 'store',
       label: 'School Store',
+      sublabel: 'Privileges & Point of Sale',
       icon: ShoppingBag,
-      badge: 'HOT',
+      badge: storeItemsCount,
+      badgeTone: 'emerald',
+    },
+    {
+      id: 'grants',
+      label: 'Discretionary Grants',
+      sublabel: 'Award Daily Eurodollars',
+      icon: Sparkles,
+      badge: 'E$',
+      badgeTone: 'emerald',
     },
     {
       id: 'print',
       label: 'Print Studio',
+      sublabel: 'Physical SmartPass Cutouts',
       icon: Printer,
-      badge: undefined,
     },
-  ] as const;
+  ];
 
-  const handleClose = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleWindowClose = async () => {
     try {
-      // @ts-ignore
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
       await getCurrentWindow().close();
     } catch {
@@ -108,369 +129,337 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const handleMinimize = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleWindowMinimize = async () => {
     try {
-      // @ts-ignore
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
       await getCurrentWindow().minimize();
-    } catch (err) {
-      console.warn('Minimize only works in desktop window', err);
+    } catch {
+      // Browser environment fallback
     }
   };
 
-  const handleMaximize = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleWindowMaximize = async () => {
     try {
-      // @ts-ignore
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
       await getCurrentWindow().toggleMaximize();
-    } catch (err) {
-      console.warn('Maximize only works in desktop window', err);
+    } catch {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
     }
   };
-
-  const isVisible = isHovered || isPinned;
 
   return (
     <>
-      {/* 1. Left Edge Trigger Zone (When Hidden) */}
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        className="fixed top-14 bottom-0 left-0 w-4 z-40 cursor-pointer pointer-events-auto"
-        title="Hover to show navigation sidebar"
+        className={`no-print shrink-0 transition-all duration-300 ease-out ${
+          isPinned ? 'w-64' : 'w-[72px]'
+        }`}
       />
 
-      {/* 2. Sleek Floating Reveal Tab (Visible When Sidebar is Hidden) */}
-      {!isVisible && (
-        <button
-          type="button"
-          onMouseEnter={() => setIsHovered(true)}
-          onClick={() => setIsHovered(true)}
-          className={`fixed left-0 top-20 z-40 pl-1.5 pr-2.5 py-3 rounded-r-2xl border-y border-r transition-all duration-200 flex flex-col items-center gap-2 group shadow-xl ${
-            isDark
-              ? 'bg-[#11151f]/90 hover:bg-[#181d29] border-white/[0.12] text-slate-300 hover:text-white'
-              : 'bg-white/95 hover:bg-slate-100 border-slate-300 text-slate-700 hover:text-slate-900'
-          }`}
-          title="Hover or click to open sidebar"
-        >
-          <div className="w-2 h-2 rounded-full bg-[#42e5b0] shadow-[0_0_8px_rgba(66,229,176,0.9)] animate-pulse" />
-          <Menu className="w-4 h-4 text-[#42e5b0] group-hover:scale-110 transition-transform" />
-          <span className="[writing-mode:vertical-rl] text-[9px] font-mono font-bold tracking-widest uppercase opacity-75 group-hover:opacity-100">
-            NAV
-          </span>
-        </button>
-      )}
-
-      {/* 3. The Slide-in Sidebar Surface */}
       <aside
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          if (!isPinned) setIsHovered(false);
-        }}
-        className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col transition-transform duration-300 ease-out no-print select-none ${
-          isVisible ? 'translate-x-0' : '-translate-x-full'
-        } ${
-          isDark
-            ? 'bg-[#0f131c]/95 backdrop-blur-2xl border-r border-white/[0.1] text-[#e6edf3] shadow-[8px_0_36px_rgba(0,0,0,0.6)]'
-            : 'bg-white/95 backdrop-blur-2xl border-r border-slate-200 text-slate-900 shadow-2xl'
+        onMouseLeave={() => setIsHovered(false)}
+        className={`no-print fixed top-0 left-0 bottom-0 z-50 flex flex-col justify-between transition-all duration-300 ease-out select-none glass-panel border-r border-outline-variant/25 ${
+          isExpanded ? 'w-64' : 'w-[72px]'
         }`}
       >
-        {/* Top Header / Mac-WinUI Traffic Lights + Pin Button */}
-        <div
-          data-tauri-drag-region
-          className={`h-13 flex items-center justify-between px-4 border-b select-none ${
-            isDark ? 'border-white/[0.08] bg-[#0b0e14]/50' : 'border-slate-100 bg-slate-50/50'
-          }`}
-        >
-          <div
-            data-tauri-drag-region="false"
-            onMouseDown={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 pointer-events-auto"
-          >
-            <button
-              type="button"
-              onClick={handleClose}
-              className="group w-3.5 h-3.5 rounded-full bg-[#FF5F56] border border-[#E0443E]/80 shadow-[0_0_6px_rgba(255,95,86,0.35)] flex items-center justify-center transition-transform hover:scale-110"
-              title="Close App"
-            >
-              <CloseIcon className="w-2 h-2 text-[#4c0002] opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-            </button>
-            <button
-              type="button"
-              onClick={handleMinimize}
-              className="group w-3.5 h-3.5 rounded-full bg-[#FFBD2E] border border-[#DEA123]/80 shadow-[0_0_6px_rgba(255,189,46,0.35)] flex items-center justify-center transition-transform hover:scale-110"
-              title="Minimize App"
-            >
-              <Minus className="w-2 h-2 text-[#543b00] opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-            </button>
-            <button
-              type="button"
-              onClick={handleMaximize}
-              className="group w-3.5 h-3.5 rounded-full bg-[#27C93F] border border-[#1AAB29]/80 shadow-[0_0_6px_rgba(39,201,63,0.35)] flex items-center justify-center transition-transform hover:scale-110"
-              title="Maximize App"
-            >
-              <Square className="w-1.5 h-1.5 text-[#003810] opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-            </button>
-            <span
-              className={`ml-1.5 font-mono text-[10px] tracking-wider uppercase font-semibold ${
-                isDark ? 'text-slate-400' : 'text-slate-500'
-              }`}
-            >
-              Terminal v3.1
-            </span>
+        {/* Top Section: Window Chrome + Brand + Cohort Selector */}
+        <div className="p-4 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
+          {/* Window Controls + Pin Action */}
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleWindowClose}
+                title="Close Application"
+                aria-label="Close Application"
+                className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]/60 shadow-inner hover:brightness-110 transition-all cursor-pointer"
+              />
+              <button
+                type="button"
+                onClick={handleWindowMinimize}
+                title="Minimize Window"
+                aria-label="Minimize Window"
+                className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]/60 shadow-inner hover:brightness-110 transition-all cursor-pointer"
+              />
+              <button
+                type="button"
+                onClick={handleWindowMaximize}
+                title="Maximize / Fullscreen Window"
+                aria-label="Maximize Window"
+                className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]/60 shadow-inner hover:brightness-110 transition-all cursor-pointer"
+              />
+            </div>
+            {isExpanded && (
+              <button
+                type="button"
+                onClick={() => setIsPinned(!isPinned)}
+                title={isPinned ? 'Unpin sidebar (auto-collapse)' : 'Pin sidebar open'}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest glass-well text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                {isPinned ? <Pin className="w-3 h-3 text-primary-container" /> : <PinOff className="w-3 h-3" />}
+                <span>{isPinned ? 'Pinned' : 'Auto'}</span>
+              </button>
+            )}
           </div>
 
-          {/* Pin Toggle */}
-          <button
-            type="button"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => setIsPinned(!isPinned)}
-            className={`p-1.5 rounded-lg border transition-all ${
-              isPinned
-                ? 'bg-[#42e5b0]/20 text-[#42e5b0] border-[#42e5b0]/40 shadow-sm'
-                : isDark
-                ? 'text-slate-500 hover:text-slate-300 border-transparent hover:border-white/[0.08]'
-                : 'text-slate-400 hover:text-slate-700 border-transparent hover:border-slate-200'
-            }`}
-            title={isPinned ? 'Sidebar pinned open (click to auto-hide)' : 'Pin sidebar open'}
-          >
-            {isPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-
-        {/* Active Cohort Glass Card */}
-        <div className="px-3.5 py-3">
-          <div
-            className={`p-3 rounded-xl border transition-all ${
-              isDark
-                ? 'bg-[#181d29]/90 backdrop-blur-md border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                : 'bg-slate-50 border-slate-200 shadow-sm'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span
-                className={`text-[10px] uppercase tracking-wider font-semibold font-mono ${
-                  isDark ? 'text-slate-400' : 'text-slate-500'
-                }`}
-              >
-                Active Cohort
-              </span>
-              <span className="w-2 h-2 rounded-full bg-[#42e5b0] shadow-[0_0_8px_rgba(66,229,176,0.7)] animate-pulse" />
+          {/* Brand Header */}
+          <div className="flex items-center gap-3 px-1">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center shadow-lg shadow-primary-container/20 specular-edge shrink-0">
+              <Landmark className="w-5 h-5 text-on-primary-fixed" />
             </div>
+            <div
+              className={`min-w-0 transition-all duration-200 ${
+                isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none w-0'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-headline font-bold text-base tracking-tight text-on-surface leading-none truncate">
+                  ESL Reserve
+                </h1>
+                <span className="text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded bg-primary-container/15 text-primary-container border border-primary-container/30 font-bold">
+                  AeroOS
+                </span>
+              </div>
+              <p className="text-[11px] text-on-surface-variant font-medium mt-1 truncate">
+                {schoolName || 'Micro-Bank Terminal'}
+              </p>
+            </div>
+          </div>
 
-            {classrooms.length > 0 && onSelectClass ? (
-              <div className="relative mt-1">
+          {/* Active Session / Cohort Selector (when expanded) */}
+          {isExpanded && onSelectClassFilter && (
+            <div className="glass-well rounded-xl p-2.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant font-semibold">
+                  Active Cohort
+                </span>
+                {onOpenClassManager && (
+                  <button
+                    type="button"
+                    onClick={onOpenClassManager}
+                    className="text-[10px] font-mono text-primary-container hover:underline flex items-center gap-0.5"
+                    title="Manage Classrooms & Rosters"
+                  >
+                    <FolderKanban className="w-3 h-3" />
+                    <span>Manage</span>
+                  </button>
+                )}
+              </div>
+              <div className="relative">
                 <select
-                  value={selectedClassId}
-                  onChange={(e) => onSelectClass(e.target.value)}
-                  className={`w-full font-display font-semibold text-xs tracking-tight bg-transparent border-none p-0 pr-5 cursor-pointer focus:outline-none truncate ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}
+                  aria-label="Active Cohort Filter"
+                  value={selectedClassFilter}
+                  onChange={(e) => onSelectClassFilter(e.target.value)}
+                  className="w-full text-xs font-headline font-bold bg-surface-container-low/80 text-on-surface rounded-lg px-2.5 py-1.5 border border-outline-variant/30 focus:outline-none focus:border-primary-container transition-colors cursor-pointer"
                 >
-                  <option value="all" className={isDark ? 'bg-[#181d29] text-white' : 'bg-white text-slate-900'}>
-                    All Cohorts ({students.length} Accounts)
-                  </option>
+                  <option value="all">All Classrooms ({studentsCount})</option>
                   {classrooms.map((c) => (
-                    <option
-                      key={c.id}
-                      value={c.id}
-                      className={isDark ? 'bg-[#181d29] text-white' : 'bg-white text-slate-900'}
-                    >
-                      {c.name} ({students.filter((s) => s.classId === c.id).length})
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.gradeLevel ? `• ${c.gradeLevel}` : ''}
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 absolute right-0 top-1 text-slate-400 pointer-events-none" />
               </div>
-            ) : (
-              <div
-                className={`mt-1 font-semibold text-xs tracking-tight truncate font-display ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
-              >
-                {cohortName}
-              </div>
-            )}
-
-            <div className="mt-1.5 flex items-center justify-between text-xs pt-1.5 border-t border-white/[0.06]">
-              <span className={`text-[10px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                ESL Credit Solvency
-              </span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/15 text-[#42e5b0] border border-emerald-500/30 font-semibold font-mono">
-                {solvencyRate}%
-              </span>
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Navigation Section Label */}
-        <div className="px-4 pt-1 pb-1">
-          <span
-            className={`text-[10px] uppercase tracking-wider font-semibold font-mono ${
-              isDark ? 'text-slate-500' : 'text-slate-400'
-            }`}
-          >
-            Core Navigation
-          </span>
-        </div>
-
-        {/* Core Navigation Links */}
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = currentView === item.id;
-            const Icon = item.icon;
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  onChangeView(item.id);
-                  if (!isPinned) setIsHovered(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all group ${
-                  isActive
-                    ? isDark
-                      ? 'bg-emerald-500/15 text-white border border-emerald-400/30 shadow-[0_2px_12px_rgba(66,229,176,0.2)]'
-                      : 'bg-emerald-600 text-white shadow-sm'
-                    : isDark
-                    ? 'text-slate-400 hover:bg-white/[0.06] hover:text-white border border-transparent'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon
-                    className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                      isActive
-                        ? isDark
-                          ? 'text-[#42e5b0]'
-                          : 'text-white'
-                        : 'text-slate-400 group-hover:text-[#42e5b0]'
-                    }`}
-                  />
-                  <span className="font-display">{item.label}</span>
-                </div>
-
-                {item.badge && (
-                  <span
-                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
-                      isActive
-                        ? isDark
-                          ? 'bg-[#42e5b0]/25 text-[#42e5b0] border border-[#42e5b0]/40'
-                          : 'bg-white/20 text-white'
-                        : isDark
-                        ? 'bg-white/[0.06] text-slate-400'
-                        : 'bg-slate-200 text-slate-600'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-
-          {/* System Settings & Utilities */}
-          <div className="pt-2 space-y-1">
-            <button
-              type="button"
-              onClick={() => {
-                onOpenSettings();
-                if (!isPinned) setIsHovered(false);
-              }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                isDark
-                  ? 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              <Sliders className="w-4 h-4 text-slate-400" />
-              <span className="font-display">Classroom Protocols</span>
-            </button>
-
-            {onOpenRules && (
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenRules();
-                  if (!isPinned) setIsHovered(false);
-                }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
-                  isDark
-                    ? 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                <BookOpen className="w-4 h-4 text-slate-400" />
-                <span className="font-display">Didactic Rules</span>
-              </button>
+          {/* Core Modules Navigation */}
+          <div className="space-y-1">
+            {isExpanded && (
+              <p className="px-2.5 text-[10px] font-mono uppercase tracking-widest text-outline mb-1.5 font-semibold">
+                Core Modules
+              </p>
             )}
-
-            {(onExportData || onResetData) && (
-              <div className="flex items-center gap-1.5 px-1 pt-1">
-                {onExportData && (
-                  <button
-                    type="button"
-                    onClick={onExportData}
-                    title="Export Classroom JSON Backup"
-                    className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-mono flex items-center justify-center gap-1.5 transition-colors ${
-                      isDark
-                        ? 'bg-white/[0.04] text-slate-400 hover:text-white hover:bg-white/[0.08]'
-                        : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'
-                    }`}
-                  >
-                    <Download className="w-3 h-3 text-[#42e5b0]" />
-                    <span>Backup</span>
-                  </button>
-                )}
-                {onResetData && (
-                  <button
-                    type="button"
-                    onClick={onResetData}
-                    title="Reset Sample Roster"
-                    className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-mono flex items-center justify-center gap-1.5 transition-colors ${
-                      isDark
-                        ? 'bg-white/[0.04] text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/10'
-                        : 'bg-slate-100 text-rose-600 hover:text-rose-700 border border-slate-200'
-                    }`}
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Reset</span>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </nav>
-
-        {/* Bottom Synchronized Ledger Card */}
-        <div className={`p-3.5 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-          <div
-            className={`p-3 rounded-xl border flex items-center justify-between ${
-              isDark
-                ? 'bg-[#181d29]/80 backdrop-blur-md border-white/[0.07]'
-                : 'bg-slate-50 border-slate-200'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#42e5b0] shadow-[0_0_8px_rgba(66,229,176,0.8)]" />
-              <div>
-                <div
-                  className={`text-[10px] font-bold uppercase font-mono tracking-wider ${
-                    isDark ? 'text-white' : 'text-slate-900'
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onSelectView(item.id)}
+                  title={!isExpanded ? `${item.label} — ${item.sublabel}` : undefined}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 relative group ${
+                    isActive
+                      ? 'bg-gradient-to-r from-primary-container/20 via-primary-container/10 to-transparent text-on-surface border border-primary-container/40 specular-edge shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 border border-transparent'
                   }`}
                 >
-                  Ledger Total
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono">
-                  {activeStudents.length} Active Accounts
-                </div>
+                  {isActive && (
+                    <div className="w-1 h-5 bg-primary-container rounded-full absolute left-1 shadow-[0_0_10px_#00f0ff]" />
+                  )}
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                      isActive
+                        ? 'bg-primary-container text-on-primary-fixed shadow-sm shadow-primary-container/30'
+                        : 'glass-well text-on-surface-variant group-hover:text-on-surface'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+
+                  <div
+                    className={`flex-1 min-w-0 text-left transition-all duration-200 ${
+                      isExpanded ? 'opacity-100' : 'opacity-0 w-0 pointer-events-none'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-headline font-bold text-xs truncate">{item.label}</span>
+                      {item.badge !== undefined && (
+                        <span
+                          className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 ${
+                            item.badgeTone === 'amber'
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              : item.badgeTone === 'emerald'
+                              ? 'bg-tertiary-container/20 text-tertiary-fixed-dim border border-tertiary-container/30'
+                              : 'bg-primary-container/15 text-primary-container border border-primary-container/30'
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant/80 truncate leading-tight mt-0.5">
+                      {item.sublabel}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Governance & Didactic Controls */}
+          <div className="pt-2 border-t border-outline-variant/20 space-y-1">
+            {isExpanded && (
+              <p className="px-2.5 text-[10px] font-mono uppercase tracking-widest text-outline mb-1.5 font-semibold">
+                Governance &amp; Vault
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={onOpenRules}
+              title={!isExpanded ? 'Didactic Credit Rules' : undefined}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+            >
+              <BookOpen className="w-4 h-4 text-tertiary-fixed-dim shrink-0" />
+              {isExpanded && <span className="truncate font-medium">Didactic Credit Rules</span>}
+            </button>
+
+            {onOpenReports && (
+              <button
+                type="button"
+                onClick={onOpenReports}
+                title={!isExpanded ? 'Cohort Analytics & Reports' : undefined}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+              >
+                <BarChart3 className="w-4 h-4 text-primary-container shrink-0" />
+                {isExpanded && <span className="truncate font-medium">Analytics &amp; Reports</span>}
+              </button>
+            )}
+
+            {onOpenBackup && (
+              <button
+                type="button"
+                onClick={onOpenBackup}
+                title={!isExpanded ? 'Data Snapshots & Backup' : undefined}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+              >
+                <Database className="w-4 h-4 text-secondary shrink-0" />
+                {isExpanded && <span className="truncate font-medium">Snapshots &amp; Backup</span>}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              title={!isExpanded ? 'Classroom Protocols & Settings' : undefined}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+            >
+              <Settings className="w-4 h-4 text-on-surface-variant shrink-0" />
+              {isExpanded && <span className="truncate font-medium">Classroom Protocols</span>}
+            </button>
+
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              title={!isExpanded ? (theme === 'dark' ? 'Switch to Aero Crystalline Light' : 'Switch to Prismatic Aero Dark') : undefined}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-300 shrink-0" />
+              ) : (
+                <Moon className="w-4 h-4 text-primary shrink-0" />
+              )}
+              {isExpanded && (
+                <span className="truncate font-medium">
+                  {theme === 'dark' ? 'Aero Crystalline (Light)' : 'Prismatic Aero (Dark)'}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={onResetDemo}
+              title={!isExpanded ? 'Reset Demo Data' : undefined}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all"
+            >
+              <RotateCcw className="w-4 h-4 shrink-0" />
+              {isExpanded && <span className="truncate font-medium">Reset Demo Ledger</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Section: Vault Circulation & Faculty Status */}
+        <div className="p-3 border-t border-outline-variant/20 space-y-2.5 bg-surface-container-lowest/40">
+          {isExpanded ? (
+            <div className="glass-well rounded-xl p-3 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant font-bold">
+                  Ledger Circulation
+                </span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono text-tertiary-fixed-dim font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse" />
+                  LIVE
+                </span>
+              </div>
+              <div className="text-base font-mono font-bold text-on-surface tracking-tight">
+                E$ {totalCirculation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-on-surface-variant pt-0.5">
+                <span>{studentsCount} Cardholders</span>
+                <span>{activeLoansCount} Active Loans</span>
               </div>
             </div>
-            <span className="text-xs font-mono font-bold text-[#42e5b0]">
-              ${totalBalance.toLocaleString()}
-            </span>
+          ) : (
+            <div
+              className="w-10 h-10 mx-auto rounded-xl glass-well flex items-center justify-center text-tertiary-fixed-dim font-mono text-xs font-bold"
+              title={`Ledger Circulation: E$ ${totalCirculation}`}
+            >
+              E$
+            </div>
+          )}
+
+          <div className="flex items-center gap-2.5 px-1">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary-container to-primary-container p-[1.5px] shrink-0">
+              <div className="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center text-[11px] font-bold font-mono text-primary-container">
+                FA
+              </div>
+            </div>
+            {isExpanded && (
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-on-surface truncate leading-tight">
+                  Faculty Admin
+                </p>
+                <p className="text-[10px] text-tertiary-fixed-dim font-mono flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" /> Reserve Governor
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </aside>

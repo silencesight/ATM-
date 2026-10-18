@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from './components/Sidebar';
+import { Sidebar, ActiveAppView } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { ClassroomRulesModal } from './components/ClassroomRulesModal';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { StudentPortal } from './components/StudentPortal';
 import { PrintableCards } from './components/PrintableCards';
 import { ClassroomStoreView } from './components/ClassroomStoreView';
+import { EnglishDailyDollarsSection } from './components/EnglishDailyDollarsSection';
 import { SettingsModal } from './components/SettingsModal';
+import { DataBackupModal } from './components/DataBackupModal';
+import { ClassManagerModal } from './components/ClassManagerModal';
+import { StudentReportsModal } from './components/StudentReportsModal';
 import {
   Student,
   Loan,
@@ -102,7 +106,7 @@ export default function App() {
     }
   });
 
-  const [currentView, setCurrentView] = useState<'teacher' | 'student' | 'print' | 'store'>('teacher');
+  const [currentView, setCurrentView] = useState<ActiveAppView>('teacher');
   const [storeCatalog, setStoreCatalog] = useState<StoreItem[]>(() => loadStoreCatalog());
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
     students[0]?.id || 'std-1'
@@ -111,6 +115,9 @@ export default function App() {
   const [printTargetStudentId, setPrintTargetStudentId] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isClassManagerModalOpen, setIsClassManagerModalOpen] = useState(false);
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>(() => loadClassrooms());
 
@@ -1018,11 +1025,12 @@ export default function App() {
     addToast('warning', 'Corrections Requested', 'Student notified to revise English work.');
   };
 
-  // Manually add daily English reward money to student (max $100 daily)
+  // Manually add daily English reward money to student (with optional FICO credit score delta)
   const handleAddDailyEnglishReward = (
     studentId: string,
     amount: number,
-    reason: string
+    reason: string,
+    creditScoreDelta: number = 0
   ): { success: boolean; error?: string } => {
     const student = students.find((s) => s.id === studentId);
     if (!student) {
@@ -1044,6 +1052,10 @@ export default function App() {
 
     const newDailyTotal = currentEarned + amount;
     const newBalance = student.currentBalance + amount;
+    const newScore =
+      creditScoreDelta !== 0
+        ? Math.min(850, Math.max(300, student.creditScore + creditScoreDelta))
+        : student.creditScore;
 
     const rewardTransaction: EnglishRewardTransaction = {
       id: `rew_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -1060,6 +1072,7 @@ export default function App() {
         return {
           ...s,
           currentBalance: newBalance,
+          creditScore: newScore,
           dailyEnglishEarned: {
             date: todayStr,
             amount: newDailyTotal,
@@ -1069,10 +1082,15 @@ export default function App() {
       })
     );
 
+    const scoreMsg =
+      creditScoreDelta !== 0
+        ? ` • FICO ${creditScoreDelta > 0 ? `+${creditScoreDelta}` : creditScoreDelta} PTS`
+        : '';
+
     addToast(
       'success',
       'English Reward Added!',
-      `+E$${amount}.00 awarded to ${student.name} (${rewardTransaction.reason}). Today's total: E$${newDailyTotal}.00.`
+      `+E$${amount}.00 awarded to ${student.name} (${rewardTransaction.reason})${scoreMsg}. Today's total: E$${newDailyTotal}.00.`
     );
 
     return { success: true };
@@ -1154,48 +1172,77 @@ export default function App() {
     (l) => l.studentId === currentStudent?.id && (l.status === 'active' || l.status === 'pending_review')
   );
 
-  const viewTitle =
-    currentView === 'store'
-      ? 'The School Store • Privilege Market'
-      : currentView === 'student'
-      ? 'Student Cardholder Portal'
-      : currentView === 'print'
-      ? 'Debit Card Print Studio'
-      : 'ESL Central Terminal';
+  const activeLoansCount = loans.filter((l) => l.status !== 'paid').length;
+  const pendingReviewsCount = loans.reduce(
+    (acc, l) => acc + l.submissions.filter((sub) => sub.status === 'pending').length,
+    0
+  );
+  const totalCirculation = students.reduce((acc, s) => acc + s.currentBalance, 0);
 
   return (
-    <div
-      className={`min-h-screen font-sans flex transition-colors duration-200 selection:bg-emerald-500/20 selection:text-emerald-300 ${
-        theme === 'dark' ? 'bg-[#0b0e14] text-[#e6edf3]' : 'bg-[#f0f2f8] text-[#1e293b]'
-      }`}
-    >
-      {/* Toast notifications */}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full">
+    <div className="min-h-screen font-sans flex transition-colors duration-300 bg-background text-on-background relative overflow-x-hidden">
+      {/* Ambient Caustic Mesh Background Spheres (Prismatic Aero / Aero Crystalline) */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden no-print">
+        <div
+          className="caustic-orb w-[520px] h-[520px] -top-40 -left-28 opacity-40"
+          style={{
+            background:
+              theme === 'dark'
+                ? 'radial-gradient(circle, rgba(49, 49, 192, 0.36) 0%, rgba(0, 240, 255, 0) 70%)'
+                : 'radial-gradient(circle, rgba(80, 217, 254, 0.35) 0%, rgba(0, 119, 182, 0) 70%)',
+          }}
+        />
+        <div
+          className="caustic-orb w-[600px] h-[600px] top-1/4 -right-48 opacity-35"
+          style={{
+            background:
+              theme === 'dark'
+                ? 'radial-gradient(circle, rgba(0, 240, 255, 0.22) 0%, rgba(49, 49, 192, 0) 70%)'
+                : 'radial-gradient(circle, rgba(71, 88, 179, 0.20) 0%, rgba(80, 217, 254, 0) 70%)',
+          }}
+        />
+        <div
+          className="caustic-orb w-[480px] h-[480px] -bottom-36 left-1/3 opacity-30"
+          style={{
+            background:
+              theme === 'dark'
+                ? 'radial-gradient(circle, rgba(0, 165, 114, 0.22) 0%, rgba(11, 14, 23, 0) 70%)'
+                : 'radial-gradient(circle, rgba(0, 129, 96, 0.16) 0%, rgba(245, 247, 252, 0) 70%)',
+          }}
+        />
+      </div>
+
+      {/* Liquid Glass Toast Notifications */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full no-print">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto p-3.5 rounded-lg shadow-2xl border flex items-start gap-3 transition-all ${
+            className={`pointer-events-auto p-4 rounded-2xl glass-panel specular-edge flex items-start gap-3 transition-all shadow-2xl ${
               toast.type === 'success'
-                ? 'bg-slate-900 border-emerald-500/40 text-white'
+                ? 'border-tertiary-container/50'
                 : toast.type === 'warning'
-                ? 'bg-slate-900 border-amber-500/40 text-white'
-                : 'bg-slate-900 border-slate-700 text-white'
+                ? 'border-amber-400/50'
+                : 'border-primary-container/50'
             }`}
           >
             {toast.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-tertiary-fixed-dim shrink-0 mt-0.5" />
             ) : toast.type === 'warning' ? (
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             ) : (
-              <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <Sparkles className="w-4 h-4 text-primary-container shrink-0 mt-0.5" />
             )}
             <div className="flex-1">
-              <h4 className="text-xs font-bold font-mono uppercase tracking-wider">{toast.title}</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{toast.message}</p>
+              <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-on-surface">
+                {toast.title}
+              </h4>
+              <p className="text-[11px] text-on-surface-variant mt-0.5 leading-relaxed">
+                {toast.message}
+              </p>
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-slate-500 hover:text-white"
+              className="text-on-surface-variant hover:text-on-surface"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -1203,32 +1250,44 @@ export default function App() {
         ))}
       </div>
 
-      {/* macOS/WinUI Left Sidebar Navigation */}
+      {/* AeroOS Left Navigation Dock */}
       <Sidebar
-        currentView={currentView}
-        onChangeView={setCurrentView}
-        students={students}
-        classrooms={classrooms}
-        selectedClassId={selectedClassId}
-        onSelectClass={setSelectedClassId}
+        activeView={currentView}
+        onSelectView={setCurrentView}
+        studentsCount={students.length}
+        activeLoansCount={activeLoansCount}
+        pendingReviewsCount={pendingReviewsCount}
+        storeItemsCount={storeCatalog.length}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
-        onExportData={handleExportData}
-        onResetData={handleResetData}
+        onResetDemo={handleResetData}
         theme={theme}
+        onToggleTheme={toggleTheme}
+        classrooms={classrooms}
+        selectedClassFilter={selectedClassId}
+        onSelectClassFilter={setSelectedClassId}
+        totalCirculation={totalCirculation}
+        schoolName={settings.schoolName}
+        onOpenClassManager={() => setIsClassManagerModalOpen(true)}
+        onOpenReports={() => setIsReportsModalOpen(true)}
+        onOpenBackup={() => setIsBackupModalOpen(true)}
       />
 
       {/* Main Work Area with Left Sidebar and Top Header Offsets */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen relative z-10">
         <TopHeader
+          activeView={currentView}
+          onSelectView={setCurrentView}
+          students={students}
+          selectedStudentId={selectedStudentId}
+          onSelectStudent={setSelectedStudentId}
+          settings={settings}
           theme={theme}
           onToggleTheme={toggleTheme}
-          title={viewTitle}
-          subtitle="v3.1 Native Shell"
         />
 
         {/* Main Views */}
-        <main className="flex-1 pt-14 p-4 sm:p-6 lg:p-8 min-w-0">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 max-w-[1600px] w-full mx-auto">
           {currentView === 'teacher' && (
             <TeacherDashboard
               students={students}
@@ -1236,6 +1295,8 @@ export default function App() {
               settings={settings}
               classrooms={classrooms}
               theme={theme}
+              selectedClassId={selectedClassId}
+              onSelectClass={setSelectedClassId}
               onBulkAdjustBalance={handleBulkAdjustBalance}
               onOpenSettings={() => setIsSettingsOpen(true)}
               onOpenPrintStudio={() => {
@@ -1281,22 +1342,52 @@ export default function App() {
             />
           )}
 
-          {currentView === 'student' && currentStudent && (
-            <StudentPortal
-              student={currentStudent}
+          {currentView === 'student' &&
+            (currentStudent ? (
+              <StudentPortal
+                student={currentStudent}
+                students={students}
+                onSelectStudent={setSelectedStudentId}
+                activeLoan={studentActiveLoan}
+                loans={loans}
+                settings={settings}
+                onUpdatePaymentFrequency={handleUpdatePaymentFrequency}
+                onRequestLoan={(data) => handleIssueLoan(currentStudent.id, data)}
+                onSubmitEnglishWork={handleSubmitEnglishWork}
+                onAddDailyReward={handleAddDailyEnglishReward}
+                onGrantCreditLimitRaise={handleGrantCreditLimitRaise}
+                onPrintCard={(studentId) => {
+                  setPrintTargetStudentId(studentId);
+                  setCurrentView('print');
+                }}
+                theme={theme}
+              />
+            ) : (
+              <div className="glass-panel rounded-3xl p-12 text-center space-y-4 specular-edge">
+                <p className="text-base font-headline font-bold text-on-surface">
+                  No Cardholders Enrolled
+                </p>
+                <p className="text-xs text-on-surface-variant font-mono">
+                  Return to the Teacher Hub to enroll students or restore your classroom roster.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setCurrentView('teacher')}
+                  className="liquid-button-primary px-5 py-2.5 rounded-full text-xs font-headline font-bold"
+                >
+                  Open Teacher Hub
+                </button>
+              </div>
+            ))}
+
+          {currentView === 'grants' && (
+            <EnglishDailyDollarsSection
               students={students}
-              onSelectStudent={setSelectedStudentId}
-              activeLoan={studentActiveLoan}
-              loans={loans}
               settings={settings}
-              onUpdatePaymentFrequency={handleUpdatePaymentFrequency}
-              onRequestLoan={(data) => handleIssueLoan(currentStudent.id, data)}
-              onSubmitEnglishWork={handleSubmitEnglishWork}
-              onPrintCard={(studentId) => {
-                setPrintTargetStudentId(studentId);
-                setCurrentView('print');
-              }}
-              theme={theme}
+              onAddDailyReward={handleAddDailyEnglishReward}
+              onManualAdjustBalance={handleManualAdjustBalance}
+              selectedStudentId={selectedStudentId}
+              onSelectStudent={setSelectedStudentId}
             />
           )}
 
@@ -1309,7 +1400,7 @@ export default function App() {
               onUpdateCatalog={setStoreCatalog}
               classrooms={classrooms}
               selectedClassId={selectedClassId}
-              onPurchaseItem={(studentId, amount, item, finalPrice, quantity) => {
+              onPurchaseItem={(studentId, amount, item, _finalPrice, quantity) => {
                 handleReduceStudentBalance(studentId, amount, item.name, {
                   itemId: item.id,
                   itemName: item.name,
@@ -1329,6 +1420,7 @@ export default function App() {
             <PrintableCards
               students={students}
               settings={settings}
+              classrooms={classrooms}
               initialSelectedStudentId={printTargetStudentId}
               onBack={() => {
                 setPrintTargetStudentId(null);
@@ -1359,6 +1451,45 @@ export default function App() {
           onClose={() => setIsRulesOpen(false)}
           settings={settings}
           theme={theme}
+        />
+      )}
+
+      {/* Global Data Backup & Snapshot Modal */}
+      {isBackupModalOpen && (
+        <DataBackupModal
+          isOpen={isBackupModalOpen}
+          onClose={() => setIsBackupModalOpen(false)}
+          students={students}
+          loans={loans}
+          storeItems={storeCatalog}
+          settings={settings}
+          onRestoreBackup={handleRestoreBackup}
+          onSaveManualSnapshot={handleSaveManualSnapshot}
+        />
+      )}
+
+      {/* Global Class Manager Modal */}
+      {isClassManagerModalOpen && (
+        <ClassManagerModal
+          isOpen={isClassManagerModalOpen}
+          onClose={() => setIsClassManagerModalOpen(false)}
+          classrooms={classrooms}
+          students={students}
+          onCreateClassroom={handleCreateClassroom}
+          onUpdateClassroom={handleUpdateClassroom}
+          onDeleteClassroom={handleDeleteClassroom}
+          onReassignStudents={handleReassignStudents}
+        />
+      )}
+
+      {/* Global Student Comprehensive Reports Modal */}
+      {isReportsModalOpen && (
+        <StudentReportsModal
+          isOpen={isReportsModalOpen}
+          onClose={() => setIsReportsModalOpen(false)}
+          students={students}
+          loans={loans}
+          settings={settings}
         />
       )}
     </div>

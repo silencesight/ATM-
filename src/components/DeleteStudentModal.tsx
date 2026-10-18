@@ -20,19 +20,19 @@ export const DeleteStudentModal: React.FC<DeleteStudentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-red-900/80 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col text-slate-100 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+      <div className="glass-panel specular-edge border border-error/40 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col text-on-surface animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-red-900/40 bg-red-950/40">
+        <div className="flex items-center justify-between p-5 border-b border-error/25 bg-error-container/20">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30">
+            <div className="p-2.5 rounded-2xl bg-error-container/40 text-error border border-error/30">
               <Trash2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white font-mono uppercase tracking-wider">
+              <h3 className="text-base font-bold text-on-surface font-headline uppercase tracking-wider">
                 Erase Student Record
               </h3>
-              <p className="text-xs text-red-300">
+              <p className="text-xs text-error">
                 Permanent classroom roster deletion
               </p>
             </div>
@@ -40,7 +40,7 @@ export const DeleteStudentModal: React.FC<DeleteStudentModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-on-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

@@ -134,22 +134,22 @@ export const BulkAddStudentsModal: React.FC<BulkAddStudentsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-3xl glass-panel specular-edge rounded-3xl shadow-2xl overflow-hidden my-8 text-on-surface">
         {/* Modal Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-lowest/40">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-2xl bg-tertiary-container/15 border border-tertiary-container/30 flex items-center justify-center text-tertiary-fixed-dim">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold font-mono text-white uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-base font-bold font-headline text-on-surface uppercase tracking-wider flex items-center gap-2">
                 Batch Student Enrollment (Bulk Add)
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary-fixed-dim font-mono font-bold border border-tertiary-container/30">
                   Roster Importer
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-on-surface-variant">
                 Paste student names to automatically mint cards, assign IDs, and issue classroom credit instruments in batch.
               </p>
             </div>
@@ -157,7 +157,7 @@ export const BulkAddStudentsModal: React.FC<BulkAddStudentsModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-on-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

@@ -181,60 +181,60 @@ export const StudentYearlyHistory: React.FC<StudentYearlyHistoryProps> = ({
   const totalRewardsAmount = rewards.reduce((acc, r) => acc + r.amount, 0);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 space-y-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-teal-500 to-emerald-500" />
+    <div className="glass-panel rounded-3xl p-5 md:p-6 space-y-5 relative overflow-hidden specular-edge">
+      <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary-container to-tertiary-container" />
 
       {/* Header & KPI Summary */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-outline-variant/20 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-teal-400" />
+            <h2 className="text-base font-bold text-on-surface uppercase tracking-wider font-headline flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary-container" />
               Annual Activity &amp; Credit History
             </h2>
-            <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-mono text-[10px] font-bold border border-teal-500/30">
+            <span className="px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary-container font-mono text-[10px] font-bold border border-primary-container/30">
               Whole Year Track Record
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-on-surface-variant mt-1">
             Complete financial dossier of credit limit rises granted, loans settled, and English rewards earned throughout the academic year.
           </p>
         </div>
 
         {/* 3 Metric Pills */}
         <div className="grid grid-cols-3 gap-2 shrink-0">
-          <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
-            <span className="text-[9px] uppercase tracking-widest text-slate-500 font-mono font-bold block">
+          <div className="p-2.5 rounded-2xl glass-well text-center">
+            <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-mono font-bold block">
               Rises Received
             </span>
-            <p className="text-sm font-bold font-mono text-emerald-400">
+            <p className="text-sm font-bold font-mono text-tertiary-fixed-dim">
               {rises.length} {rises.length === 1 ? 'Rise' : 'Rises'}
             </p>
-            <span className="text-[10px] text-slate-400 font-mono">
+            <span className="text-[10px] text-on-surface-variant font-mono">
               +E${totalRisesAmount} total
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
-            <span className="text-[9px] uppercase tracking-widest text-slate-500 font-mono font-bold block">
+          <div className="p-2.5 rounded-2xl glass-well text-center">
+            <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-mono font-bold block">
               Loans Paid Off
             </span>
-            <p className="text-sm font-bold font-mono text-teal-400">
+            <p className="text-sm font-bold font-mono text-primary-container">
               {totalPaidLoansCount} Settled
             </p>
-            <span className="text-[10px] text-slate-400 font-mono">
+            <span className="text-[10px] text-on-surface-variant font-mono">
               {student.punctualPaymentsCount} on-time
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
-            <span className="text-[9px] uppercase tracking-widest text-slate-500 font-mono font-bold block">
+          <div className="p-2.5 rounded-2xl glass-well text-center">
+            <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-mono font-bold block">
               English Earned
             </span>
-            <p className="text-sm font-bold font-mono text-cyan-400">
+            <p className="text-sm font-bold font-mono text-tertiary-fixed-dim">
               E${totalRewardsAmount}.00
             </p>
-            <span className="text-[10px] text-slate-400 font-mono">
+            <span className="text-[10px] text-on-surface-variant font-mono">
               in class awards
             </span>
           </div>
@@ -245,57 +245,57 @@ export const StudentYearlyHistory: React.FC<StudentYearlyHistoryProps> = ({
       <div className="flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => setFilter('all')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
             filter === 'all'
-              ? 'bg-slate-800 text-white border-teal-500/50 shadow-sm'
-              : 'bg-slate-950 text-slate-400 border-slate-800/80 hover:text-slate-200'
+              ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+              : 'glass-well text-on-surface-variant hover:text-on-surface'
           }`}
         >
           All Activity ({events.length})
         </button>
         <button
           onClick={() => setFilter('rises')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border flex items-center gap-1.5 ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
             filter === 'rises'
-              ? 'bg-emerald-950 text-emerald-200 border-emerald-500/60 shadow-sm'
-              : 'bg-slate-950 text-slate-400 border-slate-800/80 hover:text-slate-200'
+              ? 'bg-tertiary-container/25 text-tertiary-fixed-dim border border-tertiary-container/50 shadow-sm'
+              : 'glass-well text-on-surface-variant hover:text-on-surface'
           }`}
         >
-          <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+          <TrendingUp className="w-3.5 h-3.5 text-tertiary-fixed-dim" />
           Credit Rises ({rises.length})
         </button>
         <button
           onClick={() => setFilter('paid_loans')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border flex items-center gap-1.5 ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
             filter === 'paid_loans'
-              ? 'bg-teal-950 text-teal-200 border-teal-500/60 shadow-sm'
-              : 'bg-slate-950 text-slate-400 border-slate-800/80 hover:text-slate-200'
+              ? 'bg-primary-container/20 text-primary-container border border-primary-container/50 shadow-sm'
+              : 'glass-well text-on-surface-variant hover:text-on-surface'
           }`}
         >
-          <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary-container" />
           Paid Loans ({paidLoans.length})
         </button>
         <button
           onClick={() => setFilter('rewards')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border flex items-center gap-1.5 ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
             filter === 'rewards'
-              ? 'bg-cyan-950 text-cyan-200 border-cyan-500/60 shadow-sm'
-              : 'bg-slate-950 text-slate-400 border-slate-800/80 hover:text-slate-200'
+              ? 'bg-primary-container/20 text-primary-container border border-primary-container/50 shadow-sm'
+              : 'glass-well text-on-surface-variant hover:text-on-surface'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <Sparkles className="w-3.5 h-3.5 text-primary-container" />
           Rewards &amp; Credits ({rewards.length + adjustments.length})
         </button>
         {storePurchases.length > 0 && (
           <button
             onClick={() => setFilter('store')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
               filter === 'store'
-                ? 'bg-purple-950 text-purple-200 border-purple-500/60 shadow-sm'
-                : 'bg-slate-950 text-slate-400 border-slate-800/80 hover:text-slate-200'
+                ? 'bg-secondary-container/30 text-secondary border border-secondary/40 shadow-sm'
+                : 'glass-well text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <ShoppingBag className="w-3.5 h-3.5 text-purple-400" />
+            <ShoppingBag className="w-3.5 h-3.5 text-secondary" />
             Store ({storePurchases.length})
           </button>
         )}
@@ -307,36 +307,36 @@ export const StudentYearlyHistory: React.FC<StudentYearlyHistoryProps> = ({
           filteredEvents.map((ev) => (
             <div
               key={ev.id}
-              className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/90 hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              className="p-3.5 rounded-2xl glass-well hover:border-primary-container/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 shrink-0 mt-0.5">
+                <div className="p-2 rounded-xl glass-pill shrink-0 mt-0.5">
                   {ev.icon}
                 </div>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-xs font-bold text-white font-mono">{ev.title}</h3>
+                    <h3 className="text-xs font-bold text-on-surface font-mono">{ev.title}</h3>
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono border ${ev.badgeBg} ${ev.badgeColor}`}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border ${ev.badgeBg} ${ev.badgeColor}`}
                     >
                       {ev.badge}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 font-sans">{ev.subtitle}</p>
+                  <p className="text-xs text-on-surface-variant font-sans">{ev.subtitle}</p>
                   {ev.details && (
-                    <p className="text-[11px] text-slate-500 font-mono italic">
+                    <p className="text-[11px] text-outline font-mono italic">
                       Note: {ev.details}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="text-left sm:text-right shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800/60 flex sm:flex-col justify-between sm:justify-start items-center sm:items-end">
+              <div className="text-left sm:text-right shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-outline-variant/20 flex sm:flex-col justify-between sm:justify-start items-center sm:items-end">
                 <span className={`text-sm font-bold font-mono ${ev.amountColor}`}>
                   {ev.amountLabel}
                 </span>
-                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-slate-600" />
+                <span className="text-[10px] text-on-surface-variant font-mono flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-outline" />
                   {new Date(ev.timestamp).toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'short',
@@ -347,12 +347,12 @@ export const StudentYearlyHistory: React.FC<StudentYearlyHistoryProps> = ({
             </div>
           ))
         ) : (
-          <div className="p-8 rounded-xl bg-slate-950/50 border border-slate-800/60 text-center space-y-2">
-            <ShieldCheck className="w-8 h-8 text-slate-600 mx-auto" />
-            <p className="text-xs font-bold text-slate-300 font-mono uppercase tracking-wider">
+          <div className="p-8 rounded-2xl glass-well text-center space-y-2">
+            <ShieldCheck className="w-8 h-8 text-outline mx-auto" />
+            <p className="text-xs font-bold text-on-surface font-mono uppercase tracking-wider">
               No History Records in this Filter
             </p>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
+            <p className="text-xs text-on-surface-variant max-w-md mx-auto">
               Your academic year records update automatically as loans are settled, credit limit rises are awarded by the teacher, and English participation dollars are logged!
             </p>
           </div>

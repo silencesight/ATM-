@@ -120,41 +120,41 @@ export const ManualBalanceAdjustModal: React.FC<ManualBalanceAdjustModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+      <div className="glass-panel specular-edge rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col text-on-surface">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/95 backdrop-blur z-10">
+        <div className="p-5 border-b border-outline-variant/20 flex items-center justify-between sticky top-0 bg-surface-container-lowest/80 backdrop-blur-xl z-10">
           <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center border font-mono-code font-black text-base shadow-sm ${
+              className={`w-10 h-10 rounded-2xl flex items-center justify-center border font-mono-code font-black text-base shadow-sm ${
                 activeTab === 'increase'
-                  ? 'bg-emerald-950/80 border-emerald-500/40 text-emerald-400'
-                  : 'bg-rose-950/80 border-rose-500/40 text-rose-400'
+                  ? 'bg-tertiary-container/20 border-tertiary-container/40 text-tertiary-fixed-dim'
+                  : 'bg-error-container/30 border-error/40 text-error'
               }`}
             >
               {activeTab === 'increase' ? (
-                <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <TrendingUp className="w-5 h-5 text-tertiary-fixed-dim" />
               ) : (
-                <TrendingDown className="w-5 h-5 text-rose-400" />
+                <TrendingDown className="w-5 h-5 text-error" />
               )}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-slate-100 tracking-tight">
+                <h2 className="text-lg font-black text-on-surface font-headline tracking-tight">
                   Adjust Eurodollar Balance
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono-code font-bold uppercase bg-amber-950/60 border border-amber-500/30 text-amber-300">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-code font-bold uppercase bg-primary-container/15 border border-primary-container/30 text-primary-container">
                   {CURRENCY_NICKNAME} ({CURRENCY_SYMBOL})
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-on-surface-variant">
                 Directly add or deduct {CURRENCY_NAME} for students
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-on-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

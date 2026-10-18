@@ -38,26 +38,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-6 text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-2xl glass-panel rounded-3xl specular-edge shadow-2xl p-6 text-on-surface my-8">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-start justify-between border-b border-outline-variant/20 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-slate-950 text-emerald-400 border border-slate-800">
+            <div className="p-2.5 rounded-2xl bg-primary-container/15 text-primary-container border border-primary-container/30">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white uppercase tracking-wider font-mono">
+              <h2 className="text-lg font-bold text-on-surface uppercase tracking-wider font-headline">
                 Classroom Financial &amp; Didactic Protocols
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-on-surface-variant mt-0.5">
                 Configure interest rates, penalty increments, task exchange values, and credit limits.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-on-surface transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

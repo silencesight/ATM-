@@ -79,16 +79,16 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-6 text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-xl glass-panel rounded-3xl shadow-2xl p-6 text-on-surface my-8 specular-edge">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-start justify-between border-b border-outline-variant/20 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-slate-950 text-emerald-400 border border-slate-800">
+            <div className="p-2 rounded-xl bg-tertiary-container/20 text-tertiary-fixed-dim border border-tertiary-container/40">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+              <h2 className="text-lg font-bold uppercase tracking-wider text-on-surface font-headline flex items-center gap-2">
                 In-Class Statement Repayment
                 {isTeacherReviewer && (
                   <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-bold">

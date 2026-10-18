@@ -3,86 +3,574 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #42e5b0;
-  --color-primary-container: #00c896;
-  --color-on-primary: #003828;
-  --color-secondary: #4cd6fb;
-  --color-secondary-container: #00b2d6;
-  --color-tertiary: #ffc149;
-  --color-surface-dark: #0b0e14;
-  --color-surface-card-dark: #181d29;
-  --color-surface-card-hover: #1f2535;
-  --color-surface-light: #f0f2f8;
+  --color-background: #10131c;
+  --color-surface: #10131c;
+  --color-surface-dim: #10131c;
+  --color-surface-bright: #363943;
+  --color-surface-container-lowest: #0b0e17;
+  --color-surface-container-low: #181b25;
+  --color-surface-container: #1c1f29;
+  --color-surface-container-high: #272a34;
+  --color-surface-container-highest: #32343f;
+  --color-surface-variant: #32343f;
+
+  --color-on-background: #e0e1ef;
+  --color-on-surface: #e0e1ef;
+  --color-on-surface-variant: #bac9cc;
+  --color-outline: #849396;
+  --color-outline-variant: #3b494c;
+
+  --color-primary: #dbfcff;
+  --color-primary-container: #00f0ff;
+  --color-primary-fixed: #9cf0ff;
+  --color-primary-fixed-dim: #00dbe9;
+  --color-on-primary: #00363a;
+  --color-on-primary-container: #006970;
+  --color-on-primary-fixed: #001f22;
+  --color-on-primary-fixed-variant: #004f54;
+  --color-surface-tint: #00dbe9;
+
+  --color-secondary: #c0c1ff;
+  --color-secondary-container: #3131c0;
+  --color-secondary-fixed: #e1e0ff;
+  --color-secondary-fixed-dim: #c0c1ff;
+  --color-on-secondary: #1309a7;
+  --color-on-secondary-container: #bdbdff;
+  --color-on-secondary-fixed: #07006c;
+  --color-on-secondary-fixed-variant: #2f2ebe;
+
+  --color-tertiary: #d8ffe7;
+  --color-tertiary-container: #65f2b5;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-on-tertiary: #003824;
+  --color-on-tertiary-container: #006c47;
+  --color-on-tertiary-fixed: #002113;
+  --color-on-tertiary-fixed-variant: #005236;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  --color-inverse-surface: #e0e1ef;
+  --color-inverse-on-surface: #2d303a;
+  --color-inverse-primary: #006970;
+
+  --color-surface-dark: #10131c;
+  --color-surface-card-dark: #181b25;
+  --color-surface-card-hover: #272a34;
+  --color-surface-light: #faf8ff;
   --color-surface-card-light: #ffffff;
 }
 
-:root {
+/* ==========================================================================
+   PRISMATIC AERO GLASS (DARK MODE) & AERO CRYSTALLINE GLASS (LIGHT MODE)
+   ========================================================================== */
+
+:root,
+html.dark {
   color-scheme: dark;
-  --bg-app: #0b0e14;
-  --bg-card: #181d29;
-  --text-main: #e6edf3;
-  --text-muted: #94a3b8;
-  --border-glass: rgba(255, 255, 255, 0.08);
+  --color-background: #10131c;
+  --color-surface: #10131c;
+  --color-surface-dim: #10131c;
+  --color-surface-bright: #363943;
+  --color-surface-container-lowest: #0b0e17;
+  --color-surface-container-low: #181b25;
+  --color-surface-container: #1c1f29;
+  --color-surface-container-high: #272a34;
+  --color-surface-container-highest: #32343f;
+  --color-surface-variant: #32343f;
+
+  --color-on-background: #e0e1ef;
+  --color-on-surface: #e0e1ef;
+  --color-on-surface-variant: #bac9cc;
+  --color-outline: #849396;
+  --color-outline-variant: #3b494c;
+
+  --color-primary: #dbfcff;
+  --color-primary-container: #00f0ff;
+  --color-primary-fixed: #9cf0ff;
+  --color-primary-fixed-dim: #00dbe9;
+  --color-on-primary: #00363a;
+  --color-on-primary-container: #006970;
+  --color-on-primary-fixed: #001f22;
+  --color-on-primary-fixed-variant: #004f54;
+  --color-surface-tint: #00dbe9;
+
+  --color-secondary: #c0c1ff;
+  --color-secondary-container: #3131c0;
+  --color-secondary-fixed: #e1e0ff;
+  --color-secondary-fixed-dim: #c0c1ff;
+  --color-on-secondary: #1309a7;
+  --color-on-secondary-container: #bdbdff;
+  --color-on-secondary-fixed: #07006c;
+  --color-on-secondary-fixed-variant: #2f2ebe;
+
+  --color-tertiary: #d8ffe7;
+  --color-tertiary-container: #65f2b5;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-on-tertiary: #003824;
+  --color-on-tertiary-container: #006c47;
+  --color-on-tertiary-fixed: #002113;
+  --color-on-tertiary-fixed-variant: #005236;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  --color-inverse-surface: #e0e1ef;
+  --color-inverse-on-surface: #2d303a;
+  --color-inverse-primary: #006970;
+
+  --bg-app: #10131c;
+  --bg-card: rgba(24, 27, 37, 0.65);
+  --text-main: #e0e1ef;
+  --text-muted: #bac9cc;
+  --border-glass: rgba(255, 255, 255, 0.09);
 }
 
 html.light {
   color-scheme: light;
-  --bg-app: #f0f2f8;
-  --bg-card: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-glass: rgba(0, 0, 0, 0.08);
+  --color-background: #faf8ff;
+  --color-surface: #faf8ff;
+  --color-surface-dim: #d2d9f4;
+  --color-surface-bright: #faf8ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f3ff;
+  --color-surface-container: #eaedff;
+  --color-surface-container-high: #e2e7ff;
+  --color-surface-container-highest: #dae2fd;
+  --color-surface-variant: #dae2fd;
+
+  --color-on-background: #131b2e;
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #3e4850;
+  --color-outline: #6e7881;
+  --color-outline-variant: #bec8d2;
+
+  --color-primary: #005d90;
+  --color-primary-container: #0077b6;
+  --color-primary-fixed: #cde5ff;
+  --color-primary-fixed-dim: #94ccff;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #fefcff;
+  --color-on-primary-fixed: #001d31;
+  --color-on-primary-fixed-variant: #004b74;
+  --color-surface-tint: #006398;
+
+  --color-secondary: #00677d;
+  --color-secondary-container: #50d9fe;
+  --color-secondary-fixed: #b3ebff;
+  --color-secondary-fixed-dim: #4cd6fb;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #005c70;
+  --color-on-secondary-fixed: #001f27;
+  --color-on-secondary-fixed-variant: #004e5f;
+
+  --color-tertiary: #00664b;
+  --color-tertiary-container: #008160;
+  --color-tertiary-fixed: #60fcc6;
+  --color-tertiary-fixed-dim: #3adfab;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #f6fff9;
+  --color-on-tertiary-fixed: #002116;
+  --color-on-tertiary-fixed-variant: #00513b;
+
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --color-inverse-surface: #283044;
+  --color-inverse-on-surface: #eef0ff;
+  --color-inverse-primary: #94ccff;
+
+  --bg-app: #faf8ff;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --text-main: #131b2e;
+  --text-muted: #3e4850;
+  --border-glass: rgba(255, 255, 255, 0.9);
 }
 
-html.dark {
-  color-scheme: dark;
-  --bg-app: #0b0e14;
-  --bg-card: #181d29;
-  --text-main: #e6edf3;
-  --text-muted: #94a3b8;
-  --border-glass: rgba(255, 255, 255, 0.08);
-}
-
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html.dark body {
-  background-color: #0b0e14;
-  color: #e6edf3;
+  background-color: #10131c;
+  color: #e0e1ef;
 }
 
 html.light body {
-  background-color: #f0f2f8;
-  color: #0f172a;
+  background-color: #faf8ff;
+  color: #131b2e;
 }
 
+.font-headline,
 .font-display {
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Sora', 'Space Grotesk', 'Plus Jakarta Sans', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .font-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Hanken Grotesk', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.font-mono,
 .font-mono-code {
-  font-family: 'Space Mono', monospace;
+  font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .font-serif-card {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Space Grotesk', 'Cinzel', Georgia, serif;
 }
 
 /* ==========================================================================
-   WINUI / MACOS SEAMLESS LIGHT THEME SYSTEM
-   Natural, warm, ergonomic light mode with rich contrast and vibrant chips
+   LIQUID GLASS CORE SURFACES & REFRACTIVE MEMBRANES
    ========================================================================== */
 
-/* 1. Background Surfaces & Card Containers */
+/* Ambient Caustic Background Orbs */
+.caustic-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(110px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Sidebar & Header Glass Membranes */
+.glass-sidebar {
+  background: rgba(16, 19, 28, 0.74);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border-right: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+html.light .glass-sidebar {
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border-right: 1px solid rgba(190, 200, 210, 0.45);
+}
+
+.glass-header {
+  background: rgba(16, 19, 28, 0.64);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+html.light .glass-header {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(190, 200, 210, 0.45);
+}
+
+/* Primary Frosted Glass Membrane */
+.glass-panel,
+.aero-glass {
+  background: rgba(24, 27, 37, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 20px 0 rgba(0, 240, 255, 0.03);
+}
+
+html.light .glass-panel,
+html.light .aero-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 16px 40px -8px rgba(19, 27, 46, 0.07),
+    0 4px 12px -2px rgba(0, 93, 144, 0.04),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 1);
+}
+
+/* Interactive Refractive Card */
+.glass-card-interactive,
+.aero-card {
+  background: linear-gradient(135deg, rgba(39, 42, 52, 0.68) 0%, rgba(16, 19, 28, 0.78) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-interactive:hover,
+.aero-card:hover {
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow:
+    0 24px 55px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(0, 240, 255, 0.12),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+html.light .glass-card-interactive,
+html.light .aero-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(242, 243, 255, 0.68) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 12px 32px -6px rgba(19, 27, 46, 0.06),
+    0 2px 6px -1px rgba(0, 93, 144, 0.04),
+    inset 0 1.5px 0 0 #ffffff;
+}
+
+html.light .glass-card-interactive:hover,
+html.light .aero-card:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(242, 243, 255, 0.82) 100%);
+  border-color: rgba(80, 217, 254, 0.6);
+  box-shadow:
+    0 20px 42px -8px rgba(0, 93, 144, 0.12),
+    0 4px 12px -2px rgba(80, 217, 254, 0.15),
+    inset 0 1.5px 0 0 #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Inset Telemetry Well / Canal */
+.glass-well,
+.aero-well {
+  background: rgba(11, 14, 23, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+html.light .glass-well,
+html.light .aero-well {
+  background: rgba(234, 237, 255, 0.65);
+  border: 1px solid rgba(190, 200, 210, 0.45);
+  box-shadow:
+    inset 0 2px 5px rgba(19, 27, 46, 0.04),
+    0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Refractive Pill / Control Capsule */
+.glass-pill,
+.aero-pill {
+  background: rgba(39, 42, 52, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+html.light .glass-pill,
+html.light .aero-pill {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(190, 200, 210, 0.5);
+  box-shadow:
+    0 4px 12px rgba(19, 27, 46, 0.04),
+    inset 0 1px 0 0 #ffffff;
+}
+
+/* Specular Edge Border Highlight */
+.specular-edge {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.08);
+}
+
+html.light .specular-edge {
+  box-shadow: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.95), 0 8px 24px -6px rgba(0, 93, 144, 0.08);
+}
+
+/* Liquid Pill Primary & Emerald Buttons */
+.liquid-button-primary,
+.btn-liquid-primary {
+  background: linear-gradient(135deg, #00f0ff 0%, #00dbe9 50%, #3131c0 100%);
+  color: #001f22;
+  box-shadow:
+    0 8px 25px rgba(0, 240, 255, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+}
+
+.liquid-button-primary:hover:not(:disabled),
+.btn-liquid-primary:hover:not(:disabled) {
+  box-shadow:
+    0 12px 32px rgba(0, 240, 255, 0.42),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+html.light .liquid-button-primary,
+html.light .btn-liquid-primary {
+  background: linear-gradient(135deg, #005d90 0%, #0077b6 60%, #0096c7 100%);
+  color: #ffffff;
+  box-shadow:
+    0 8px 24px -4px rgba(0, 119, 182, 0.35),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+html.light .liquid-button-primary:hover:not(:disabled),
+html.light .btn-liquid-primary:hover:not(:disabled) {
+  box-shadow:
+    0 12px 28px -4px rgba(0, 119, 182, 0.45),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.65);
+}
+
+.liquid-button-emerald,
+.btn-liquid-emerald {
+  background: linear-gradient(135deg, #65f2b5 0%, #4edea3 100%);
+  color: #002113;
+  box-shadow:
+    0 8px 25px rgba(101, 242, 181, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+}
+
+.liquid-button-emerald:hover:not(:disabled),
+.btn-liquid-emerald:hover:not(:disabled) {
+  box-shadow:
+    0 12px 30px rgba(101, 242, 181, 0.38),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+html.light .liquid-button-emerald,
+html.light .btn-liquid-emerald {
+  background: linear-gradient(135deg, #00664b 0%, #008160 100%);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px -4px rgba(0, 129, 96, 0.3),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ==========================================================================
+   HOLOGRAPHIC STUDENT INSTRUMENT FINISHES
+   ========================================================================== */
+
+.holo-card-cyan {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.18) 0%, rgba(49, 49, 192, 0.28) 55%, rgba(11, 14, 23, 0.92) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 12px 32px -4px rgba(0, 240, 255, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+html.light .holo-card-cyan {
+  background: linear-gradient(135deg, #004e7c 0%, #0077b6 50%, #023e8a 100%);
+  border: 1px solid rgba(148, 204, 255, 0.6);
+  box-shadow: 0 14px 30px -6px rgba(0, 93, 144, 0.28), inset 0 1.5px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+.holo-card-indigo {
+  background: linear-gradient(135deg, rgba(192, 193, 255, 0.16) 0%, rgba(49, 49, 192, 0.35) 50%, rgba(16, 19, 28, 0.92) 100%);
+  border: 1px solid rgba(192, 193, 255, 0.32);
+  box-shadow: 0 12px 32px -4px rgba(49, 49, 192, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+html.light .holo-card-indigo {
+  background: linear-gradient(135deg, #1e295b 0%, #2b3a8a 50%, #151e46 100%);
+  border: 1px solid rgba(192, 193, 255, 0.5);
+  box-shadow: 0 14px 30px -6px rgba(30, 41, 91, 0.28), inset 0 1.5px 0 0 rgba(255, 255, 255, 0.4);
+}
+
+.holo-card-emerald {
+  background: linear-gradient(135deg, rgba(101, 242, 181, 0.18) 0%, rgba(0, 108, 71, 0.32) 55%, rgba(11, 14, 23, 0.92) 100%);
+  border: 1px solid rgba(101, 242, 181, 0.35);
+  box-shadow: 0 12px 32px -4px rgba(101, 242, 181, 0.14), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+html.light .holo-card-emerald {
+  background: linear-gradient(135deg, #00563f 0%, #007f5f 55%, #003d2d 100%);
+  border: 1px solid rgba(96, 252, 198, 0.5);
+  box-shadow: 0 14px 30px -6px rgba(0, 102, 75, 0.26), inset 0 1.5px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+.holo-card-amber {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(146, 64, 14, 0.35) 55%, rgba(11, 14, 23, 0.92) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  box-shadow: 0 12px 32px -4px rgba(251, 191, 36, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+html.light .holo-card-amber {
+  background: linear-gradient(135deg, #78350f 0%, #b45309 55%, #451a03 100%);
+  border: 1px solid rgba(253, 230, 138, 0.55);
+  box-shadow: 0 14px 30px -6px rgba(180, 83, 9, 0.26), inset 0 1.5px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+.holo-card-delisted {
+  background: linear-gradient(135deg, rgba(147, 0, 10, 0.28) 0%, rgba(39, 42, 52, 0.45) 55%, rgba(11, 14, 23, 0.95) 100%);
+  border: 1px solid rgba(255, 180, 171, 0.28);
+  box-shadow: inset 0 1px 0 0 rgba(255, 180, 171, 0.15);
+}
+
+html.light .holo-card-delisted {
+  background: linear-gradient(135deg, #5c1922 0%, #3a2028 55%, #24171c 100%);
+  border: 1px solid rgba(255, 180, 171, 0.4);
+  box-shadow: 0 12px 26px -6px rgba(147, 0, 10, 0.22), inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.holo-sheen {
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.14) 36%,
+    rgba(0, 240, 255, 0.16) 43%,
+    rgba(192, 193, 255, 0.14) 50%,
+    transparent 65%
+  );
+}
+
+/* Custom Liquid Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(11, 14, 23, 0.3);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(132, 147, 150, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.5);
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: rgba(226, 231, 255, 0.4);
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 93, 144, 0.22);
+  border-radius: 9999px;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 119, 182, 0.45);
+}
+
+/* ==========================================================================
+   MODAL & LEGACY COMPONENT LIQUID GLASS HARMONIZATION
+   Ensures all dialogs, popups, and utility surfaces inherit Aero Glass
+   ========================================================================== */
+
+html.dark .bg-slate-900 {
+  background-color: rgba(24, 27, 37, 0.78);
+  backdrop-filter: blur(20px);
+}
+
+html.dark .bg-slate-950 {
+  background-color: rgba(11, 14, 23, 0.72);
+}
+
 html.light .bg-slate-900,
 html.light .bg-\[\#0b0e14\],
 html.light .bg-\[\#0e121b\],
@@ -96,270 +584,106 @@ html.light .bg-\[\#0f131c\]\/95,
 html.light .bg-\[\#11151f\]\/90,
 html.light .bg-\[\#181d29\]\/90,
 html.light .bg-\[\#181d29\]\/95 {
-  background-color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(24px) saturate(180%);
 }
 
-/* 2. Inset Wells, Metric Boxes, and Table Headers */
 html.light .bg-slate-950,
 html.light .bg-\[\#11151f\],
 html.light .bg-\[\#0d1117\],
 html.light thead.bg-slate-950,
 html.light thead .bg-slate-950,
 html.light .bg-slate-950\/50,
+html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/70,
 html.light .bg-slate-950\/80,
 html.light .bg-slate-950\/90 {
-  background-color: #e9ecf4 !important;
+  background-color: rgba(234, 237, 255, 0.7) !important;
 }
 
-/* 3. Utility Button Backgrounds & Hover States */
 html.light .bg-slate-800,
 html.light .bg-slate-800\/50,
 html.light .bg-slate-800\/60,
-html.light .bg-slate-800\/80,
-html.light .bg-white\/\[0\.04\],
-html.light .bg-white\/\[0\.05\],
-html.light .bg-white\/\[0\.06\],
-html.light .bg-white\/\[0\.08\] {
-  background-color: #f4f6fa !important;
+html.light .bg-slate-800\/80 {
+  background-color: rgba(226, 231, 255, 0.75) !important;
 }
 
 html.light .hover\:bg-slate-800:hover,
-html.light .hover\:bg-slate-700:hover,
-html.light .hover\:bg-\[\#212736\]:hover,
-html.light .hover\:bg-\[\#1f2535\]:hover,
-html.light .hover\:bg-white\/\[0\.1\]:hover,
-html.light .hover\:bg-white\/\[0\.12\]:hover,
-html.light .hover\:bg-white\/\[0\.15\]:hover {
-  background-color: #e2e6ef !important;
+html.light .hover\:bg-slate-700:hover {
+  background-color: rgba(218, 226, 253, 0.9) !important;
 }
 
-/* 4. Borders & Dividers */
 html.light .border-slate-800,
 html.light .border-slate-700,
 html.light .border-slate-800\/80,
-html.light .border-slate-800\/60,
-html.light .border-white\/\[0\.05\],
-html.light .border-white\/\[0\.06\],
-html.light .border-white\/\[0\.07\],
-html.light .border-white\/\[0\.08\],
-html.light .border-white\/\[0\.1\],
-html.light .border-white\/\[0\.12\] {
-  border-color: #dbe0eb !important;
+html.light .border-slate-800\/60 {
+  border-color: rgba(190, 200, 210, 0.55) !important;
 }
 
-/* 5. Typography & High-Contrast Colors */
-html.light .text-white,
 html.light .text-slate-100,
-html.light .text-slate-200 {
-  color: #0f172a !important;
+html.light .text-slate-200,
+html.light .bg-slate-900 h2.text-white,
+html.light .bg-slate-900 h3.text-white,
+html.light .bg-slate-900 h4.text-white,
+html.light .bg-slate-900 p.text-white,
+html.light .bg-slate-900 span.text-white,
+html.light .bg-slate-900 strong.text-white,
+html.light .bg-slate-900 input.text-white,
+html.light .bg-slate-900 select.text-white,
+html.light .bg-slate-950 h2.text-white,
+html.light .bg-slate-950 h3.text-white,
+html.light .bg-slate-950 h4.text-white,
+html.light .bg-slate-950 p.text-white,
+html.light .bg-slate-950 span.text-white,
+html.light .bg-slate-950 strong.text-white,
+html.light .bg-slate-950 input.text-white,
+html.light .bg-slate-950 select.text-white {
+  color: #131b2e !important;
 }
 
 html.light .text-slate-300 {
-  color: #334155 !important;
+  color: #283044 !important;
 }
 
 html.light .text-slate-400 {
-  color: #475569 !important;
+  color: #3e4850 !important;
 }
 
 html.light .text-slate-500 {
-  color: #64748b !important;
+  color: #6e7881 !important;
 }
 
-/* Accents in Light Mode: Vibrant, crisp, highly legible */
 html.light .text-emerald-400,
-html.light .text-emerald-300,
-html.light .text-\[\#42e5b0\] {
-  color: #047857 !important;
+html.light .text-emerald-300 {
+  color: #00664b !important;
 }
 
 html.light .text-teal-300,
 html.light .text-teal-400 {
-  color: #0f766e !important;
+  color: #00677d !important;
 }
 
 html.light .text-amber-400,
-html.light .text-amber-300,
-html.light .text-amber-200 {
+html.light .text-amber-300 {
   color: #b45309 !important;
 }
 
 html.light .text-sky-400,
-html.light .text-sky-300 {
-  color: #0369a1 !important;
+html.light .text-sky-300,
+html.light .text-cyan-400,
+html.light .text-cyan-300 {
+  color: #005d90 !important;
 }
 
-html.light .text-purple-400,
-html.light .text-purple-300 {
-  color: #7e22ce !important;
-}
-
-html.light .text-rose-400,
-html.light .text-rose-300 {
-  color: #be123c !important;
-}
-
-/* 6. Vibrant Status Chips & Badges in Light Mode (No muddiness or opaque graying) */
-html.light .bg-emerald-500\/15,
-html.light .bg-emerald-500\/20,
-html.light .bg-emerald-950\/20,
-html.light .bg-emerald-950\/40 {
-  background-color: #ecfdf5 !important;
-  border-color: #a7f3d0 !important;
-  color: #047857 !important;
-}
-
-html.light .bg-amber-500\/15,
-html.light .bg-amber-500\/20,
-html.light .bg-amber-950\/20,
-html.light .bg-amber-950\/40,
-html.light .bg-amber-950\/60 {
-  background-color: #fffbeb !important;
-  border-color: #fde68a !important;
-  color: #b45309 !important;
-}
-
-html.light .bg-red-500\/15,
-html.light .bg-red-500\/20,
-html.light .bg-red-950\/60,
-html.light .bg-red-950\/40,
-html.light .bg-red-950\/20 {
-  background-color: #fef2f2 !important;
-  border-color: #fecaca !important;
-  color: #b91c1c !important;
-}
-
-html.light .bg-sky-500\/15,
-html.light .bg-sky-500\/20,
-html.light .bg-sky-950\/20,
-html.light .bg-cyan-500\/10 {
-  background-color: #f0f9ff !important;
-  border-color: #bae6fd !important;
-  color: #0369a1 !important;
-}
-
-html.light .bg-purple-500\/15,
-html.light .bg-purple-500\/20,
-html.light .bg-purple-950\/20 {
-  background-color: #faf5ff !important;
-  border-color: #e9d5ff !important;
-  color: #7e22ce !important;
-}
-
-/* Ensure child icons inside status chips carry the crisp accent color */
-html.light .bg-emerald-500\/15 *,
-html.light .bg-emerald-500\/20 * {
-  color: #047857 !important;
-}
-html.light .bg-amber-500\/20 *,
-html.light .bg-amber-950\/60 * {
-  color: #b45309 !important;
-}
-html.light .bg-red-950\/60 *,
-html.light .bg-red-500\/20 * {
-  color: #b91c1c !important;
-}
-html.light .bg-sky-500\/20 *,
-html.light .bg-cyan-500\/10 * {
-  color: #0369a1 !important;
-}
-
-/* 7. Form Controls & Inputs */
-html.light input:not([type="checkbox"]):not([type="radio"]),
-html.light textarea,
-html.light select {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
-}
-
-html.light input:not([type="checkbox"]):not([type="radio"]):focus,
-html.light textarea:focus,
-html.light select:focus {
-  border-color: #059669 !important;
-  box-shadow: 0 0 0 1px #059669 !important;
-}
-
-html.light input::placeholder,
-html.light textarea::placeholder {
-  color: #94a3b8 !important;
-}
-
-html.light select option {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-}
-
-/* 8. Modal Backdrops */
-html.light .bg-black\/80,
-html.light .bg-black\/75,
-html.light .bg-black\/70,
-html.light .bg-black\/60,
-html.light .bg-black\/50 {
-  background-color: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-/* 9. Table Rows & Shadows */
-html.light tr:hover {
-  background-color: #f8fafc !important;
-}
-
-html.light .shadow-2xl,
-html.light .shadow-xl {
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
-}
-
-html.light .shadow-sm {
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03) !important;
-}
-
-/* 10. Preserve Content inside Colored Action Buttons */
-html.light .bg-emerald-500,
-html.light .bg-emerald-600,
-html.light .bg-sky-600,
-html.light .bg-sky-500,
-html.light .bg-red-600,
-html.light .bg-red-500,
-html.light .bg-amber-500,
-html.light .bg-indigo-600,
-html.light .bg-purple-600,
-html.light .bg-emerald-500 .text-white,
-html.light .bg-emerald-600 .text-white,
-html.light .bg-sky-600 .text-white,
-html.light .bg-sky-500 .text-white,
-html.light .bg-red-600 .text-white,
-html.light .bg-red-500 .text-white,
-html.light .bg-amber-500 .text-white,
-html.light .bg-indigo-600 .text-white,
-html.light .bg-purple-600 .text-white {
-  color: #ffffff !important;
-}
-
-html.light .bg-emerald-500 .text-slate-950,
-html.light .bg-\[\#42e5b0\] .text-\[\#003828\] {
-  color: #003828 !important;
-}
-
-/* 11. EXCLUSION: Physical Simulated Credit Card */
-html.light .credit-card-surface,
-html.light [data-credit-card-canvas],
+/* Keep white text on holographic cards and solid colored buttons in Light Mode */
+html.light .holo-card-cyan *,
+html.light .holo-card-indigo *,
+html.light .holo-card-emerald *,
+html.light .holo-card-amber *,
+html.light .holo-card-delisted *,
 html.light .credit-card-surface *,
 html.light [data-credit-card-canvas] * {
-  /* Prevent color inversion inside simulated bank cards */
   color: inherit;
-}
-
-html.light .credit-card-surface .text-white {
-  color: #ffffff !important;
-}
-
-html.light .credit-card-surface .text-slate-300 {
-  color: #cbd5e1 !important;
-}
-
-html.light .credit-card-surface .text-amber-200\/90 {
-  color: rgba(253, 230, 138, 0.9) !important;
 }
 
 /* Print styles for classroom credit card didactic cutouts */

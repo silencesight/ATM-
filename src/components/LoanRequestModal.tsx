@@ -8,6 +8,7 @@ interface LoanRequestModalProps {
   onClose: () => void;
   student: Student;
   activeLoan?: Loan | null;
+  initialAmount?: number | null;
   settings: TeacherSettings;
   onSubmitLoan: (loanData: {
     principal: number;
@@ -22,13 +23,25 @@ export const LoanRequestModal: React.FC<LoanRequestModalProps> = ({
   onClose,
   student,
   activeLoan,
+  initialAmount,
   settings,
   onSubmitLoan,
 }) => {
-  const [loanAmount, setLoanAmount] = useState<number>(Math.min(50, student.maxLoanLimit));
+  const [loanAmount, setLoanAmount] = useState<number>(() => {
+    if (initialAmount && initialAmount > 0) {
+      return Math.max(10, Math.min(initialAmount, student.maxLoanLimit));
+    }
+    return Math.min(50, student.maxLoanLimit);
+  });
   const [loanType, setLoanType] = useState<'short' | 'big'>('short');
   const [durationDays, setDurationDays] = useState<number>(5);
   const [notes, setNotes] = useState<string>('');
+
+  React.useEffect(() => {
+    if (initialAmount && initialAmount > 0) {
+      setLoanAmount(Math.max(10, Math.min(initialAmount, student.maxLoanLimit)));
+    }
+  }, [initialAmount, student.maxLoanLimit]);
 
   // Rules checks
   const isDelisted = student.cardStatus === 'delisted';
@@ -76,16 +89,16 @@ export const LoanRequestModal: React.FC<LoanRequestModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-6 text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-xl glass-panel rounded-3xl shadow-2xl p-6 text-on-surface my-8 specular-edge">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-start justify-between border-b border-outline-variant/20 pb-4">
           <div>
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <DollarSign className="w-5 h-5" />
               </div>
-              <h2 className="text-xl font-bold font-serif-card text-white">
+              <h2 className="text-xl font-bold font-headline text-on-surface">
                 Request Classroom Loan
               </h2>
             </div>

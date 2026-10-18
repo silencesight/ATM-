@@ -1,176 +1,303 @@
 import React from 'react';
 import {
-  Sun,
-  Moon,
+  CreditCard,
   Minus,
   Square,
-  X as CloseIcon,
-  Sparkles
+  X,
+  Sun,
+  Moon,
+  Sparkles,
+  ShieldCheck,
+  Search,
+  Printer,
+  ShoppingBag,
+  LayoutDashboard,
 } from 'lucide-react';
+import { Student, TeacherSettings } from '../types';
+import { StudentSelectorNav } from './StudentSelectorNav';
+import { ActiveAppView } from './Sidebar';
 
 interface TopHeaderProps {
-  theme: 'dark' | 'light';
-  onToggleTheme: () => void;
-  title?: string;
-  subtitle?: string;
-  onOpenSidebar?: () => void;
+  activeView: ActiveAppView;
+  onSelectView?: (view: ActiveAppView) => void;
+  students: Student[];
+  selectedStudentId: string;
+  onSelectStudent: (id: string) => void;
+  settings: TeacherSettings;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
-  theme,
+  activeView,
+  onSelectView,
+  students,
+  selectedStudentId,
+  onSelectStudent,
+  settings,
+  theme = 'dark',
   onToggleTheme,
-  title = 'ESL Reserve Terminal',
-  subtitle = 'v3.1 Native Shell',
-  onOpenSidebar,
 }) => {
-  const isDark = theme === 'dark';
+  const activeCount = students.filter((s) => s.cardStatus === 'active').length;
 
-  const handleClose = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const isTauri =
+    typeof window !== 'undefined' &&
+    ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
+
+  const handleMinimize = async () => {
+    if (!isTauri) return;
     try {
-      // @ts-ignore
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      await getCurrentWindow().minimize();
+    } catch {
+      // ignore if outside Tauri
+    }
+  };
+
+  const handleToggleMaximize = async () => {
+    if (!isTauri) return;
+    try {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      await getCurrentWindow().toggleMaximize();
+    } catch {
+      // ignore if outside Tauri
+    }
+  };
+
+  const handleClose = async () => {
+    if (!isTauri) return;
+    try {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
       await getCurrentWindow().close();
     } catch {
-      window.close();
+      // ignore if outside Tauri
     }
   };
 
-  const handleMinimize = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleStartDrag = async (e: React.MouseEvent<HTMLElement>) => {
+    if (!isTauri || e.button !== 0) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('button, select, input, a, [data-no-drag]')) return;
     try {
-      // @ts-ignore
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().minimize();
-    } catch (err) {
-      console.warn('Minimize only works in Tauri desktop window', err);
-    }
-  };
-
-  const handleMaximize = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      // @ts-ignore
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().toggleMaximize();
-    } catch (err) {
-      console.warn('Maximize only works in Tauri desktop window', err);
-    }
-  };
-
-  const handleStartDrag = async (e: React.MouseEvent) => {
-    // Only drag on primary left button and avoid child button clicks
-    if (e.button !== 0) return;
-    try {
-      // @ts-ignore
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
       await getCurrentWindow().startDragging();
     } catch {
-      // Running in browser
+      // ignore if outside Tauri
     }
   };
 
-  const handleDoubleClickHeader = async () => {
-    try {
-      // @ts-ignore
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().toggleMaximize();
-    } catch {}
+  const viewMeta: Record<ActiveAppView, { badge: string; title: string; subtitle: string }> = {
+    teacher: {
+      badge: 'DIDACTIC TREASURY TERMINAL',
+      title: 'Teacher Hub & Classroom Ledger',
+      subtitle: settings.classroomTitle || 'ESL Financial Literacy & Micro-Banking',
+    },
+    student: {
+      badge: 'VIRTUAL INSTRUMENT PORTAL',
+      title: 'Student SmartPass & Credit Telemetry',
+      subtitle: 'Real-time balance, task-based loan settlement & credit tier progression',
+    },
+    store: {
+      badge: 'PRIVILEGE TREASURY & POS',
+      title: 'School Store & Classroom Privileges',
+      subtitle: 'Redeem Eurodollars for academic perks, passes, and classroom privileges',
+    },
+    grants: {
+      badge: 'FACULTY DISCRETIONARY RESERVE',
+      title: 'Award Daily English Eurodollars',
+      subtitle: 'Instant liquidity grants & merit adjustments for active English participation',
+    },
+    print: {
+      badge: 'PHYSICAL CARD ISSUANCE',
+      title: 'SmartPass Print Studio',
+      subtitle: 'Front & back folding credit card cutouts for classroom wallets',
+    },
   };
+
+  const currentMeta = viewMeta[activeView] || viewMeta.teacher;
 
   return (
     <header
       data-tauri-drag-region
       onMouseDown={handleStartDrag}
-      onDoubleClick={handleDoubleClickHeader}
-      className={`fixed top-0 left-0 right-0 h-13 z-40 flex items-center justify-between px-3 sm:px-5 transition-colors duration-200 border-b select-none no-print cursor-default ${
-        isDark
-          ? 'bg-[#0e121b]/90 backdrop-blur-2xl border-white/[0.08] text-[#e6edf3] shadow-[0_2px_16px_rgba(0,0,0,0.35)]'
-          : 'bg-[#f8f9ff]/90 backdrop-blur-xl border-slate-200 text-slate-900 shadow-sm'
-      }`}
+      onDoubleClick={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest('button, select, input, a, [data-no-drag]')) return;
+        handleToggleMaximize();
+      }}
+      className="no-print sticky top-0 z-40 h-16 px-4 sm:px-8 flex items-center justify-between gap-4 select-none glass-panel !bg-background/90 backdrop-blur-2xl border-b border-outline-variant/25"
     >
-      {/* Left: Window Traffic Light Controls + Terminal Title */}
-      <div data-tauri-drag-region className="flex items-center gap-3">
-        {/* macOS Traffic Lights Window Controls */}
+      {/* Left: Active Terminal Breadcrumb & View Title */}
+      <div className="flex items-center gap-3 min-w-0" data-tauri-drag-region>
         <div
-          data-tauri-drag-region="false"
-          onMouseDown={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 pointer-events-auto"
+          className="w-9 h-9 rounded-xl glass-pill flex items-center justify-center text-primary-container shrink-0 specular-edge"
+          data-tauri-drag-region
         >
-          <button
-            type="button"
-            onClick={handleClose}
-            className="group w-3.5 h-3.5 rounded-full bg-[#FF5F56] border border-[#E0443E]/80 shadow-[0_0_6px_rgba(255,95,86,0.35)] flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-            title="Close Window"
-          >
-            <CloseIcon className="w-2 h-2 text-[#4c0002] opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-          </button>
-          <button
-            type="button"
-            onClick={handleMinimize}
-            className="group w-3.5 h-3.5 rounded-full bg-[#FFBD2E] border border-[#DEA123]/80 shadow-[0_0_6px_rgba(255,189,46,0.35)] flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-            title="Minimize Window"
-          >
-            <Minus className="w-2 h-2 text-[#543b00] opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-          </button>
-          <button
-            type="button"
-            onClick={handleMaximize}
-            className="group w-3.5 h-3.5 rounded-full bg-[#27C93F] border border-[#1AAB29]/80 shadow-[0_0_6px_rgba(39,201,63,0.35)] flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-            title="Toggle Maximize"
-          >
-            <Square className="w-1.5 h-1.5 text-[#003810] opacity-0 group-hover:opacity-100 transition-opacity stroke-[3]" />
-          </button>
+          <CreditCard className="w-4 h-4 pointer-events-none" />
         </div>
-
-        <div className="h-4 w-px bg-white/[0.1] hidden sm:block" />
-
-        {/* Title */}
-        <div data-tauri-drag-region className="flex items-center gap-2">
-          <span className="font-display font-bold text-xs sm:text-sm tracking-tight truncate">
-            {title}
-          </span>
-          <span
-            className={`hidden md:inline-flex text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-              isDark
-                ? 'bg-white/[0.06] text-slate-300 border-white/[0.08]'
-                : 'bg-slate-100 text-slate-600 border-slate-200'
-            }`}
+        <div className="min-w-0" data-tauri-drag-region>
+          <div className="flex items-center gap-2" data-tauri-drag-region>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-primary-container font-bold">
+              {currentMeta.badge}
+            </span>
+            <span className="hidden md:inline-block text-outline">•</span>
+            <span className="hidden md:inline-block text-[11px] font-mono text-on-surface-variant truncate">
+              {settings.schoolName || 'Oxford English Academy'}
+            </span>
+          </div>
+          <h2
+            className="text-sm sm:text-base font-headline font-bold text-on-surface tracking-tight truncate"
+            data-tauri-drag-region
           >
-            {subtitle}
-          </span>
+            {currentMeta.title}
+          </h2>
         </div>
       </div>
 
-      {/* Right: Theme Switcher & Utility */}
-      <div
-        data-tauri-drag-region="false"
-        onMouseDown={(e) => e.stopPropagation()}
-        className="flex items-center gap-2 pointer-events-auto"
-      >
-        {/* ☀️ / 🌙 Instant Theme Toggle */}
-        <button
-          type="button"
-          onClick={onToggleTheme}
-          className={`px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-mono font-semibold transition-all cursor-pointer ${
-            isDark
-              ? 'bg-[#181d29] hover:bg-[#212736] text-amber-300 border-white/[0.1] shadow-sm'
-              : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-200 shadow-sm'
-          }`}
-          title={isDark ? 'Switch to Light Mode (Projector Ready)' : 'Switch to Dark Mode'}
-        >
-          {isDark ? (
-            <>
-              <Sun className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden sm:inline text-[11px] text-amber-200">Light</span>
-            </>
-          ) : (
-            <>
-              <Moon className="w-3.5 h-3.5 text-slate-700" />
-              <span className="hidden sm:inline text-[11px] text-slate-700">Dark</span>
-            </>
+      {/* Right: Quick View Pills, Student Selector, Live Status, Theme Toggle, Window Controls */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        {/* Quick Module Switcher Pills on Desktop */}
+        {onSelectView && (
+          <div className="hidden xl:flex items-center gap-1 p-1 rounded-full glass-well">
+            <button
+              type="button"
+              onClick={() => onSelectView('teacher')}
+              className={`px-3 py-1 rounded-full text-[11px] font-headline font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'teacher'
+                  ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <LayoutDashboard className="w-3 h-3" />
+              <span>Hub</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectView('student')}
+              className={`px-3 py-1 rounded-full text-[11px] font-headline font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'student'
+                  ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <CreditCard className="w-3 h-3" />
+              <span>Portal</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectView('grants')}
+              className={`px-3 py-1 rounded-full text-[11px] font-headline font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'grants'
+                  ? 'bg-tertiary-container text-on-tertiary-fixed shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Award E$</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectView('store')}
+              className={`px-3 py-1 rounded-full text-[11px] font-headline font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'store'
+                  ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <ShoppingBag className="w-3 h-3" />
+              <span>Store</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectView('print')}
+              className={`px-3 py-1 rounded-full text-[11px] font-headline font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'print'
+                  ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <Printer className="w-3 h-3" />
+              <span>Print</span>
+            </button>
+          </div>
+        )}
+
+        {/* Quick Student Switcher when in Student, Store, or Grants View */}
+        {(activeView === 'student' || activeView === 'store' || activeView === 'grants') &&
+          students.length > 0 && (
+            <StudentSelectorNav
+              students={students}
+              selectedStudentId={selectedStudentId}
+              onSelectStudent={onSelectStudent}
+              label={
+                activeView === 'store'
+                  ? 'Shopper'
+                  : activeView === 'grants'
+                  ? 'Recipient'
+                  : 'Cardholder'
+              }
+              variant="navbar"
+              showBalance={true}
+              showCreditScore={false}
+            />
           )}
-        </button>
+
+        {/* Active Cardholders Status Pill */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass-pill text-xs font-mono">
+          <span className="w-2 h-2 rounded-full bg-tertiary-container shadow-[0_0_8px_#65f2b5]" />
+          <span className="text-on-surface font-bold">{activeCount}</span>
+          <span className="text-on-surface-variant text-[11px]">Active</span>
+        </div>
+
+        {/* Theme Switcher Button */}
+        {onToggleTheme && (
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            title={
+              theme === 'dark'
+                ? 'Switch to Aero Crystalline Glass (Light Mode)'
+                : 'Switch to Prismatic Aero Glass (Dark Mode)'
+            }
+            className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:border-primary-container/50 transition-all"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-300" />
+            ) : (
+              <Moon className="w-4 h-4 text-primary" />
+            )}
+          </button>
+        )}
+
+        {/* Native Window Controls (Minimize, Maximize, Close) */}
+        {isTauri && (
+          <div className="flex items-center gap-1 pl-2 border-l border-outline-variant/30">
+            <button
+              type="button"
+              onClick={handleMinimize}
+              title="Minimize"
+              className="w-7 h-7 rounded-lg hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleMaximize}
+              title="Maximize / Restore"
+              className="w-7 h-7 rounded-lg hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              <Square className="w-3 h-3" />
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              title="Close"
+              className="w-7 h-7 rounded-lg hover:bg-error-container hover:text-on-error-container flex items-center justify-center text-on-surface-variant transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
