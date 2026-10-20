@@ -281,12 +281,6 @@ export async function pushClassroomStateToCloud(
         error: `Cloud database returned HTTP ${response.status}. Make sure Firebase Realtime Database rules allow read/write.`,
       };
     }
-    // Write tiny 30-byte version stamp so connected student devices only fetch state.json when updatedAt changes
-    await fetch(`${targetUrl}/atm_v4/updatedAt.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state.updatedAt),
-    }).catch(() => {});
     return { ok: true };
   } catch (err) {
     return {
@@ -452,22 +446,22 @@ export async function dispatchStudentAction(
       body: JSON.stringify(action),
     });
 
-    // Also update state snapshot so if teacher desktop app is currently closed,
-    // other students and this student on refresh see the up-to-date state immediately.
-    if (nextState) {
+    // Fetch latest authoritative server state first before applying student action
+    // so a student device NEVER overwrites a recent Teacher approval with stale local state!
+    const latestFromCloud = await fetchClassroomStateFromCloud(targetUrl);
+    const mergedServerState = latestFromCloud.state
+      ? applyStudentActionToState(latestFromCloud.state, action)
+      : nextState;
+
+    if (mergedServerState) {
       await fetch(`${targetUrl}/atm_v4/state.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nextState),
+        body: JSON.stringify(mergedServerState),
       });
-      await fetch(`${targetUrl}/atm_v4/updatedAt.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nextState.updatedAt),
-      }).catch(() => {});
     }
 
-    return { ok: true, updatedState: nextState };
+    return { ok: true, updatedState: mergedServerState || nextState };
   } catch (err) {
     return {
       ok: false,
@@ -571,8 +565,9 @@ export function subscribeToClassroomRealtime(options: {
       if (!forceFullFetch && typeof document !== 'undefined' && document.hidden) return;
       try {
         if (!forceFullFetch && lastSeenUpdatedAt) {
-          // 30-byte timestamp check: only download state.json if something actually changed!
-          const stampRes = await fetch(`${targetUrl}/atm_v4/updatedAt.json`);
+          // 30-byte timestamp check directly inside /atm_v4/state/updatedAt.json!
+          // This is automatically updated whenever ATM 4.0 writes /atm_v4/state.json.
+          const stampRes = await fetch(`${targetUrl}/atm_v4/state/updatedAt.json`);
           if (stampRes.ok) {
             const remoteStamp = await stampRes.json();
             if (typeof remoteStamp === 'string' && remoteStamp === lastSeenUpdatedAt) {
@@ -595,7 +590,7 @@ export function subscribeToClassroomRealtime(options: {
       const sseEndpoint =
         role === 'teacher'
           ? `${targetUrl}/atm_v4/student_actions.json`
-          : `${targetUrl}/atm_v4/updatedAt.json`;
+          : `${targetUrl}/atm_v4/state/updatedAt.json`;
       eventSource = new EventSource(sseEndpoint);
       eventSource.addEventListener('put', () => {
         if (role === 'teacher') {

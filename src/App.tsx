@@ -36,6 +36,7 @@ import {
   subscribeToClassroomRealtime,
   getConfiguredCloudDbUrl,
   fetchClassroomStateFromCloud,
+  removeCloudStudentAction,
 } from './services/cloudSync';
 import { INITIAL_STUDENTS, INITIAL_LOANS } from './data/initialData';
 import { loadClassrooms, saveClassrooms } from './data/classrooms';
@@ -1440,7 +1441,7 @@ export default function App() {
 
     if (req.type === 'loan_request' && req.loanRequestData) {
       const student = students.find((s) => s.id === req.studentId);
-      if (student && student.cardStatus === 'active' && !student.activeLoanId) {
+      if (student && student.cardStatus !== 'delisted') {
         const data = req.loanRequestData;
         const effectiveRate = settings.baseInterestRate;
         const totalDue = calculateTotalDue(data.principal, effectiveRate);
@@ -1792,6 +1793,7 @@ export default function App() {
           : r
       )
     );
+    removeCloudStudentAction(`act_${requestId}`, settings.cloudDatabaseUrl);
   };
 
   // Reject a pending student request and release any held Eurodollars
@@ -1827,6 +1829,7 @@ export default function App() {
           : r
       )
     );
+    removeCloudStudentAction(`act_${requestId}`, settings.cloudDatabaseUrl);
 
     addToast(
       'warning',
