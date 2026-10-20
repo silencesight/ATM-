@@ -11,6 +11,9 @@ import { SettingsModal } from './components/SettingsModal';
 import { DataBackupModal } from './components/DataBackupModal';
 import { ClassManagerModal } from './components/ClassManagerModal';
 import { StudentReportsModal } from './components/StudentReportsModal';
+import { TeacherApprovalCenterModal } from './components/TeacherApprovalCenterModal';
+import { CloudSyncModal } from './components/CloudSyncModal';
+import { StudentWebApp } from './components/student-web/StudentWebApp';
 import {
   Student,
   Loan,
@@ -22,7 +25,18 @@ import {
   Classroom,
   BalanceAdjustmentTransaction,
   CreditLimitRaiseTransaction,
+  PendingStudentRequest,
+  BalanceDisclaimerNotice,
+  P2PTransferRecord,
 } from './types';
+import {
+  CloudClassroomState,
+  StudentActionPayload,
+  pushClassroomStateToCloud,
+  subscribeToClassroomRealtime,
+  getConfiguredCloudDbUrl,
+  fetchClassroomStateFromCloud,
+} from './services/cloudSync';
 import { INITIAL_STUDENTS, INITIAL_LOANS } from './data/initialData';
 import { loadClassrooms, saveClassrooms } from './data/classrooms';
 import {
@@ -118,8 +132,32 @@ export default function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isClassManagerModalOpen, setIsClassManagerModalOpen] = useState(false);
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
+  const [isApprovalCenterOpen, setIsApprovalCenterOpen] = useState(false);
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>(() => loadClassrooms());
+
+  const [pendingRequests, setPendingRequests] = useState<PendingStudentRequest[]>(() => {
+    try {
+      const saved = localStorage.getItem('esl_classroom_pending_requests');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const isStandaloneStudentWeb = React.useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('portal') === 'student') return true;
+      if (params.get('portal') === 'teacher') return false;
+    } catch {
+      // ignore
+    }
+    const envMode = (import.meta as unknown as { env?: Record<string, string> }).env
+      ?.VITE_APP_MODE;
+    return envMode === 'student';
+  }, []);
 
   // Sync store catalog to localStorage
   useEffect(() => {
@@ -156,6 +194,14 @@ export default function App() {
     }
   }, [settings]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('esl_classroom_pending_requests', JSON.stringify(pendingRequests));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [pendingRequests]);
+
   // Toast Helper
   const addToast = (type: 'success' | 'warning' | 'info', title: string, message: string) => {
     const id = `toast_${Date.now()}_${Math.random()}`;
@@ -168,6 +214,141 @@ export default function App() {
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // Helper to build a BalanceDisclaimerNotice whenever a student's balance changes
+  const buildBalanceDisclaimer = (
+    studentId: string,
+    previousBalance: number,
+    newBalance: number,
+    reason: string,
+    category: BalanceDisclaimerNotice['category']
+  ): BalanceDisclaimerNotice => ({
+    id: `disc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    studentId,
+    previousBalance,
+    newBalance,
+    delta: newBalance - previousBalance,
+    reason,
+    category,
+    createdAt: new Date().toISOString(),
+  });
+
+  // Push classroom state to Cloud & Local BroadcastChannel whenever state changes in Teacher Mode
+  useEffect(() => {
+    if (isStandaloneStudentWeb) return;
+    const statePayload: CloudClassroomState = {
+      version: 4,
+      updatedAt: new Date().toISOString(),
+      students,
+      loans,
+      storeCatalog,
+      classrooms,
+      settings,
+      pendingRequests,
+    };
+    const timer = window.setTimeout(() => {
+      pushClassroomStateToCloud(statePayload, settings.cloudDatabaseUrl);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [
+    isStandaloneStudentWeb,
+    students,
+    loans,
+    storeCatalog,
+    classrooms,
+    settings,
+    pendingRequests,
+  ]);
+
+  // Listen for real-time Student Web App actions in Teacher Mode
+  useEffect(() => {
+    if (isStandaloneStudentWeb) return;
+
+    const handleIncomingStudentAction = (action: StudentActionPayload) => {
+      if (action.type === 'UPDATE_PROFILE') {
+        setStudents((prev) =>
+          prev.map((s) => {
+            if (s.id !== action.studentId) return s;
+            return {
+              ...s,
+              avatarUrl: action.avatarUrl !== undefined ? action.avatarUrl : s.avatarUrl,
+              customPassword:
+                action.customPassword !== undefined ? action.customPassword : s.customPassword,
+            };
+          })
+        );
+      } else if (action.type === 'ACKNOWLEDGE_DISCLAIMERS') {
+        const ackTime = new Date().toISOString();
+        setStudents((prev) =>
+          prev.map((s) => {
+            if (s.id !== action.studentId) return s;
+            return {
+              ...s,
+              disclaimers: (s.disclaimers || []).map((d) =>
+                action.disclaimerIds.includes(d.id) && !d.acknowledgedAt
+                  ? { ...d, acknowledgedAt: ackTime }
+                  : d
+              ),
+            };
+          })
+        );
+      } else if (action.type === 'SUBMIT_REQUEST') {
+        const req = action.request;
+        setPendingRequests((prev) => {
+          if (prev.some((r) => r.id === req.id)) return prev;
+          return [req, ...prev];
+        });
+        if (req.reservedAmount > 0) {
+          setStudents((prev) =>
+            prev.map((s) =>
+              s.id === req.studentId
+                ? { ...s, reservedBalance: (s.reservedBalance || 0) + req.reservedAmount }
+                : s
+            )
+          );
+        }
+        const labelMap: Record<PendingStudentRequest['type'], string> = {
+          loan_payment: 'Notebook Photo Loan Payment',
+          loan_request: 'New Loan Request',
+          store_purchase: 'School Store Order',
+          p2p_transfer: 'Friend Money Transfer',
+        };
+        addToast(
+          'info',
+          `📲 New ${labelMap[req.type]}`,
+          `${req.studentName} submitted a request from the Student Web App. Click Approvals to review!`
+        );
+      } else if (action.type === 'CANCEL_REQUEST') {
+        setPendingRequests((prev) => {
+          const target = prev.find((r) => r.id === action.requestId && r.status === 'pending');
+          if (target && target.reservedAmount > 0) {
+            setStudents((stPrev) =>
+              stPrev.map((s) =>
+                s.id === target.studentId
+                  ? {
+                      ...s,
+                      reservedBalance: Math.max(
+                        0,
+                        (s.reservedBalance || 0) - target.reservedAmount
+                      ),
+                    }
+                  : s
+              )
+            );
+          }
+          return prev.filter((r) => r.id !== action.requestId);
+        });
+      }
+    };
+
+    const unsubscribe = subscribeToClassroomRealtime({
+      role: 'teacher',
+      dbUrl: getConfiguredCloudDbUrl(settings.cloudDatabaseUrl),
+      onStudentAction: handleIncomingStudentAction,
+    });
+
+    return () => unsubscribe();
+  }, [isStandaloneStudentWeb, settings.cloudDatabaseUrl]);
 
   // Switch to student view from teacher row
   const handleSwitchToStudentView = (studentId: string) => {
@@ -389,6 +570,14 @@ export default function App() {
       timestamp: new Date().toISOString(),
     };
 
+    const disclaimer = buildBalanceDisclaimer(
+      student.id,
+      student.currentBalance,
+      newBalance,
+      `Store Purchase: ${purchaseRecord.itemName}`,
+      'store'
+    );
+
     setStudents((prev) =>
       prev.map((s) =>
         s.id === studentId
@@ -398,6 +587,7 @@ export default function App() {
               creditScore: newScore,
               totalStorePurchasesCount: (s.totalStorePurchasesCount || 0) + qty,
               storePurchasesHistory: [purchaseRecord, ...(s.storePurchasesHistory || [])],
+              disclaimers: [disclaimer, ...(s.disclaimers || [])],
             }
           : s
       )
@@ -474,6 +664,14 @@ export default function App() {
       timestamp,
     }));
 
+    const cartDisclaimer = buildBalanceDisclaimer(
+      student.id,
+      student.currentBalance,
+      newBalance,
+      `Store Cart Purchase (${totalItemsCount} item${totalItemsCount > 1 ? 's' : ''})`,
+      'store'
+    );
+
     setStudents((prev) =>
       prev.map((s) =>
         s.id === studentId
@@ -483,6 +681,7 @@ export default function App() {
               creditScore: newScore,
               totalStorePurchasesCount: (s.totalStorePurchasesCount || 0) + totalItemsCount,
               storePurchasesHistory: [...purchaseRecords, ...(s.storePurchasesHistory || [])],
+              disclaimers: [cartDisclaimer, ...(s.disclaimers || [])],
             }
           : s
       )
@@ -536,6 +735,14 @@ export default function App() {
       timestamp: new Date().toISOString(),
     };
 
+    const manualDisclaimer = buildBalanceDisclaimer(
+      student.id,
+      prevBalance,
+      newBalance,
+      adjustmentTx.reason,
+      type === 'increase' ? 'reward' : 'fine'
+    );
+
     setStudents((prev) =>
       prev.map((s) =>
         s.id === studentId
@@ -544,6 +751,7 @@ export default function App() {
               currentBalance: newBalance,
               creditScore: newScore,
               balanceAdjustmentsHistory: [adjustmentTx, ...(s.balanceAdjustmentsHistory || [])],
+              disclaimers: [manualDisclaimer, ...(s.disclaimers || [])],
             }
           : s
       )
@@ -598,10 +806,19 @@ export default function App() {
           timestamp: new Date().toISOString(),
         };
 
+        const bulkDisclaimer = buildBalanceDisclaimer(
+          s.id,
+          prevBalance,
+          newBalance,
+          adjustmentTx.reason,
+          targetType === 'increase' ? 'reward' : 'fine'
+        );
+
         return {
           ...s,
           currentBalance: newBalance,
           balanceAdjustmentsHistory: [adjustmentTx, ...(s.balanceAdjustmentsHistory || [])],
+          disclaimers: [bulkDisclaimer, ...(s.disclaimers || [])],
         };
       })
     );
@@ -753,6 +970,14 @@ export default function App() {
       timestamp: now.toISOString(),
     };
 
+    const loanDisclaimer = buildBalanceDisclaimer(
+      student.id,
+      prevBalance,
+      newBalance,
+      disbursementTx.reason,
+      'loan'
+    );
+
     setLoans((prev) => [newLoan, ...prev]);
     setStudents((prev) =>
       prev.map((s) =>
@@ -762,6 +987,7 @@ export default function App() {
               currentBalance: newBalance,
               activeLoanId: loanId,
               balanceAdjustmentsHistory: [disbursementTx, ...(s.balanceAdjustmentsHistory || [])],
+              disclaimers: [loanDisclaimer, ...(s.disclaimers || [])],
             }
           : s
       )
@@ -1066,6 +1292,14 @@ export default function App() {
       createdAt: new Date().toISOString(),
     };
 
+    const rewardDisclaimer = buildBalanceDisclaimer(
+      student.id,
+      student.currentBalance,
+      newBalance,
+      `English Daily Eurodollar Grant: ${rewardTransaction.reason}`,
+      'reward'
+    );
+
     setStudents((prev) =>
       prev.map((s) => {
         if (s.id !== studentId) return s;
@@ -1078,6 +1312,7 @@ export default function App() {
             amount: newDailyTotal,
           },
           englishRewardsHistory: [rewardTransaction, ...(s.englishRewardsHistory || [])],
+          disclaimers: [rewardDisclaimer, ...(s.disclaimers || [])],
         };
       })
     );
@@ -1130,6 +1365,8 @@ export default function App() {
     students: Student[];
     loans: Loan[];
     storeItems?: StoreItem[];
+    classrooms?: Classroom[];
+    pendingRequests?: PendingStudentRequest[];
     settings?: TeacherSettings;
   }) => {
     if (data.students && Array.isArray(data.students)) {
@@ -1140,6 +1377,12 @@ export default function App() {
     }
     if (data.storeItems && Array.isArray(data.storeItems)) {
       setStoreCatalog(data.storeItems);
+    }
+    if (data.classrooms && Array.isArray(data.classrooms)) {
+      setClassrooms(data.classrooms);
+    }
+    if (data.pendingRequests && Array.isArray(data.pendingRequests)) {
+      setPendingRequests(data.pendingRequests);
     }
     if (data.settings) {
       setSettings(data.settings);
@@ -1155,15 +1398,438 @@ export default function App() {
       students,
       loans,
       storeCatalog,
+      classrooms,
+      pendingRequests,
       settings,
     };
     try {
+      // Remove older timestamped snapshots to prevent localStorage quota overflow
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('esl_snapshot_')) {
+          localStorage.removeItem(k);
+        }
+      });
       localStorage.setItem('esl_classroom_emergency_snapshot', JSON.stringify(payload));
-      localStorage.setItem(`esl_snapshot_${Date.now()}`, JSON.stringify(payload));
       addToast('success', 'Snapshot Saved', `Emergency recovery snapshot saved at ${new Date().toLocaleTimeString()}.`);
     } catch {
       addToast('warning', 'Snapshot Notice', 'Local storage limit reached. Please use Download JSON backup.');
     }
+  };
+
+  // Teacher 1-click Reset Student Password back to their 3-digit Card CVV
+  const handleResetStudentPassword = (studentId: string) => {
+    const target = students.find((s) => s.id === studentId);
+    if (!target) return;
+    setStudents((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, customPassword: undefined } : s))
+    );
+    addToast(
+      'info',
+      'Student Password Reset to Card CVV',
+      `${target.name}'s login password has been reset to their 3-digit Card CVV (${target.cvv}).`
+    );
+  };
+
+  // Approve a pending student request from the Student Web App
+  const handleApprovePendingRequest = (requestId: string, teacherNote?: string) => {
+    const req = pendingRequests.find((r) => r.id === requestId && r.status === 'pending');
+    if (!req) return;
+
+    const nowIso = new Date().toISOString();
+
+    if (req.type === 'loan_request' && req.loanRequestData) {
+      const student = students.find((s) => s.id === req.studentId);
+      if (student && student.cardStatus === 'active' && !student.activeLoanId) {
+        const data = req.loanRequestData;
+        const effectiveRate = settings.baseInterestRate;
+        const totalDue = calculateTotalDue(data.principal, effectiveRate);
+        const dueDate = new Date(Date.now() + data.durationDays * 24 * 60 * 60 * 1000);
+        const loanId = `loan-${Date.now().toString().slice(-4)}`;
+
+        const newLoan: Loan = {
+          id: loanId,
+          studentId: student.id,
+          principal: data.principal,
+          baseInterestRate: settings.baseInterestRate,
+          delayPenaltyRate: settings.delayPenaltyIncrement,
+          delaysCount: 0,
+          effectiveInterestRate: effectiveRate,
+          totalDue,
+          amountRepaid: 0,
+          loanType: data.loanType,
+          durationDays: data.durationDays,
+          createdAt: nowIso,
+          dueDate: dueDate.toISOString(),
+          status: 'active',
+          submissions: [],
+          notes: data.notes,
+        };
+
+        const prevBalance = student.currentBalance;
+        const newBalance = prevBalance + data.principal;
+        const disclaimer = buildBalanceDisclaimer(
+          student.id,
+          prevBalance,
+          newBalance,
+          `Approved Loan Disbursement: E$${data.principal}.00 (${data.durationDays}d term)${
+            teacherNote ? ` • Note: ${teacherNote}` : ''
+          }`,
+          'loan'
+        );
+
+        const disbursementTx: BalanceAdjustmentTransaction = {
+          id: `loan_disb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: student.id,
+          studentName: student.name,
+          type: 'increase',
+          amount: data.principal,
+          previousBalance: prevBalance,
+          newBalance,
+          reason: `Loan Disbursement: E$${data.principal} (${data.durationDays}d term)`,
+          category: 'other',
+          creditScoreChange: 0,
+          timestamp: nowIso,
+        };
+
+        setLoans((prev) => [newLoan, ...prev]);
+        setStudents((prev) =>
+          prev.map((s) =>
+            s.id === student.id
+              ? {
+                  ...s,
+                  currentBalance: newBalance,
+                  activeLoanId: loanId,
+                  balanceAdjustmentsHistory: [
+                    disbursementTx,
+                    ...(s.balanceAdjustmentsHistory || []),
+                  ],
+                  disclaimers: [disclaimer, ...(s.disclaimers || [])],
+                }
+              : s
+          )
+        );
+        addToast(
+          'success',
+          'Loan Request Approved!',
+          `Disbursed E$${data.principal}.00 to ${student.name}'s wallet.`
+        );
+      }
+    } else if (req.type === 'loan_payment' && req.loanPaymentData) {
+      const payData = req.loanPaymentData;
+      const loan = loans.find((l) => l.id === payData.loanId);
+      if (loan) {
+        const remainingBefore = Math.max(0, loan.totalDue - loan.amountRepaid);
+        const paymentCredit = payData.totalCreditValue;
+        const extraMoney = Math.max(0, paymentCredit - remainingBefore);
+        const newRepaid = loan.amountRepaid + paymentCredit;
+        const isFullyPaid = newRepaid >= loan.totalDue;
+
+        const newSub: EnglishSubmission = {
+          id: `sub_${Date.now()}`,
+          loanId: loan.id,
+          studentId: req.studentId,
+          createdAt: req.createdAt,
+          sentencesCount: payData.sentencesCount,
+          wordsCount: payData.wordsCount,
+          phrasalVerbsCount: payData.phrasalVerbsCount,
+          sentences: [],
+          words: [],
+          phrasalVerbs: [],
+          sentencesCredit: payData.sentencesCount * settings.sentenceValue,
+          wordsCredit: payData.wordsCount * settings.wordValue,
+          phrasalVerbsCredit: payData.phrasalVerbsCount * settings.phrasalVerbValue,
+          totalCreditValue: paymentCredit,
+          hasDecoratedPresentation: payData.hasDecoratedPresentation,
+          scoreBonusAwarded: payData.hasDecoratedPresentation
+            ? settings.decoratedPresentationScoreBoost
+            : 0,
+          status: 'approved',
+          teacherFeedback: teacherNote,
+          reviewedAt: nowIso,
+          notebookPhotoDataUrl: payData.notebookPhotoDataUrl,
+          studentNotes: payData.studentNotes,
+        };
+
+        setLoans((prev) =>
+          prev.map((l) =>
+            l.id === loan.id
+              ? {
+                  ...l,
+                  amountRepaid: Math.min(newRepaid, l.totalDue),
+                  status: isFullyPaid ? 'paid' : 'active',
+                  paidAt: isFullyPaid ? nowIso : undefined,
+                  submissions: [newSub, ...l.submissions],
+                }
+              : l
+          )
+        );
+
+        setStudents((prev) =>
+          prev.map((student) => {
+            if (student.id !== loan.studentId) return student;
+
+            let scoreDelta = 0;
+            let decoratedCount = student.decoratedStatementsCount;
+            let punctualCount = student.punctualPaymentsCount;
+
+            if (payData.hasDecoratedPresentation) {
+              scoreDelta += settings.decoratedPresentationScoreBoost;
+              decoratedCount += 1;
+            }
+            if (isFullyPaid && loan.delaysCount === 0) {
+              scoreDelta += settings.punctualityScoreBoost;
+              punctualCount += 1;
+            }
+
+            const newScore = Math.min(850, Math.max(300, student.creditScore + scoreDelta));
+            const tier = getCreditTier(newScore);
+            const newMaxLimit = isFullyPaid
+              ? Math.min(settings.maxLoanCap, Math.max(student.maxLoanLimit + 50, tier.maxLoanLimit))
+              : student.maxLoanLimit;
+
+            const prevBalance = student.currentBalance;
+            const updatedBalance = prevBalance + extraMoney;
+            const disclaimersList = [...(student.disclaimers || [])];
+
+            if (extraMoney > 0) {
+              disclaimersList.unshift(
+                buildBalanceDisclaimer(
+                  student.id,
+                  prevBalance,
+                  updatedBalance,
+                  `Notebook Loan Repayment Surplus (+E$${extraMoney}.00 after settling loan)`,
+                  'loan'
+                )
+              );
+            }
+
+            return {
+              ...student,
+              currentBalance: updatedBalance,
+              creditScore: newScore,
+              maxLoanLimit: newMaxLimit,
+              activeLoanId: isFullyPaid ? null : student.activeLoanId,
+              totalLoansCompleted: isFullyPaid
+                ? student.totalLoansCompleted + 1
+                : student.totalLoansCompleted,
+              punctualPaymentsCount: punctualCount,
+              decoratedStatementsCount: decoratedCount,
+              disclaimers: disclaimersList,
+            };
+          })
+        );
+
+        addToast(
+          'success',
+          'Notebook Photo Verified & Approved!',
+          `Credited E$${paymentCredit}.00 toward ${req.studentName}'s loan.${
+            isFullyPaid ? ' Loan is now 100% PAID!' : ''
+          }`
+        );
+      }
+    } else if (req.type === 'store_purchase' && req.storePurchaseData) {
+      const storeData = req.storePurchaseData;
+      const student = students.find((s) => s.id === req.studentId);
+      if (student) {
+        const totalCost = storeData.totalPrice;
+        const prevBalance = student.currentBalance;
+        const newBalance = Math.max(0, prevBalance - totalCost);
+        const totalItemsQty = storeData.items.reduce((a, b) => a + b.quantity, 0);
+        const scoreBonus = Math.min(25, 5 * storeData.items.length);
+        const newScore = Math.min(850, student.creditScore + scoreBonus);
+
+        // Decrement catalog stock
+        setStoreCatalog((prevCat) =>
+          prevCat.map((item) => {
+            const ordered = storeData.items.find((i) => i.itemId === item.id);
+            if (!ordered || item.unlimitedStock) return item;
+            return { ...item, stock: Math.max(0, item.stock - ordered.quantity) };
+          })
+        );
+
+        const purchaseRecords: StorePurchaseTransaction[] = storeData.items.map((it) => ({
+          id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: student.id,
+          studentName: student.name,
+          itemId: it.itemId,
+          itemName: `${it.itemName}${it.quantity > 1 ? ` (x${it.quantity})` : ''}`,
+          pricePaid: it.unitPrice * it.quantity,
+          originalPrice: it.originalPrice * it.quantity,
+          discountPercent: it.discountPercent,
+          quantity: it.quantity,
+          creditScoreBonusAwarded: 5,
+          timestamp: nowIso,
+        }));
+
+        const disclaimer = buildBalanceDisclaimer(
+          student.id,
+          prevBalance,
+          newBalance,
+          `Approved Store Order: ${storeData.items.map((i) => i.itemName).join(', ')}${
+            teacherNote ? ` (${teacherNote})` : ''
+          }`,
+          'store'
+        );
+
+        setStudents((prev) =>
+          prev.map((s) =>
+            s.id === student.id
+              ? {
+                  ...s,
+                  currentBalance: newBalance,
+                  reservedBalance: Math.max(0, (s.reservedBalance || 0) - req.reservedAmount),
+                  creditScore: newScore,
+                  totalStorePurchasesCount: (s.totalStorePurchasesCount || 0) + totalItemsQty,
+                  storePurchasesHistory: [
+                    ...purchaseRecords,
+                    ...(s.storePurchasesHistory || []),
+                  ],
+                  disclaimers: [disclaimer, ...(s.disclaimers || [])],
+                }
+              : s
+          )
+        );
+
+        addToast(
+          'success',
+          'Store Order Approved!',
+          `Approved ${req.studentName}'s store purchase of E$${totalCost}.00.`
+        );
+      }
+    } else if (req.type === 'p2p_transfer' && req.transferData) {
+      const tf = req.transferData;
+      const sender = students.find((s) => s.id === req.studentId);
+      const recipient = students.find((s) => s.id === tf.recipientId);
+
+      if (sender && recipient) {
+        const senderPrev = sender.currentBalance;
+        const senderNew = Math.max(0, senderPrev - tf.amount);
+        const recipientPrev = recipient.currentBalance;
+        const recipientNew = recipientPrev + tf.amount;
+
+        const sentRecord: P2PTransferRecord = {
+          id: `p2p_s_${Date.now()}`,
+          direction: 'sent',
+          counterpartyId: recipient.id,
+          counterpartyName: recipient.name,
+          counterpartyClassName: recipient.className,
+          amount: tf.amount,
+          message: tf.message,
+          timestamp: nowIso,
+        };
+
+        const receivedRecord: P2PTransferRecord = {
+          id: `p2p_r_${Date.now()}`,
+          direction: 'received',
+          counterpartyId: sender.id,
+          counterpartyName: sender.name,
+          counterpartyClassName: sender.className,
+          amount: tf.amount,
+          message: tf.message,
+          timestamp: nowIso,
+        };
+
+        const senderDisclaimer = buildBalanceDisclaimer(
+          sender.id,
+          senderPrev,
+          senderNew,
+          `Approved Transfer to ${recipient.name}: "${tf.message}"`,
+          'transfer'
+        );
+
+        const recipientDisclaimer = buildBalanceDisclaimer(
+          recipient.id,
+          recipientPrev,
+          recipientNew,
+          `Received Transfer from ${sender.name}: "${tf.message}"`,
+          'transfer'
+        );
+
+        setStudents((prev) =>
+          prev.map((s) => {
+            if (s.id === sender.id) {
+              return {
+                ...s,
+                currentBalance: senderNew,
+                reservedBalance: Math.max(0, (s.reservedBalance || 0) - req.reservedAmount),
+                p2pTransfersHistory: [sentRecord, ...(s.p2pTransfersHistory || [])],
+                disclaimers: [senderDisclaimer, ...(s.disclaimers || [])],
+              };
+            }
+            if (s.id === recipient.id) {
+              return {
+                ...s,
+                currentBalance: recipientNew,
+                p2pTransfersHistory: [receivedRecord, ...(s.p2pTransfersHistory || [])],
+                disclaimers: [recipientDisclaimer, ...(s.disclaimers || [])],
+              };
+            }
+            return s;
+          })
+        );
+
+        addToast(
+          'success',
+          'Friend Transfer Approved!',
+          `Moved E$${tf.amount}.00 from ${sender.name} to ${recipient.name}.`
+        );
+      }
+    }
+
+    setPendingRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? { ...r, status: 'approved', reviewedAt: nowIso, teacherNote }
+          : r
+      )
+    );
+  };
+
+  // Reject a pending student request and release any held Eurodollars
+  const handleRejectPendingRequest = (requestId: string, teacherNote?: string) => {
+    const req = pendingRequests.find((r) => r.id === requestId && r.status === 'pending');
+    if (!req) return;
+
+    if (req.reservedAmount > 0) {
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === req.studentId
+            ? {
+                ...s,
+                reservedBalance: Math.max(0, (s.reservedBalance || 0) - req.reservedAmount),
+              }
+            : s
+        )
+      );
+    }
+
+    setPendingRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              status: 'rejected',
+              reviewedAt: new Date().toISOString(),
+              teacherNote: teacherNote || 'Declined by Teacher',
+            }
+          : r
+      )
+    );
+
+    addToast(
+      'warning',
+      'Request Declined',
+      req.reservedAmount > 0
+        ? `Declined ${req.studentName}'s request and released E$${req.reservedAmount}.00 back to their available balance.`
+        : `Declined ${req.studentName}'s request.`
+    );
+  };
+
+  const handleApproveAllPendingRequests = () => {
+    const pendingList = pendingRequests.filter((r) => r.status === 'pending');
+    pendingList.forEach((r) => {
+      handleApprovePendingRequest(r.id, 'Batch approved by Teacher');
+    });
   };
 
   // Active student object for student view
@@ -1177,7 +1843,30 @@ export default function App() {
     (acc, l) => acc + l.submissions.filter((sub) => sub.status === 'pending').length,
     0
   );
+  const pendingWebApprovalsCount = pendingRequests.filter((r) => r.status === 'pending').length;
   const totalCirculation = students.reduce((acc, s) => acc + s.currentBalance, 0);
+
+  const liveCloudClassroomState: CloudClassroomState = {
+    version: 4,
+    updatedAt: new Date().toISOString(),
+    students,
+    loans,
+    storeCatalog,
+    classrooms,
+    settings,
+    pendingRequests,
+  };
+
+  // If opened as the Standalone Student Web App (e.g. on GitHub Pages or ?portal=student)
+  if (isStandaloneStudentWeb) {
+    return (
+      <StudentWebApp
+        initialState={liveCloudClassroomState}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen font-sans flex transition-colors duration-300 bg-background text-on-background relative overflow-x-hidden">
@@ -1271,6 +1960,9 @@ export default function App() {
         onOpenClassManager={() => setIsClassManagerModalOpen(true)}
         onOpenReports={() => setIsReportsModalOpen(true)}
         onOpenBackup={() => setIsBackupModalOpen(true)}
+        onOpenApprovals={() => setIsApprovalCenterOpen(true)}
+        onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
+        pendingWebApprovalsCount={pendingWebApprovalsCount}
       />
 
       {/* Main Work Area with Left Sidebar and Top Header Offsets */}
@@ -1284,6 +1976,9 @@ export default function App() {
           settings={settings}
           theme={theme}
           onToggleTheme={toggleTheme}
+          pendingWebApprovalsCount={pendingWebApprovalsCount}
+          onOpenApprovals={() => setIsApprovalCenterOpen(true)}
+          onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
         />
 
         {/* Main Views */}
@@ -1339,7 +2034,23 @@ export default function App() {
               onGrantCreditLimitRaise={handleGrantCreditLimitRaise}
               onRestoreBackup={handleRestoreBackup}
               onSaveManualSnapshot={handleSaveManualSnapshot}
+              pendingWebApprovalsCount={pendingWebApprovalsCount}
+              onOpenApprovals={() => setIsApprovalCenterOpen(true)}
+              onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
+              onResetStudentPassword={handleResetStudentPassword}
             />
+          )}
+
+          {currentView === 'student_web' && (
+            <div className="rounded-3xl overflow-hidden border border-primary-container/35 shadow-2xl">
+              <StudentWebApp
+                initialState={liveCloudClassroomState}
+                isEmbeddedPreview={true}
+                onExitStudentWebMode={() => setCurrentView('teacher')}
+                theme={theme}
+                onToggleTheme={toggleTheme}
+              />
+            </div>
           )}
 
           {currentView === 'student' &&
@@ -1462,6 +2173,8 @@ export default function App() {
           students={students}
           loans={loans}
           storeItems={storeCatalog}
+          classrooms={classrooms}
+          pendingRequests={pendingRequests}
           settings={settings}
           onRestoreBackup={handleRestoreBackup}
           onSaveManualSnapshot={handleSaveManualSnapshot}
@@ -1490,6 +2203,42 @@ export default function App() {
           students={students}
           loans={loans}
           settings={settings}
+        />
+      )}
+
+      {/* Live Student Web App Approval Center Modal */}
+      {isApprovalCenterOpen && (
+        <TeacherApprovalCenterModal
+          isOpen={isApprovalCenterOpen}
+          onClose={() => setIsApprovalCenterOpen(false)}
+          requests={pendingRequests}
+          students={students}
+          settings={settings}
+          onApproveRequest={handleApprovePendingRequest}
+          onRejectRequest={handleRejectPendingRequest}
+          onApproveAllPending={handleApproveAllPendingRequests}
+        />
+      )}
+
+      {/* Real-Time Cloud Sync & Student Web App Link Modal */}
+      {isCloudSyncModalOpen && (
+        <CloudSyncModal
+          isOpen={isCloudSyncModalOpen}
+          onClose={() => setIsCloudSyncModalOpen(false)}
+          settings={settings}
+          onUpdateSettings={(newSettings) => {
+            setSettings(newSettings);
+          }}
+          onForcePushToCloud={(dbUrl) =>
+            pushClassroomStateToCloud(
+              {
+                ...liveCloudClassroomState,
+                settings: { ...settings, cloudDatabaseUrl: dbUrl },
+              },
+              dbUrl
+            )
+          }
+          onOpenStudentWebPreview={() => setCurrentView('student_web')}
         />
       )}
     </div>

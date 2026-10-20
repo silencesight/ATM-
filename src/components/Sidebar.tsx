@@ -19,10 +19,13 @@ import {
   FolderKanban,
   ChevronRight,
   ShieldCheck,
+  Globe,
+  Bell,
+  Smartphone,
 } from 'lucide-react';
 import { Classroom } from '../types';
 
-export type ActiveAppView = 'teacher' | 'student' | 'store' | 'grants' | 'print';
+export type ActiveAppView = 'teacher' | 'student' | 'store' | 'grants' | 'print' | 'student_web';
 
 interface SidebarProps {
   activeView: ActiveAppView;
@@ -44,6 +47,9 @@ interface SidebarProps {
   onOpenClassManager?: () => void;
   onOpenBackup?: () => void;
   onOpenReports?: () => void;
+  onOpenApprovals?: () => void;
+  onOpenCloudSync?: () => void;
+  pendingWebApprovalsCount?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -66,6 +72,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenClassManager,
   onOpenBackup,
   onOpenReports,
+  onOpenApprovals,
+  onOpenCloudSync,
+  pendingWebApprovalsCount = 0,
 }) => {
   const [isPinned, setIsPinned] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
@@ -117,6 +126,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Print Studio',
       sublabel: 'Physical SmartPass Cutouts',
       icon: Printer,
+    },
+    {
+      id: 'student_web',
+      label: 'Student Web App',
+      sublabel: 'Live Student Login Portal',
+      icon: Smartphone,
+      badge: pendingWebApprovalsCount > 0 ? `${pendingWebApprovalsCount} new` : 'LIVE',
+      badgeTone: pendingWebApprovalsCount > 0 ? 'amber' : 'emerald',
     },
   ];
 
@@ -338,6 +355,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <p className="px-2.5 text-[10px] font-mono uppercase tracking-widest text-outline mb-1.5 font-semibold">
                 Governance &amp; Vault
               </p>
+            )}
+
+            {onOpenApprovals && (
+              <button
+                type="button"
+                onClick={onOpenApprovals}
+                title={!isExpanded ? 'Web App Approval Center' : undefined}
+                className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Bell className="w-4 h-4 text-amber-400 shrink-0" />
+                  {isExpanded && <span className="truncate font-medium">Approval Center</span>}
+                </div>
+                {isExpanded && pendingWebApprovalsCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                    {pendingWebApprovalsCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {onOpenCloudSync && (
+              <button
+                type="button"
+                onClick={onOpenCloudSync}
+                title={!isExpanded ? 'Cloud Sync & Student Link' : undefined}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all"
+              >
+                <Globe className="w-4 h-4 text-primary-container shrink-0" />
+                {isExpanded && <span className="truncate font-medium">Cloud Sync &amp; Web Link</span>}
+              </button>
             )}
 
             <button

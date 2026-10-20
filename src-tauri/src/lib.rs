@@ -1,19 +1,20 @@
 #[tauri::command]
-fn autosave_backup(content: String) -> Result<(), String> {
+fn autosave_backup(content: String, filename: Option<String>) -> Result<String, String> {
     use std::fs;
     use std::path::Path;
     
-    let folder = Path::new(r#"C:\Users\jeffv\OneDrive\Documents\Levels\MATERIAL\ATM\Installer\ATM\SNAPSHOT"#);
-    if !folder.exists() {
-        fs::create_dir_all(folder).map_err(|e| e.to_string())?;
-    }
+    let main_folder = Path::new(r#"C:\Users\jeffv\OneDrive\Documents\Levels\MATERIAL\ATM\SNAPSHOT"#);
+    let _ = fs::create_dir_all(main_folder);
+
+    let file_name = filename.unwrap_or_else(|| "autosave.json".to_string());
+    let target_path = main_folder.join(&file_name);
+    fs::write(&target_path, &content).map_err(|e| e.to_string())?;
+
+    // Also update latest autosave.json
+    let latest_path = main_folder.join("autosave.json");
+    let _ = fs::write(&latest_path, &content);
     
-    // Save to a fixed file name or with a timestamp? The user said "a function of autosaving".
-    // I'll just use a single autosave.json file to avoid spamming the folder, or maybe keep the latest one.
-    let file_path = folder.join("autosave.json");
-    fs::write(file_path, content).map_err(|e| e.to_string())?;
-    
-    Ok(())
+    Ok(target_path.to_string_lossy().to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

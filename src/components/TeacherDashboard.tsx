@@ -29,7 +29,11 @@ import {
   ShoppingBag,
   Settings,
   X,
+  KeyRound,
+  Bell,
+  Globe,
 } from 'lucide-react';
+import { StudentAvatar } from './StudentAvatar';
 import {
   Student,
   Loan,
@@ -125,6 +129,10 @@ export interface TeacherDashboardProps {
     settings?: TeacherSettings;
   }) => void;
   onSaveManualSnapshot: () => void;
+  pendingWebApprovalsCount?: number;
+  onOpenApprovals?: () => void;
+  onOpenCloudSync?: () => void;
+  onResetStudentPassword?: (studentId: string) => void;
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
@@ -161,6 +169,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onGrantCreditLimitRaise,
   onRestoreBackup,
   onSaveManualSnapshot,
+  pendingWebApprovalsCount = 0,
+  onOpenApprovals,
+  onOpenCloudSync,
+  onResetStudentPassword,
 }) => {
   const [localClassFilter, setLocalClassFilter] = useState<string>(selectedClassId);
   const effectiveClassFilter = onSelectClass ? selectedClassId : localClassFilter;
@@ -965,6 +977,33 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         </form>
       )}
 
+      {/* 5A. LIVE STUDENT WEB APP APPROVALS BANNER */}
+      {pendingWebApprovalsCount > 0 && onOpenApprovals && (
+        <div className="glass-panel rounded-2xl p-4 border-2 border-amber-400/55 flex flex-col sm:flex-row sm:items-center justify-between gap-3 specular-edge shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0 animate-pulse">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-headline font-extrabold text-on-surface">
+                {pendingWebApprovalsCount} Live Student Web App{' '}
+                {pendingWebApprovalsCount === 1 ? 'Transaction' : 'Transactions'} Waiting for Your Approval!
+              </h4>
+              <p className="text-xs text-on-surface-variant">
+                Students submitted notebook photos, loan requests, store purchases, or friend transfers from the Student Web App.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenApprovals}
+            className="liquid-button-primary px-4 py-2.5 rounded-full text-xs font-headline font-bold shrink-0 cursor-pointer"
+          >
+            Open Approval Center ({pendingWebApprovalsCount})
+          </button>
+        </div>
+      )}
+
       {/* 5. PENDING ENGLISH REPAYMENT SUBMISSIONS ALERT */}
       {pendingReviewsCount > 0 && (
         <div className="glass-panel rounded-2xl p-4 border border-amber-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1092,9 +1131,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   <div className="space-y-3 min-w-0 w-full">
                     <div className="flex items-start gap-3 min-w-0 w-full">
                       <div className="relative shrink-0 mt-0.5">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary-container/30 to-secondary-container/40 border border-primary-container/40 flex items-center justify-center font-headline font-bold text-base text-on-surface">
-                          {student.name.charAt(0)}
-                        </div>
+                        <StudentAvatar
+                          name={student.name}
+                          avatarUrl={student.avatarUrl}
+                          size="md"
+                        />
                         <span
                           className={`absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold border ${
                             isDelisted
@@ -1122,12 +1163,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           <span className="text-primary-container font-semibold truncate">
                             {tier.name}
                           </span>
+                          <span>•</span>
+                          <span title="Default Card CVV PIN">PIN: {student.cvv}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Dedicated 6-Button Quick Utility Toolbar Row (Never Overlaps Student Name) */}
-                    <div className="glass-well rounded-xl p-1 grid grid-cols-6 gap-1 w-full">
+                    {/* Dedicated 7-Button Quick Utility Toolbar Row (Never Overlaps Student Name) */}
+                    <div className="glass-well rounded-xl p-1 grid grid-cols-7 gap-1 w-full">
                       <button
                         type="button"
                         onClick={() => setStudentForHistory(student)}
@@ -1160,6 +1203,24 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       >
                         <Printer className="w-3.5 h-3.5" />
                       </button>
+                      {onResetStudentPassword && (
+                        <button
+                          type="button"
+                          onClick={() => onResetStudentPassword(student.id)}
+                          title={
+                            student.customPassword
+                              ? `Reset custom password back to Card CVV (${student.cvv})`
+                              : `Using default Card CVV (${student.cvv})`
+                          }
+                          className={`py-1.5 rounded-lg hover:bg-surface-container-high/60 transition-colors flex items-center justify-center ${
+                            student.customPassword
+                              ? 'text-amber-400 hover:text-amber-300'
+                              : 'text-on-surface-variant hover:text-primary-container'
+                          }`}
+                        >
+                          <KeyRound className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       {isDelisted ? (
                         <button
                           type="button"
@@ -1756,6 +1817,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         students={students}
         loans={loans}
         storeItems={storeCatalog}
+        classrooms={classrooms}
         settings={settings}
         onRestoreBackup={onRestoreBackup}
         onSaveManualSnapshot={onSaveManualSnapshot}

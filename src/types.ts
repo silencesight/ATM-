@@ -43,6 +43,90 @@ export interface EnglishSubmission {
   status: 'pending' | 'approved' | 'rejected';
   teacherFeedback?: string;
   reviewedAt?: string;
+  notebookPhotoDataUrl?: string;
+  notebookAdditionalPhotos?: string[];
+  studentNotes?: string;
+}
+
+export interface BalanceDisclaimerNotice {
+  id: string;
+  studentId: string;
+  previousBalance: number;
+  newBalance: number;
+  delta: number;
+  reason: string;
+  category: 'reward' | 'fine' | 'store' | 'loan' | 'transfer' | 'adjustment';
+  createdAt: string;
+  acknowledgedAt?: string;
+}
+
+export interface P2PTransferRecord {
+  id: string;
+  direction: 'sent' | 'received';
+  counterpartyId: string;
+  counterpartyName: string;
+  counterpartyClassName?: string;
+  amount: number;
+  message: string;
+  timestamp: string;
+}
+
+export type PendingRequestType =
+  | 'loan_request'
+  | 'loan_payment'
+  | 'store_purchase'
+  | 'p2p_transfer';
+
+export interface PendingStudentRequest {
+  id: string;
+  type: PendingRequestType;
+  studentId: string;
+  studentName: string;
+  classId?: string;
+  className?: string;
+  createdAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewedAt?: string;
+  teacherNote?: string;
+  reservedAmount: number;
+
+  loanRequestData?: {
+    principal: number;
+    durationDays: number;
+    loanType: 'short' | 'big';
+    notes: string;
+  };
+
+  loanPaymentData?: {
+    loanId: string;
+    sentencesCount: number;
+    wordsCount: number;
+    phrasalVerbsCount: number;
+    totalCreditValue: number;
+    hasDecoratedPresentation: boolean;
+    notebookPhotoDataUrl: string;
+    studentNotes?: string;
+  };
+
+  storePurchaseData?: {
+    items: {
+      itemId: string;
+      itemName: string;
+      quantity: number;
+      unitPrice: number;
+      originalPrice: number;
+      discountPercent: number;
+    }[];
+    totalPrice: number;
+  };
+
+  transferData?: {
+    recipientId: string;
+    recipientName: string;
+    recipientClassName?: string;
+    amount: number;
+    message: string;
+  };
 }
 
 export interface Loan {
@@ -124,6 +208,13 @@ export interface Student {
 
   // Credit limit raises history (manual teacher raises of choice)
   creditLimitRaisesHistory?: CreditLimitRaiseTransaction[];
+
+  // Student Web App Profile & Security
+  customPassword?: string;        // Optional custom password replacing temporary CVV PIN
+  avatarUrl?: string;             // Custom compressed profile picture or preset avatar ID
+  reservedBalance?: number;       // E$ currently held for pending store/transfer requests
+  disclaimers?: BalanceDisclaimerNotice[];
+  p2pTransfersHistory?: P2PTransferRecord[];
 }
 
 export interface CreditLimitRaiseTransaction {
@@ -221,6 +312,8 @@ export interface TeacherSettings {
   maxDailyEnglishDollars: number; // $100
   schoolName: string;
   classroomTitle: string;
+  allowCrossClassTransfers?: boolean;
+  cloudDatabaseUrl?: string;
 }
 
 export interface CreditTier {

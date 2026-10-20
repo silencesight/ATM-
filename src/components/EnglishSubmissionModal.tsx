@@ -200,10 +200,10 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
               <input
                 type="number"
                 min="0"
-                max="50"
+                max="9999"
                 value={phrasalVerbsCount}
                 onChange={(e) => setPhrasalVerbsCount(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-14 h-8 text-center text-sm font-bold bg-slate-900 border border-slate-800 rounded-md text-white font-mono focus:outline-none focus:border-purple-400"
+                className="w-16 h-8 text-center text-sm font-bold bg-slate-900 border border-slate-800 rounded-md text-white font-mono focus:outline-none focus:border-purple-400"
               />
 
               <button
@@ -220,6 +220,14 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
                 className="px-2 h-8 rounded-md bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 text-[10px] font-mono font-bold transition-colors"
               >
                 +2
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPhrasalVerbsCount(phrasalVerbsCount + 10)}
+                className="px-2 h-8 rounded-md bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 text-[10px] font-mono font-bold transition-colors"
+              >
+                +10
               </button>
             </div>
           </div>
@@ -251,10 +259,10 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
               <input
                 type="number"
                 min="0"
-                max="50"
+                max="9999"
                 value={sentencesCount}
                 onChange={(e) => setSentencesCount(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-14 h-8 text-center text-sm font-bold bg-slate-900 border border-slate-800 rounded-md text-white font-mono focus:outline-none focus:border-emerald-400"
+                className="w-16 h-8 text-center text-sm font-bold bg-slate-900 border border-slate-800 rounded-md text-white font-mono focus:outline-none focus:border-emerald-400"
               />
 
               <button
@@ -271,6 +279,14 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
                 className="px-2 h-8 rounded-md bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-800/60 text-[10px] font-mono font-bold transition-colors"
               >
                 +2
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSentencesCount(sentencesCount + 10)}
+                className="px-2 h-8 rounded-md bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-800/60 text-[10px] font-mono font-bold transition-colors"
+              >
+                +10
               </button>
             </div>
           </div>
@@ -302,10 +318,10 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
               <input
                 type="number"
                 min="0"
-                max="100"
+                max="9999"
                 value={wordsCount}
                 onChange={(e) => setWordsCount(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-14 h-8 text-center text-sm font-bold bg-slate-900 border border-slate-800 rounded-md text-white font-mono focus:outline-none focus:border-amber-400"
+                className="w-16 h-8 text-center text-sm font-bold bg-slate-900 border border-slate-800 rounded-md text-white font-mono focus:outline-none focus:border-amber-400"
               />
 
               <button
@@ -322,6 +338,14 @@ export const EnglishSubmissionModal: React.FC<EnglishSubmissionModalProps> = ({
                 className="px-2 h-8 rounded-md bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 border border-amber-800/60 text-[10px] font-mono font-bold transition-colors"
               >
                 +5
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWordsCount(wordsCount + 10)}
+                className="px-2 h-8 rounded-md bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 border border-amber-800/60 text-[10px] font-mono font-bold transition-colors"
+              >
+                +10
               </button>
             </div>
           </div>

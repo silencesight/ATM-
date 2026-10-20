@@ -12,6 +12,8 @@ import {
   Printer,
   ShoppingBag,
   LayoutDashboard,
+  Bell,
+  Globe,
 } from 'lucide-react';
 import { Student, TeacherSettings } from '../types';
 import { StudentSelectorNav } from './StudentSelectorNav';
@@ -26,6 +28,9 @@ interface TopHeaderProps {
   settings: TeacherSettings;
   theme?: 'dark' | 'light';
   onToggleTheme?: () => void;
+  pendingWebApprovalsCount?: number;
+  onOpenApprovals?: () => void;
+  onOpenCloudSync?: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
@@ -37,6 +42,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   settings,
   theme = 'dark',
   onToggleTheme,
+  pendingWebApprovalsCount = 0,
+  onOpenApprovals,
+  onOpenCloudSync,
 }) => {
   const activeCount = students.filter((s) => s.cardStatus === 'active').length;
 
@@ -111,6 +119,11 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       badge: 'PHYSICAL CARD ISSUANCE',
       title: 'SmartPass Print Studio',
       subtitle: 'Front & back folding credit card cutouts for classroom wallets',
+    },
+    student_web: {
+      badge: 'LIVE STUDENT WEB APP',
+      title: 'Student Self-Service Banking Portal',
+      subtitle: 'Login via FULL NAME IN CAPS + Card CVV • Real-time sync with ATM 4.0',
     },
   };
 
@@ -248,6 +261,40 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="text-on-surface font-bold">{activeCount}</span>
           <span className="text-on-surface-variant text-[11px]">Active</span>
         </div>
+
+        {/* Live Student Approvals Inbox Button */}
+        {onOpenApprovals && (
+          <button
+            type="button"
+            onClick={onOpenApprovals}
+            title="Open Student Web App Approval Center"
+            className={`relative px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              pendingWebApprovalsCount > 0
+                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50 animate-pulse'
+                : 'glass-pill text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            <Bell className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Approvals</span>
+            {pendingWebApprovalsCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-black text-[10px] font-extrabold">
+                {pendingWebApprovalsCount}
+              </span>
+            )}
+          </button>
+        )}
+
+        {/* Cloud Sync & Student Web Link Button */}
+        {onOpenCloudSync && (
+          <button
+            type="button"
+            onClick={onOpenCloudSync}
+            title="Cloud Sync & Shareable Student Web App Link"
+            className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-primary-container hover:border-primary-container/50 transition-all cursor-pointer"
+          >
+            <Globe className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Theme Switcher Button */}
         {onToggleTheme && (

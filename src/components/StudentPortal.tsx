@@ -35,6 +35,7 @@ import { QuickAddDailyDollarsModal } from './QuickAddDailyDollarsModal';
 import { GrantCreditLimitRaiseModal } from './GrantCreditLimitRaiseModal';
 import { StudentLoansLedger } from './StudentLoansLedger';
 import { StudentSelectorNav } from './StudentSelectorNav';
+import { StudentAvatar } from './StudentAvatar';
 
 interface StudentPortalProps {
   student: Student;
@@ -235,11 +236,11 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
           {/* Left: Student Identity & Badges */}
           <div className="flex items-start sm:items-center gap-4">
             <div className="relative shrink-0">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-container via-secondary-container to-surface-container-highest p-[2px] shadow-lg">
-                <div className="w-full h-full rounded-[14px] bg-surface-container-lowest flex items-center justify-center font-headline font-extrabold text-2xl text-primary-container">
-                  {student.name.charAt(0)}
-                </div>
-              </div>
+              <StudentAvatar
+                name={student.name}
+                avatarUrl={student.avatarUrl}
+                size="lg"
+              />
               <div
                 className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full flex items-center justify-center border-2 border-surface-container-lowest ${
                   isDelisted
