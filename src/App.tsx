@@ -151,6 +151,7 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('portal') === 'student') return true;
       if (params.get('portal') === 'teacher') return false;
+      if (window.location.hostname.endsWith('github.io')) return true;
     } catch {
       // ignore
     }
