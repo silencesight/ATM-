@@ -391,29 +391,39 @@ export default function App() {
       } else if (action.type === 'SUBMIT_REQUEST') {
         const req = action.request;
         setPendingRequests((prev) => {
-          if (prev.some((r) => r.id === req.id)) return prev;
+          const existing = prev.find((r) => r.id === req.id);
+          if (existing) {
+            if (existing.status !== 'pending') {
+              removeCloudStudentAction(
+                `act_${req.id}`,
+                settings.cloudDatabaseUrl,
+                settings.cloudSupabaseKey
+              );
+            }
+            return prev;
+          }
+          if (req.reservedAmount > 0) {
+            setStudents((stPrev) =>
+              stPrev.map((s) =>
+                s.id === req.studentId
+                  ? { ...s, reservedBalance: (s.reservedBalance || 0) + req.reservedAmount }
+                  : s
+              )
+            );
+          }
+          const labelMap: Record<PendingStudentRequest['type'], string> = {
+            loan_payment: 'Notebook Photo Loan Payment',
+            loan_request: 'New Loan Request',
+            store_purchase: 'School Store Order',
+            p2p_transfer: 'Friend Money Transfer',
+          };
+          addToast(
+            'info',
+            `📲 New ${labelMap[req.type]}`,
+            `${req.studentName} submitted a request from the Student Web App. Click Approvals to review!`
+          );
           return [req, ...prev];
         });
-        if (req.reservedAmount > 0) {
-          setStudents((prev) =>
-            prev.map((s) =>
-              s.id === req.studentId
-                ? { ...s, reservedBalance: (s.reservedBalance || 0) + req.reservedAmount }
-                : s
-            )
-          );
-        }
-        const labelMap: Record<PendingStudentRequest['type'], string> = {
-          loan_payment: 'Notebook Photo Loan Payment',
-          loan_request: 'New Loan Request',
-          store_purchase: 'School Store Order',
-          p2p_transfer: 'Friend Money Transfer',
-        };
-        addToast(
-          'info',
-          `📲 New ${labelMap[req.type]}`,
-          `${req.studentName} submitted a request from the Student Web App. Click Approvals to review!`
-        );
       } else if (action.type === 'CANCEL_REQUEST') {
         setPendingRequests((prev) => {
           const target = prev.find((r) => r.id === action.requestId && r.status === 'pending');

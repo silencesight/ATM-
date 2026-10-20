@@ -126,11 +126,15 @@ let cachedSupabaseClient: SupabaseClient | null = null;
 let lastPushedContentFingerprint = '';
 
 export function normalizeSupabaseUrl(rawUrl?: string): string {
-  if (!rawUrl) return '';
+  if (!rawUrl) return DEFAULT_SUPABASE_URL;
   let cleaned = rawUrl.trim();
-  if (!cleaned) return '';
-  // Automatically upgrade legacy Firebase URLs to the new Supabase Project URL
-  if (cleaned.includes('firebaseio.com') || cleaned.includes('firebasedatabase.app')) {
+  if (!cleaned) return DEFAULT_SUPABASE_URL;
+  // Automatically upgrade legacy Firebase URLs or non-Supabase URLs to the new Supabase Project URL
+  if (
+    cleaned.includes('firebaseio.com') ||
+    cleaned.includes('firebasedatabase.app') ||
+    !cleaned.includes('supabase.co')
+  ) {
     return DEFAULT_SUPABASE_URL;
   }
   cleaned = cleaned.replace(/\/+$/, '').replace(/\/rest\/v1.*$/, '').replace(/\/atm_v4.*$/, '');
@@ -604,6 +608,38 @@ export async function fetchClassroomStateFromCloud(
             // ignore action queue fetch error
           }
 
+          // Rescue any unsynced local pending requests from this device before updating local cache
+          try {
+            const previousLocal = loadLocalClassroomStateFallback();
+            if (previousLocal && Array.isArray(previousLocal.pendingRequests)) {
+              const remoteIds = new Set(mergedState.pendingRequests.map((r) => r.id));
+              for (const localReq of previousLocal.pendingRequests) {
+                if (localReq && localReq.status === 'pending' && !remoteIds.has(localReq.id)) {
+                  const rescueAction: StudentActionPayload = {
+                    id: `act_${localReq.id}`,
+                    type: 'SUBMIT_REQUEST',
+                    request: localReq,
+                    createdAt: localReq.createdAt || new Date().toISOString(),
+                  };
+                  mergedState = applyStudentActionToState(mergedState, rescueAction);
+                  remoteIds.add(localReq.id);
+                  await supabase.from('atm_student_actions').upsert(
+                    {
+                      id: rescueAction.id,
+                      action_type: rescueAction.type,
+                      student_id: localReq.studentId,
+                      payload: rescueAction,
+                      created_at: rescueAction.createdAt,
+                    },
+                    { onConflict: 'id' }
+                  );
+                }
+              }
+            }
+          } catch {
+            // ignore rescue error
+          }
+
           try {
             localStorage.setItem('esl_classroom_live_state_cache', JSON.stringify(mergedState));
           } catch {
@@ -735,6 +771,11 @@ export async function dispatchStudentAction(
       };
     }
 
+    // If the student cancelled a pending request, also remove the original request action from the queue
+    if (action.type === 'CANCEL_REQUEST') {
+      await supabase.from('atm_student_actions').delete().eq('id', `act_${action.requestId}`);
+    }
+
     return { ok: true, updatedState: nextState };
   } catch (err) {
     return {
@@ -798,10 +839,12 @@ export function subscribeToClassroomRealtime(options: {
         if (role === 'teacher' && onStudentAction) {
           const act = ev.data.action as StudentActionPayload;
           const processed = getProcessedActionIds();
-          if (act.id && !processed.has(act.id)) {
+          if (act.id && (act.type === 'SUBMIT_REQUEST' || !processed.has(act.id))) {
             markActionProcessed(act.id);
             onStudentAction(act);
-            removeCloudStudentAction(act.id, dbUrl, supabaseKey);
+            if (act.type !== 'SUBMIT_REQUEST') {
+              removeCloudStudentAction(act.id, dbUrl, supabaseKey);
+            }
           }
         } else if (role === 'student' && ev.data.state && onStateSync) {
           lastSeenUpdatedAt = ev.data.state.updatedAt || '';
@@ -835,12 +878,18 @@ export function subscribeToClassroomRealtime(options: {
         const processed = getProcessedActionIds();
         for (const row of rows) {
           const act = row.payload as StudentActionPayload;
-          if (act && act.id && !processed.has(act.id)) {
+          if (!act || !act.id) continue;
+
+          if (act.type === 'SUBMIT_REQUEST') {
+            // Keep SUBMIT_REQUEST in atm_student_actions until Teacher approves/declines it
+            // so no request is ever lost if multiple windows/tabs are open!
+            onStudentAction(act);
+            markActionProcessed(act.id);
+          } else if (!processed.has(act.id)) {
             markActionProcessed(act.id);
             onStudentAction(act);
             removeCloudStudentAction(act.id, targetUrl, targetKey);
           } else if (row.id && processed.has(row.id)) {
-            // Clean up already-processed leftover action row
             removeCloudStudentAction(row.id, targetUrl, targetKey);
           }
         }
@@ -907,11 +956,16 @@ export function subscribeToClassroomRealtime(options: {
               const newRow = payload.new as { id?: string; payload?: StudentActionPayload };
               const act = newRow?.payload;
               if (act && act.id) {
-                const processed = getProcessedActionIds();
-                if (!processed.has(act.id)) {
+                if (act.type === 'SUBMIT_REQUEST') {
                   markActionProcessed(act.id);
                   onStudentAction(act);
-                  removeCloudStudentAction(act.id, targetUrl, targetKey);
+                } else {
+                  const processed = getProcessedActionIds();
+                  if (!processed.has(act.id)) {
+                    markActionProcessed(act.id);
+                    onStudentAction(act);
+                    removeCloudStudentAction(act.id, targetUrl, targetKey);
+                  }
                 }
               } else {
                 checkTeacherActions();
@@ -953,10 +1007,10 @@ export function subscribeToClassroomRealtime(options: {
     // Initial check + low-frequency 8s lightweight fallback check (38 bytes only)
     if (role === 'teacher') {
       checkTeacherActions();
-      pollTimer = window.setInterval(checkTeacherActions, 6000);
+      pollTimer = window.setInterval(checkTeacherActions, 3000);
     } else {
       checkStudentState(true);
-      pollTimer = window.setInterval(() => checkStudentState(false), 8000);
+      pollTimer = window.setInterval(() => checkStudentState(false), 5000);
     }
 
     return () => {
