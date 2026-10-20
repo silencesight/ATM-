@@ -1780,7 +1780,15 @@ export default function App() {
     setPendingRequests((prev) =>
       prev.map((r) =>
         r.id === requestId
-          ? { ...r, status: 'approved', reviewedAt: nowIso, teacherNote }
+          ? {
+              ...r,
+              status: 'approved',
+              reviewedAt: nowIso,
+              teacherNote,
+              loanPaymentData: r.loanPaymentData
+                ? { ...r.loanPaymentData, photoDataUrl: '' }
+                : undefined,
+            }
           : r
       )
     );
@@ -1812,6 +1820,9 @@ export default function App() {
               status: 'rejected',
               reviewedAt: new Date().toISOString(),
               teacherNote: teacherNote || 'Declined by Teacher',
+              loanPaymentData: r.loanPaymentData
+                ? { ...r.loanPaymentData, photoDataUrl: '' }
+                : undefined,
             }
           : r
       )

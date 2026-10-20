@@ -281,6 +281,12 @@ export async function pushClassroomStateToCloud(
         error: `Cloud database returned HTTP ${response.status}. Make sure Firebase Realtime Database rules allow read/write.`,
       };
     }
+    // Write tiny 30-byte version stamp so connected student devices only fetch state.json when updatedAt changes
+    await fetch(`${targetUrl}/atm_v4/updatedAt.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state.updatedAt),
+    }).catch(() => {});
     return { ok: true };
   } catch (err) {
     return {
@@ -454,6 +460,11 @@ export async function dispatchStudentAction(
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nextState),
       });
+      await fetch(`${targetUrl}/atm_v4/updatedAt.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextState.updatedAt),
+      }).catch(() => {});
     }
 
     return { ok: true, updatedState: nextState };
@@ -482,7 +493,7 @@ export async function removeCloudStudentAction(actionId: string, dbUrl?: string)
 }
 
 /**
- * Subscribe to real-time updates (both local BroadcastChannel and Cloud polling/SSE).
+ * Subscribe to real-time updates (local BroadcastChannel + Firebase Server-Sent Events + ultra-lightweight 30-byte stamp check).
  */
 export function subscribeToClassroomRealtime(options: {
   role: 'teacher' | 'student';
@@ -492,19 +503,22 @@ export function subscribeToClassroomRealtime(options: {
 }): () => void {
   const { role, dbUrl, onStateSync, onStudentAction } = options;
   let isClosed = false;
+  let lastSeenUpdatedAt = '';
 
-  // 1. Local BroadcastChannel listener
+  // 1. Local BroadcastChannel listener (0ms on same PC)
   let bc: BroadcastChannel | null = null;
   try {
     bc = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
     bc.onmessage = (ev) => {
       if (isClosed || !ev.data) return;
       if (ev.data.kind === 'STATE_SYNC' && ev.data.state && onStateSync) {
+        lastSeenUpdatedAt = ev.data.state.updatedAt || '';
         onStateSync(ev.data.state);
       } else if (ev.data.kind === 'STUDENT_ACTION' && ev.data.action) {
         if (role === 'teacher' && onStudentAction) {
           onStudentAction(ev.data.action);
         } else if (role === 'student' && ev.data.state && onStateSync) {
+          lastSeenUpdatedAt = ev.data.state.updatedAt || '';
           onStateSync(ev.data.state);
         }
       }
@@ -513,37 +527,37 @@ export function subscribeToClassroomRealtime(options: {
     // ignore
   }
 
-  // 2. Cloud polling & Server-Sent Events listener
+  // 2. Cloud Server-Sent Events (instant push) + ultra-lightweight 30-byte version check fallback
   const targetUrl = normalizeFirebaseDbUrl(dbUrl || getConfiguredCloudDbUrl());
   let pollTimer: number | null = null;
+  let eventSource: EventSource | null = null;
 
   if (targetUrl) {
-    const pollCloud = async () => {
-      if (isClosed) return;
+    const checkTeacherActions = async () => {
+      if (isClosed || !onStudentAction) return;
       try {
-        if (role === 'teacher' && onStudentAction) {
-          const res = await fetch(`${targetUrl}/atm_v4/student_actions.json`);
-          if (res.ok) {
-            const actionsMap = await res.json();
-            if (actionsMap && typeof actionsMap === 'object') {
-              const processed = getProcessedActionIds();
-              const actions = Object.values(actionsMap) as StudentActionPayload[];
-              actions.sort(
-                (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-              );
-              for (const act of actions) {
-                if (act && act.id && !processed.has(act.id)) {
-                  markActionProcessed(act.id);
-                  onStudentAction(act);
-                  removeCloudStudentAction(act.id, targetUrl);
-                }
+        // 4-byte shallow check first so idle polling consumes virtually 0 bandwidth
+        const shallowRes = await fetch(`${targetUrl}/atm_v4/student_actions.json?shallow=true`);
+        if (!shallowRes.ok) return;
+        const shallowData = await shallowRes.json();
+        if (!shallowData) return;
+
+        const res = await fetch(`${targetUrl}/atm_v4/student_actions.json`);
+        if (res.ok) {
+          const actionsMap = await res.json();
+          if (actionsMap && typeof actionsMap === 'object') {
+            const processed = getProcessedActionIds();
+            const actions = Object.values(actionsMap) as StudentActionPayload[];
+            actions.sort(
+              (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            );
+            for (const act of actions) {
+              if (act && act.id && !processed.has(act.id)) {
+                markActionProcessed(act.id);
+                onStudentAction(act);
+                removeCloudStudentAction(act.id, targetUrl);
               }
             }
-          }
-        } else if (role === 'student' && onStateSync) {
-          const res = await fetchClassroomStateFromCloud(targetUrl);
-          if (res.state) {
-            onStateSync(res.state);
           }
         }
       } catch {
@@ -551,9 +565,98 @@ export function subscribeToClassroomRealtime(options: {
       }
     };
 
-    // Initial check + 2.5s real-time interval
-    pollCloud();
-    pollTimer = window.setInterval(pollCloud, 2500);
+    const checkStudentState = async (forceFullFetch = false) => {
+      if (isClosed || !onStateSync) return;
+      // Pause background polling when phone screen is off or browser tab is hidden
+      if (!forceFullFetch && typeof document !== 'undefined' && document.hidden) return;
+      try {
+        if (!forceFullFetch && lastSeenUpdatedAt) {
+          // 30-byte timestamp check: only download state.json if something actually changed!
+          const stampRes = await fetch(`${targetUrl}/atm_v4/updatedAt.json`);
+          if (stampRes.ok) {
+            const remoteStamp = await stampRes.json();
+            if (typeof remoteStamp === 'string' && remoteStamp === lastSeenUpdatedAt) {
+              return; // 0 KB state download needed!
+            }
+          }
+        }
+        const res = await fetchClassroomStateFromCloud(targetUrl);
+        if (res.state) {
+          lastSeenUpdatedAt = res.state.updatedAt || '';
+          onStateSync(res.state);
+        }
+      } catch {
+        // ignore transient network errors
+      }
+    };
+
+    // Connect Firebase native Server-Sent Events (SSE) for instant (<0.2s) push notifications
+    try {
+      const sseEndpoint =
+        role === 'teacher'
+          ? `${targetUrl}/atm_v4/student_actions.json`
+          : `${targetUrl}/atm_v4/updatedAt.json`;
+      eventSource = new EventSource(sseEndpoint);
+      eventSource.addEventListener('put', () => {
+        if (role === 'teacher') {
+          checkTeacherActions();
+        } else {
+          checkStudentState(false);
+        }
+      });
+      eventSource.addEventListener('patch', () => {
+        if (role === 'teacher') {
+          checkTeacherActions();
+        } else {
+          checkStudentState(false);
+        }
+      });
+    } catch {
+      // Fallback to lightweight polling if EventSource is blocked
+    }
+
+    const onVisibilityChange = () => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        if (role === 'teacher') checkTeacherActions();
+        else checkStudentState(false);
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibilityChange);
+    }
+
+    // Initial check + lightweight 4s fallback check (30 bytes only)
+    if (role === 'teacher') {
+      checkTeacherActions();
+      pollTimer = window.setInterval(checkTeacherActions, 3500);
+    } else {
+      checkStudentState(true);
+      pollTimer = window.setInterval(() => checkStudentState(false), 4000);
+    }
+
+    return () => {
+      isClosed = true;
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+      }
+      if (eventSource) {
+        try {
+          eventSource.close();
+        } catch {
+          // ignore
+        }
+      }
+      if (bc) {
+        try {
+          bc.close();
+        } catch {
+          // ignore
+        }
+      }
+      if (pollTimer !== null) {
+        clearInterval(pollTimer);
+      }
+    };
   }
 
   return () => {
