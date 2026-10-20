@@ -17,6 +17,8 @@ export const DEFAULT_TEACHER_SETTINGS: TeacherSettings = {
   maxDailyEnglishDollars: 100,
   schoolName: 'Oxford English Academy',
   classroomTitle: 'ESL Financial Literacy Project',
+  cloudDatabaseUrl: 'https://fovucovcxlwutweyldai.supabase.co',
+  cloudSupabaseKey: 'sb_publishable_b9Pd24FUbxxAdLb6YwXTsA_PkWFf8XS',
 };
 
 export const CREDIT_TIERS: CreditTier[] = [

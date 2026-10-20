@@ -7,14 +7,22 @@ import {
   ExternalLink,
   RefreshCw,
   AlertTriangle,
-  Sparkles,
   Wifi,
   Users,
   Smartphone,
+  Database,
+  KeyRound,
+  Code2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { TeacherSettings } from '../types';
 import {
-  normalizeFirebaseDbUrl,
+  SUPABASE_SETUP_SQL,
+  getConfiguredCloudDbUrl,
+  getConfiguredSupabaseKey,
+  normalizeSupabaseKey,
+  normalizeSupabaseUrl,
   saveConfiguredCloudDbUrl,
 } from '../services/cloudSync';
 
@@ -23,7 +31,10 @@ interface CloudSyncModalProps {
   onClose: () => void;
   settings: TeacherSettings;
   onUpdateSettings: (newSettings: TeacherSettings) => void;
-  onForcePushToCloud: (dbUrl: string) => Promise<{ ok: boolean; error?: string }>;
+  onForcePushToCloud: (
+    dbUrl: string,
+    supabaseKey?: string
+  ) => Promise<{ ok: boolean; error?: string }>;
   onOpenStudentWebPreview: () => void;
 }
 
@@ -36,26 +47,37 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   onOpenStudentWebPreview,
 }) => {
   const [dbUrlInput, setDbUrlInput] = useState<string>(
-    settings.cloudDatabaseUrl || ''
+    () => settings.cloudDatabaseUrl || getConfiguredCloudDbUrl() || ''
+  );
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState<string>(
+    () => settings.cloudSupabaseKey || getConfiguredSupabaseKey() || ''
   );
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [showSqlPreview, setShowSqlPreview] = useState(false);
 
   if (!isOpen) return null;
 
-  const normalizedDbUrl = normalizeFirebaseDbUrl(dbUrlInput);
+  const normalizedDbUrl = normalizeSupabaseUrl(dbUrlInput);
+  const normalizedAnonKey = normalizeSupabaseKey(supabaseKeyInput);
   const publicBaseUrl = 'https://silencesight.github.io/ATM-/';
-  const studentShareUrl = normalizedDbUrl
-    ? `${publicBaseUrl}?portal=student&db=${encodeURIComponent(normalizedDbUrl)}`
-    : `${publicBaseUrl}?portal=student`;
+  const studentShareUrl =
+    normalizedDbUrl && normalizedAnonKey
+      ? `${publicBaseUrl}?portal=student&db=${encodeURIComponent(normalizedDbUrl)}&key=${encodeURIComponent(normalizedAnonKey)}`
+      : normalizedDbUrl
+      ? `${publicBaseUrl}?portal=student&db=${encodeURIComponent(normalizedDbUrl)}`
+      : `${publicBaseUrl}?portal=student`;
 
   const handleSaveAndSync = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanUrl = saveConfiguredCloudDbUrl(dbUrlInput);
+    const cleanUrl = saveConfiguredCloudDbUrl(dbUrlInput, supabaseKeyInput);
+    const cleanKey = normalizeSupabaseKey(supabaseKeyInput);
     const updatedSettings: TeacherSettings = {
       ...settings,
       cloudDatabaseUrl: cleanUrl,
+      cloudSupabaseKey: cleanKey,
     };
     onUpdateSettings(updatedSettings);
 
@@ -67,18 +89,27 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       return;
     }
 
+    if (!cleanKey) {
+      setSyncStatus('error');
+      setStatusMessage(
+        'Please paste your Supabase Anon / Publishable API Key so ATM 4.0 can authenticate with your Supabase database.'
+      );
+      return;
+    }
+
     setSyncStatus('syncing');
-    setStatusMessage('Connecting and pushing classroom roster to cloud...');
-    const res = await onForcePushToCloud(cleanUrl);
+    setStatusMessage('Connecting to Supabase and pushing classroom roster to cloud...');
+    const res = await onForcePushToCloud(cleanUrl, cleanKey);
     if (res.ok) {
       setSyncStatus('success');
       setStatusMessage(
-        'Connected! Your classroom roster, loans, and store are now live in the cloud.'
+        'Connected to Supabase! Your classroom roster, loans, and store are now live in real time.'
       );
     } else {
       setSyncStatus('error');
       setStatusMessage(
-        res.error || 'Could not connect. Check the URL and make sure Database Rules are set to true.'
+        res.error ||
+          'Could not connect to Supabase. Verify your Project URL, Anon Key, and make sure you ran the SQL Setup Script.'
       );
     }
   };
@@ -89,21 +120,30 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
     setTimeout(() => setCopiedLink(false), 3000);
   };
 
+  const handleCopySql = () => {
+    navigator.clipboard?.writeText(SUPABASE_SETUP_SQL);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 3000);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto glass-panel rounded-3xl border border-primary-container/35 shadow-2xl specular-edge p-6 sm:p-7 space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-outline-variant/20 pb-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-primary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container">
-              <Globe className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+              <Database className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-headline font-extrabold text-on-surface">
-                Student Web App &amp; Real-Time Cloud Sync
+              <h2 className="text-xl font-headline font-extrabold text-on-surface flex items-center gap-2">
+                Supabase Real-Time Cloud Sync
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  PostgreSQL + WebSockets
+                </span>
               </h2>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Connect ATM 4.0 to your live Student Web App and manage student transfer rules.
+                Connect ATM 4.0 to your free Supabase database for instant, high-capacity Student Web App sync.
               </p>
             </div>
           </div>
@@ -125,7 +165,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 Test the Student Web App Right Now!
               </h3>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Launch the live Student Web App view to log in with any student's{' '}
+                Launch the live Student Web App view to log in with any student&apos;s{' '}
                 <strong>FULL NAME IN CAPS</strong> + <strong>3-digit Card CVV</strong>.
               </p>
             </div>
@@ -143,26 +183,77 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           </button>
         </div>
 
-        {/* Cloud Database Configuration */}
+        {/* 1-Click Supabase SQL Setup Card */}
+        <div className="glass-well rounded-2xl p-4 border border-emerald-500/30 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-emerald-300 font-bold flex items-center gap-2">
+                <Code2 className="w-4 h-4" />
+                One-Time Supabase Table Setup (Takes 30 Seconds)
+              </h3>
+              <p className="text-[11px] font-mono text-on-surface-variant leading-relaxed">
+                1. Go to <span className="text-emerald-300 font-bold">supabase.com</span> &rarr; Create a free project.
+                <br />
+                2. Open <strong>SQL Editor</strong> &rarr; Click <strong>Copy SQL Setup Script</strong> below &rarr; Paste &amp; click <strong>Run</strong>.
+                <br />
+                3. Go to <strong>Project Settings &rarr; API</strong> &rarr; Copy your <strong>Project URL</strong> &amp; <strong>anon public key</strong> below!
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleCopySql}
+                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                {copiedSql ? 'SQL Copied!' : 'Copy SQL Setup Script'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSqlPreview((prev) => !prev)}
+                className="p-2 rounded-xl glass-pill text-on-surface-variant hover:text-on-surface text-xs font-mono cursor-pointer"
+                title="View SQL Script"
+              >
+                {showSqlPreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {showSqlPreview && (
+            <pre className="p-3 rounded-xl bg-black/60 border border-outline-variant/25 text-[10px] font-mono text-emerald-300 overflow-x-auto max-h-44 select-all">
+              {SUPABASE_SETUP_SQL}
+            </pre>
+          )}
+        </div>
+
+        {/* Supabase Credentials Configuration */}
         <form onSubmit={handleSaveAndSync} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-mono uppercase tracking-wider text-on-surface-variant font-bold flex items-center gap-2">
               <Wifi className="w-3.5 h-3.5 text-primary-container" />
-              Free Firebase Realtime Database URL (For Internet Sync Across Devices)
+              Supabase Project URL
             </label>
             <input
               type="text"
               value={dbUrlInput}
               onChange={(e) => setDbUrlInput(e.target.value)}
-              placeholder="https://your-classroom-atm-default-rtdb.firebaseio.com"
+              placeholder="https://abcdefghijklm.supabase.co"
               className="w-full glass-well rounded-2xl px-4 py-3 text-xs font-mono text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:ring-2 focus:ring-primary-container"
             />
-            <p className="text-[11px] font-mono text-on-surface-variant leading-relaxed">
-              💡 <strong>How to get your free URL in 60 seconds:</strong> Go to{' '}
-              <span className="text-primary-container">console.firebase.google.com</span> → Create
-              a free project → Build → <strong>Realtime Database</strong> → Create Database (Start
-              in <strong>Test Mode</strong>) → Copy the URL and paste it above!
-            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-on-surface-variant font-bold flex items-center gap-2">
+              <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
+              Supabase Anon / Publishable API Key
+            </label>
+            <input
+              type="password"
+              value={supabaseKeyInput}
+              onChange={(e) => setSupabaseKeyInput(e.target.value)}
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (or sb_publishable_...)"
+              className="w-full glass-well rounded-2xl px-4 py-3 text-xs font-mono text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            />
           </div>
 
           {syncStatus !== 'idle' && (
@@ -188,14 +279,15 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
               className="liquid-button-primary px-5 py-2.5 rounded-xl text-xs font-headline font-bold flex items-center gap-2 cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Save &amp; Sync Classroom to Cloud
+              Save &amp; Sync Classroom to Supabase
             </button>
           </div>
         </form>
 
         {/* Student Shareable Web Link */}
         <div className="glass-well rounded-2xl p-4 space-y-2.5 border border-outline-variant/20">
-          <label className="text-xs font-mono uppercase tracking-wider text-on-surface-variant font-bold block">
+          <label className="text-xs font-mono uppercase tracking-wider text-on-surface-variant font-bold flex items-center gap-2">
+            <Globe className="w-3.5 h-3.5 text-primary-container" />
             Shareable Student Web App Link
           </label>
           <div className="flex items-center gap-2">
@@ -215,7 +307,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
             </button>
           </div>
           <p className="text-[11px] font-mono text-on-surface-variant">
-            Share this link with your students on WhatsApp or Google Classroom so they can open their bank from any phone or computer.
+            Share this link with your students on WhatsApp or Google Classroom so they can open their bank from any phone or computer with automatic Supabase connection.
           </p>
         </div>
 

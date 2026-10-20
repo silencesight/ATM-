@@ -32,9 +32,13 @@ import {
 import {
   CloudClassroomState,
   StudentActionPayload,
+  DEFAULT_SUPABASE_URL,
+  DEFAULT_SUPABASE_ANON_KEY,
+  normalizeSupabaseUrl,
   pushClassroomStateToCloud,
   subscribeToClassroomRealtime,
   getConfiguredCloudDbUrl,
+  getConfiguredSupabaseKey,
   fetchClassroomStateFromCloud,
   removeCloudStudentAction,
 } from './services/cloudSync';
@@ -115,7 +119,18 @@ export default function App() {
   const [settings, setSettings] = useState<TeacherSettings>(() => {
     try {
       const saved = localStorage.getItem('esl_classroom_settings');
-      return saved ? JSON.parse(saved) : DEFAULT_TEACHER_SETTINGS;
+      if (saved) {
+        const parsed = JSON.parse(saved) as TeacherSettings;
+        return {
+          ...DEFAULT_TEACHER_SETTINGS,
+          ...parsed,
+          cloudDatabaseUrl: normalizeSupabaseUrl(
+            parsed.cloudDatabaseUrl || DEFAULT_SUPABASE_URL
+          ),
+          cloudSupabaseKey: parsed.cloudSupabaseKey || DEFAULT_SUPABASE_ANON_KEY,
+        };
+      }
+      return DEFAULT_TEACHER_SETTINGS;
     } catch {
       return DEFAULT_TEACHER_SETTINGS;
     }
@@ -249,7 +264,11 @@ export default function App() {
       pendingRequests,
     };
     const timer = window.setTimeout(() => {
-      pushClassroomStateToCloud(statePayload, settings.cloudDatabaseUrl);
+      pushClassroomStateToCloud(
+        statePayload,
+        settings.cloudDatabaseUrl,
+        settings.cloudSupabaseKey
+      );
     }, 250);
     return () => clearTimeout(timer);
   }, [
@@ -346,11 +365,12 @@ export default function App() {
     const unsubscribe = subscribeToClassroomRealtime({
       role: 'teacher',
       dbUrl: getConfiguredCloudDbUrl(settings.cloudDatabaseUrl),
+      supabaseKey: getConfiguredSupabaseKey(settings.cloudSupabaseKey),
       onStudentAction: handleIncomingStudentAction,
     });
 
     return () => unsubscribe();
-  }, [isStandaloneStudentWeb, settings.cloudDatabaseUrl]);
+  }, [isStandaloneStudentWeb, settings.cloudDatabaseUrl, settings.cloudSupabaseKey]);
 
   // Switch to student view from teacher row
   const handleSwitchToStudentView = (studentId: string) => {
@@ -1793,7 +1813,11 @@ export default function App() {
           : r
       )
     );
-    removeCloudStudentAction(`act_${requestId}`, settings.cloudDatabaseUrl);
+    removeCloudStudentAction(
+      `act_${requestId}`,
+      settings.cloudDatabaseUrl,
+      settings.cloudSupabaseKey
+    );
   };
 
   // Reject a pending student request and release any held Eurodollars
@@ -1829,7 +1853,11 @@ export default function App() {
           : r
       )
     );
-    removeCloudStudentAction(`act_${requestId}`, settings.cloudDatabaseUrl);
+    removeCloudStudentAction(
+      `act_${requestId}`,
+      settings.cloudDatabaseUrl,
+      settings.cloudSupabaseKey
+    );
 
     addToast(
       'warning',
@@ -2244,13 +2272,19 @@ export default function App() {
           onUpdateSettings={(newSettings) => {
             setSettings(newSettings);
           }}
-          onForcePushToCloud={(dbUrl) =>
+          onForcePushToCloud={(dbUrl, supabaseKey) =>
             pushClassroomStateToCloud(
               {
                 ...liveCloudClassroomState,
-                settings: { ...settings, cloudDatabaseUrl: dbUrl },
+                settings: {
+                  ...settings,
+                  cloudDatabaseUrl: dbUrl,
+                  cloudSupabaseKey: supabaseKey,
+                },
               },
-              dbUrl
+              dbUrl,
+              supabaseKey,
+              { force: true }
             )
           }
           onOpenStudentWebPreview={() => setCurrentView('student_web')}

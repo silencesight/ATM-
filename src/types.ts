@@ -314,6 +314,7 @@ export interface TeacherSettings {
   classroomTitle: string;
   allowCrossClassTransfers?: boolean;
   cloudDatabaseUrl?: string;
+  cloudSupabaseKey?: string;
 }
 
 export interface CreditTier {
