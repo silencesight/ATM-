@@ -251,18 +251,25 @@ export default function App() {
   });
 
   // Hydrate & merge any recent Student Web App updates from Supabase on Teacher startup
-  const hasHydratedFromCloudRef = React.useRef(false);
+  const [hasHydratedFromCloud, setHasHydratedFromCloud] = useState(false);
 
   useEffect(() => {
     if (isStandaloneStudentWeb) return;
     let cancelled = false;
 
+    const cleanUrl = normalizeSupabaseUrl(settings.cloudDatabaseUrl || DEFAULT_SUPABASE_URL);
+    const cleanKey = settings.cloudSupabaseKey || DEFAULT_SUPABASE_ANON_KEY;
+    if (cleanUrl !== settings.cloudDatabaseUrl || cleanKey !== settings.cloudSupabaseKey) {
+      setSettings((prev) => ({
+        ...prev,
+        cloudDatabaseUrl: cleanUrl,
+        cloudSupabaseKey: cleanKey,
+      }));
+    }
+
     const hydrateOnStartup = async () => {
       try {
-        const res = await fetchClassroomStateFromCloud(
-          settings.cloudDatabaseUrl,
-          settings.cloudSupabaseKey
-        );
+        const res = await fetchClassroomStateFromCloud(cleanUrl, cleanKey);
         if (cancelled) return;
 
         if (res.source === 'cloud' && res.state) {
@@ -314,7 +321,7 @@ export default function App() {
         // ignore startup hydration error
       } finally {
         if (!cancelled) {
-          hasHydratedFromCloudRef.current = true;
+          setHasHydratedFromCloud(true);
         }
       }
     };
@@ -327,7 +334,7 @@ export default function App() {
 
   // Push classroom state to Cloud & Local BroadcastChannel whenever state changes in Teacher Mode
   useEffect(() => {
-    if (isStandaloneStudentWeb || !hasHydratedFromCloudRef.current) return;
+    if (isStandaloneStudentWeb || !hasHydratedFromCloud) return;
     const statePayload: CloudClassroomState = {
       version: 4,
       updatedAt: new Date().toISOString(),
@@ -348,6 +355,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [
     isStandaloneStudentWeb,
+    hasHydratedFromCloud,
     students,
     loans,
     storeCatalog,

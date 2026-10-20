@@ -127,29 +127,26 @@ let lastPushedContentFingerprint = '';
 
 export function normalizeSupabaseUrl(rawUrl?: string): string {
   if (!rawUrl) return DEFAULT_SUPABASE_URL;
-  let cleaned = rawUrl.trim();
+  const cleaned = rawUrl.trim();
   if (!cleaned) return DEFAULT_SUPABASE_URL;
-  // Automatically upgrade legacy Firebase URLs or non-Supabase URLs to the new Supabase Project URL
-  if (
-    cleaned.includes('firebaseio.com') ||
-    cleaned.includes('firebasedatabase.app') ||
-    !cleaned.includes('supabase.co')
-  ) {
-    return DEFAULT_SUPABASE_URL;
+  // Extract strictly https://<project-ref>.supabase.co and strip any accidentally concatenated key or path
+  const match = cleaned.match(/([a-z0-9-]+)\.supabase\.co/i);
+  if (match && match[1]) {
+    return `https://${match[1].toLowerCase()}.supabase.co`;
   }
-  cleaned = cleaned.replace(/\/+$/, '').replace(/\/rest\/v1.*$/, '').replace(/\/atm_v4.*$/, '');
-  if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
-    cleaned = `https://${cleaned}`;
-  }
-  return cleaned;
+  return DEFAULT_SUPABASE_URL;
 }
 
 // Keep alias for compatibility across components
 export const normalizeFirebaseDbUrl = normalizeSupabaseUrl;
 
 export function normalizeSupabaseKey(rawKey?: string): string {
-  if (!rawKey) return '';
-  return rawKey.trim().replace(/^["']+|["']+$/g, '');
+  if (!rawKey) return DEFAULT_SUPABASE_ANON_KEY;
+  let cleaned = rawKey.trim().replace(/^["']+|["']+$/g, '');
+  // Strip any accidental URL prefix if pasted together
+  cleaned = cleaned.replace(/https?:\/\/[a-z0-9-]+\.supabase\.co\/?/gi, '').trim();
+  if (!cleaned) return DEFAULT_SUPABASE_ANON_KEY;
+  return cleaned;
 }
 
 export function getConfiguredCloudDbUrl(settingsUrl?: string): string {
@@ -186,7 +183,13 @@ export function getConfiguredCloudDbUrl(settingsUrl?: string): string {
 
   try {
     const saved = localStorage.getItem(CLOUD_URL_STORAGE_KEY);
-    if (saved) return normalizeSupabaseUrl(saved);
+    if (saved) {
+      const normalized = normalizeSupabaseUrl(saved);
+      if (normalized !== saved) {
+        localStorage.setItem(CLOUD_URL_STORAGE_KEY, normalized);
+      }
+      return normalized;
+    }
   } catch {
     // ignore
   }
@@ -774,6 +777,35 @@ export async function dispatchStudentAction(
     // If the student cancelled a pending request, also remove the original request action from the queue
     if (action.type === 'CANCEL_REQUEST') {
       await supabase.from('atm_student_actions').delete().eq('id', `act_${action.requestId}`);
+      await supabase.from('atm_student_actions').delete().eq('id', action.id);
+    }
+
+    // Also merge and persist into atm_classroom_state so both tables are always in sync
+    try {
+      const latestFromCloud = await fetchClassroomStateFromCloud(targetUrl, targetKey);
+      const mergedServerState = latestFromCloud.state
+        ? applyStudentActionToState(latestFromCloud.state, action)
+        : nextState;
+
+      if (mergedServerState) {
+        const nowIso = new Date().toISOString();
+        const stateWithStamp: CloudClassroomState = {
+          ...mergedServerState,
+          updatedAt: nowIso,
+        };
+        await supabase.from('atm_classroom_state').upsert(
+          {
+            id: 'main',
+            version: stateWithStamp.version || 4,
+            updated_at: nowIso,
+            state: stateWithStamp,
+          },
+          { onConflict: 'id' }
+        );
+        return { ok: true, updatedState: stateWithStamp };
+      }
+    } catch {
+      // ignore secondary state sync error if atomic action row succeeded
     }
 
     return { ok: true, updatedState: nextState };
@@ -873,24 +905,47 @@ export function subscribeToClassroomRealtime(options: {
           .select('id, payload, created_at')
           .order('created_at', { ascending: true });
 
-        if (error || !Array.isArray(rows) || rows.length === 0) return;
+        if (!error && Array.isArray(rows) && rows.length > 0) {
+          const processed = getProcessedActionIds();
+          for (const row of rows) {
+            const act = row.payload as StudentActionPayload;
+            if (!act || !act.id) continue;
 
-        const processed = getProcessedActionIds();
-        for (const row of rows) {
-          const act = row.payload as StudentActionPayload;
-          if (!act || !act.id) continue;
+            if (act.type === 'SUBMIT_REQUEST') {
+              // Keep SUBMIT_REQUEST in atm_student_actions until Teacher approves/declines it
+              // so no request is ever lost if multiple windows/tabs are open!
+              onStudentAction(act);
+              markActionProcessed(act.id);
+            } else if (!processed.has(act.id)) {
+              markActionProcessed(act.id);
+              onStudentAction(act);
+              removeCloudStudentAction(act.id, targetUrl, targetKey);
+            } else if (row.id && processed.has(row.id)) {
+              removeCloudStudentAction(row.id, targetUrl, targetKey);
+            }
+          }
+        }
 
-          if (act.type === 'SUBMIT_REQUEST') {
-            // Keep SUBMIT_REQUEST in atm_student_actions until Teacher approves/declines it
-            // so no request is ever lost if multiple windows/tabs are open!
-            onStudentAction(act);
-            markActionProcessed(act.id);
-          } else if (!processed.has(act.id)) {
-            markActionProcessed(act.id);
-            onStudentAction(act);
-            removeCloudStudentAction(act.id, targetUrl, targetKey);
-          } else if (row.id && processed.has(row.id)) {
-            removeCloudStudentAction(row.id, targetUrl, targetKey);
+        // Also check atm_classroom_state for any pendingRequests that aren't in teacher state yet
+        const { data: stateRow } = await supabase
+          .from('atm_classroom_state')
+          .select('updated_at, state')
+          .eq('id', 'main')
+          .maybeSingle();
+
+        if (stateRow?.state && typeof stateRow.state === 'object') {
+          const remoteState = stateRow.state as Partial<CloudClassroomState>;
+          if (Array.isArray(remoteState.pendingRequests)) {
+            for (const req of remoteState.pendingRequests) {
+              if (req && req.id && req.status === 'pending') {
+                onStudentAction({
+                  id: `act_${req.id}`,
+                  type: 'SUBMIT_REQUEST',
+                  request: req,
+                  createdAt: req.createdAt || new Date().toISOString(),
+                });
+              }
+            }
           }
         }
       } catch {
