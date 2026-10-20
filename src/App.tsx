@@ -250,9 +250,84 @@ export default function App() {
     createdAt: new Date().toISOString(),
   });
 
-  // Push classroom state to Cloud & Local BroadcastChannel whenever state changes in Teacher Mode
+  // Hydrate & merge any recent Student Web App updates from Supabase on Teacher startup
+  const hasHydratedFromCloudRef = React.useRef(false);
+
   useEffect(() => {
     if (isStandaloneStudentWeb) return;
+    let cancelled = false;
+
+    const hydrateOnStartup = async () => {
+      try {
+        const res = await fetchClassroomStateFromCloud(
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+        if (cancelled) return;
+
+        if (res.source === 'cloud' && res.state) {
+          const cloud = res.state;
+          const isLocalDefaultSample =
+            students.length <= INITIAL_STUDENTS.length &&
+            cloud.students.length > INITIAL_STUDENTS.length;
+
+          if (isLocalDefaultSample) {
+            setStudents(cloud.students);
+            setLoans(cloud.loans || []);
+            if (cloud.storeCatalog?.length) setStoreCatalog(cloud.storeCatalog);
+            if (cloud.classrooms?.length) setClassrooms(cloud.classrooms);
+            if (cloud.pendingRequests?.length) setPendingRequests(cloud.pendingRequests);
+          } else {
+            // Merge any student profile updates (avatar, customPassword, disclaimers, reservedBalance)
+            if (Array.isArray(cloud.students) && cloud.students.length > 0) {
+              const cloudStudentMap = new Map(cloud.students.map((cs) => [cs.id, cs]));
+              setStudents((prev) =>
+                prev.map((localSt) => {
+                  const remoteSt = cloudStudentMap.get(localSt.id);
+                  if (!remoteSt) return localSt;
+                  return {
+                    ...localSt,
+                    avatarUrl: remoteSt.avatarUrl ?? localSt.avatarUrl,
+                    customPassword: remoteSt.customPassword ?? localSt.customPassword,
+                    reservedBalance: Math.max(
+                      localSt.reservedBalance || 0,
+                      remoteSt.reservedBalance || 0
+                    ),
+                  };
+                })
+              );
+            }
+
+            // Merge any pending requests submitted while ATM 4.0 was closed
+            if (Array.isArray(cloud.pendingRequests) && cloud.pendingRequests.length > 0) {
+              setPendingRequests((prev) => {
+                const existingIds = new Set(prev.map((r) => r.id));
+                const newFromCloud = cloud.pendingRequests.filter(
+                  (r) => !existingIds.has(r.id)
+                );
+                return newFromCloud.length > 0 ? [...newFromCloud, ...prev] : prev;
+              });
+            }
+          }
+        }
+      } catch {
+        // ignore startup hydration error
+      } finally {
+        if (!cancelled) {
+          hasHydratedFromCloudRef.current = true;
+        }
+      }
+    };
+
+    hydrateOnStartup();
+    return () => {
+      cancelled = true;
+    };
+  }, [isStandaloneStudentWeb]);
+
+  // Push classroom state to Cloud & Local BroadcastChannel whenever state changes in Teacher Mode
+  useEffect(() => {
+    if (isStandaloneStudentWeb || !hasHydratedFromCloudRef.current) return;
     const statePayload: CloudClassroomState = {
       version: 4,
       updatedAt: new Date().toISOString(),
