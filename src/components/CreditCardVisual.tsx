@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wifi, AlertOctagon, RotateCw, Eye, EyeOff } from 'lucide-react';
+import { Wifi, AlertOctagon, RotateCw, Eye, EyeOff, Printer } from 'lucide-react';
 import { Student, TeacherSettings } from '../types';
 import {
   getCreditTier,
@@ -15,6 +15,7 @@ interface CreditCardVisualProps {
   forceSide?: 'front' | 'back';
   printDensity?: 'standard' | 'compact' | 'ultra-compact';
   hideMetricsRail?: boolean;
+  onPrint?: () => void;
 }
 
 export const CreditCardVisual: React.FC<CreditCardVisualProps> = ({
@@ -25,6 +26,7 @@ export const CreditCardVisual: React.FC<CreditCardVisualProps> = ({
   forceSide,
   printDensity = 'standard',
   hideMetricsRail = false,
+  onPrint,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const effectiveFlipped = forceSide !== undefined ? forceSide === 'back' : isFlipped;
@@ -92,6 +94,17 @@ export const CreditCardVisual: React.FC<CreditCardVisualProps> = ({
               <RotateCw className="w-3 h-3 text-primary-container" />
               <span>{isFlipped ? 'Front' : 'Flip 3D'}</span>
             </button>
+            {onPrint && (
+              <button
+                type="button"
+                onClick={onPrint}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full glass-pill hover:border-cyan-400/50 text-cyan-300 font-mono text-[10px] uppercase tracking-wider transition-all"
+                title="Print replacement card"
+              >
+                <Printer className="w-3 h-3 text-cyan-400" />
+                <span>Print</span>
+              </button>
+            )}
           </div>
         </div>
       )}

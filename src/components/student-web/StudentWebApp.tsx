@@ -1555,7 +1555,12 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left 5 cols: 3D SmartPass Card */}
               <div className="lg:col-span-5 glass-panel rounded-3xl p-5 sm:p-6 specular-edge space-y-3">
-                <CreditCardVisual student={currentStudent} settings={settings} interactive={true} />
+                <CreditCardVisual
+                  student={currentStudent}
+                  settings={settings}
+                  interactive={true}
+                  onPrint={() => setIsPrintCardModalOpen(true)}
+                />
                 <button
                   type="button"
                   onClick={() => setIsPrintCardModalOpen(true)}
