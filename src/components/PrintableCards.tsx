@@ -37,6 +37,7 @@ export const PrintableCards: React.FC<PrintableCardsProps> = ({
   });
 
   const [cardSide, setCardSide] = useState<'front' | 'both' | 'back'>('front');
+  const [printDensity, setPrintDensity] = useState<'ultra-compact' | 'compact' | 'standard'>('ultra-compact');
   const [searchFilter, setSearchFilter] = useState('');
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>('all');
 
@@ -107,8 +108,18 @@ export const PrintableCards: React.FC<PrintableCardsProps> = ({
 
   const activeStudentsToPrint = students.filter((s) => selectedStudentIds.includes(s.id));
 
+  const cardsPerA4Page =
+    cardSide === 'both'
+      ? 5
+      : printDensity === 'ultra-compact'
+      ? 15
+      : printDensity === 'compact'
+      ? 10
+      : 4;
+  const estimatedA4Sheets = Math.max(1, Math.ceil(activeStudentsToPrint.length / cardsPerA4Page));
+
   return (
-    <div className="min-h-screen text-on-surface p-2 md:p-4">
+    <div className="min-h-screen text-on-surface p-2 md:p-4 print:p-0 print:min-h-0">
       {/* Non-printable Liquid Glass Control Panel */}
       <div className="no-print max-w-6xl mx-auto mb-8 glass-panel rounded-3xl p-6 shadow-2xl space-y-6 specular-edge">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant/20 pb-5">
@@ -122,18 +133,58 @@ export const PrintableCards: React.FC<PrintableCardsProps> = ({
             </button>
             <div>
               <h1 className="text-xl font-bold font-headline uppercase tracking-wider text-on-surface flex items-center gap-2">
-                SmartPass Print &amp; Tangible Mint Studio
-                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary-container border border-primary-container/30 font-bold uppercase tracking-wider">
-                  ISO/IEC 7810
+                SmartPass Print &amp; Bulk A4 Mint Studio
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold uppercase tracking-wider">
+                  {cardsPerA4Page} Cards / A4 Sheet (~{estimatedA4Sheets} {estimatedA4Sheets === 1 ? 'Page' : 'Pages'})
                 </span>
               </h1>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Generate high-resolution printable holographic SmartPass cutouts with didactic repayment rules.
+                Paper-saving bulk A4 layout with full card numbers, CVV, and didactic repayment rules.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            {/* A4 Paper Density Selector */}
+            <div className="flex items-center glass-well p-1 rounded-full text-xs font-headline font-bold">
+              <button
+                type="button"
+                onClick={() => setPrintDensity('ultra-compact')}
+                className={`px-3 py-1.5 rounded-full transition-all ${
+                  printDensity === 'ultra-compact'
+                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+                title="Ultra-Compact Bulk Mode: 3 columns × 5 rows = 15 cards per A4 page"
+              >
+                Ultra-Compact (15/A4)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintDensity('compact')}
+                className={`px-3 py-1.5 rounded-full transition-all ${
+                  printDensity === 'compact'
+                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+                title="Compact Standard Mode: 2 columns × 5 rows = 10 cards per A4 page"
+              >
+                Compact (10/A4)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintDensity('standard')}
+                className={`px-3 py-1.5 rounded-full transition-all ${
+                  printDensity === 'standard'
+                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+                title="Large Display Mode: 4 cards per A4 page"
+              >
+                Large (4/A4)
+              </button>
+            </div>
+
             {/* Side Format Mode */}
             <div className="flex items-center glass-well p-1 rounded-full text-xs font-headline font-bold">
               <button
@@ -318,26 +369,26 @@ export const PrintableCards: React.FC<PrintableCardsProps> = ({
           <Sparkles className="w-4 h-4 text-tertiary-fixed-dim shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-bold uppercase tracking-wider text-[11px] text-tertiary-fixed-dim">
-              Print Guidelines for Best Tangible SmartPass Feel:
+              Paper-Saving Bulk A4 Print Guidelines:
             </p>
             <p className="text-on-surface leading-relaxed text-[11px]">
-              1. In your browser print dialog, ensure <strong>&quot;Background graphics&quot;</strong> is checked so metallic gradients, EMV chips, and holographic finishes are preserved.
+              1. <strong>Ultra-Compact (15/A4)</strong> fits a 3×5 grid (15 cards) on a single A4 sheet; <strong>Compact (10/A4)</strong> fits a 2×5 grid (10 cards); <strong>Front &amp; Back (Foldable)</strong> prints Front &amp; Back side-by-side (5 foldable cards per A4 sheet).
             </p>
             <p className="text-on-surface-variant leading-relaxed text-[11px]">
-              2. Print on 250–300 gsm heavy cardstock or photo paper. If printing <strong>Front &amp; Back</strong>, fold along the center dotted line and laminate.
+              2. In your browser print dialog, check <strong>&quot;Background graphics&quot;</strong> and set Margins to <strong>Default or Minimum</strong>.
             </p>
           </div>
         </div>
       </div>
 
       {/* Printable Sheet Grid */}
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto print:max-w-none print:w-full">
         <div className="no-print text-xs text-on-surface-variant mb-4 flex items-center justify-between font-mono">
           <span className="uppercase tracking-wider text-[11px] text-on-surface font-bold">
-            Print Preview ({activeStudentsToPrint.length} Students Queued)
+            Print Preview ({activeStudentsToPrint.length} Students Queued • ~{estimatedA4Sheets} A4 {estimatedA4Sheets === 1 ? 'Sheet' : 'Sheets'})
           </span>
           <span className="text-[11px] text-on-surface-variant">
-            Standard Credit Card Ratio: 85.6mm × 53.98mm (3.37&quot; × 2.125&quot;)
+            Mode: {printDensity === 'ultra-compact' ? 'Ultra-Compact 3×5 (15/A4)' : printDensity === 'compact' ? 'Compact 2×5 (10/A4)' : 'Standard (4/A4)'}
           </span>
         </div>
 
@@ -358,62 +409,73 @@ export const PrintableCards: React.FC<PrintableCardsProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 printable-card-grid">
+          <div
+            className={`grid ${
+              cardSide === 'both'
+                ? 'grid-cols-1 gap-3 print-grid-foldable'
+                : printDensity === 'ultra-compact'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 print-grid-ultra'
+                : printDensity === 'compact'
+                ? 'grid-cols-1 md:grid-cols-2 gap-3 print-grid-compact'
+                : 'grid-cols-1 md:grid-cols-2 gap-6 print-grid-standard'
+            } printable-card-grid`}
+          >
             {activeStudentsToPrint.map((student) => (
               <div
                 key={student.id}
-                className="printable-card-item p-5 glass-panel rounded-3xl specular-edge flex flex-col items-center justify-center relative shadow-lg print:bg-transparent print:border-dashed print:border-slate-400 print:shadow-none print:p-2"
+                className={`printable-card-item ${
+                  printDensity === 'ultra-compact'
+                    ? 'p-2 rounded-2xl print:p-0.5 print:rounded-lg'
+                    : printDensity === 'compact'
+                    ? 'p-3 rounded-2xl print:p-1 print:rounded-xl'
+                    : 'p-4 rounded-3xl print:p-1.5 print:rounded-xl'
+                } glass-panel specular-edge flex flex-col items-center justify-center relative shadow-lg print:bg-transparent print:border print:border-dashed print:border-slate-300 print:shadow-none`}
                 style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
               >
                 {/* Single print button in web preview */}
-                <div className="no-print w-full flex items-center justify-between pb-3 mb-3 border-b border-outline-variant/20 text-xs font-mono">
-                  <span className="font-bold text-on-surface">{student.name}</span>
+                <div className="no-print w-full flex items-center justify-between pb-2 mb-2 border-b border-outline-variant/20 text-xs font-mono">
+                  <span className="font-bold text-on-surface truncate text-[11px]">{student.name}</span>
                   <button
                     type="button"
                     onClick={() => handlePrintSingle(student.id)}
-                    className="px-3 py-1 rounded-full glass-pill hover:border-primary-container/50 text-primary-container text-[10px] font-bold flex items-center gap-1 transition-all"
+                    className="px-2.5 py-0.5 rounded-full glass-pill hover:border-primary-container/50 text-primary-container text-[10px] font-bold flex items-center gap-1 transition-all shrink-0"
                   >
                     <Printer className="w-3 h-3" />
-                    Print Just This Card
+                    Print 1
                   </button>
                 </div>
 
                 {/* Card visual(s) based on format mode */}
                 {cardSide === 'both' ? (
-                  <div className="w-full space-y-4">
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-2 items-center relative">
                     {/* Front */}
-                    <div>
-                      <span className="text-[9px] font-mono text-on-surface-variant uppercase tracking-widest block mb-1">
+                    <div className="w-full">
+                      <span className="no-print text-[9px] font-mono text-on-surface-variant uppercase tracking-widest block mb-1">
                         Front
                       </span>
                       <CreditCardVisual
                         student={student}
                         settings={settings}
                         interactive={false}
-                        compact={false}
+                        compact={printDensity !== 'standard'}
+                        printDensity={printDensity === 'standard' ? 'compact' : printDensity}
+                        hideMetricsRail={true}
                         forceSide="front"
                       />
                     </div>
 
-                    {/* Fold line */}
-                    <div className="flex items-center gap-2 text-[10px] text-on-surface-variant font-mono my-2">
-                      <div className="flex-1 border-t border-dashed border-outline-variant print:border-slate-400" />
-                      <span className="flex items-center gap-1">
-                        <Scissors className="w-3 h-3 text-on-surface-variant" /> Fold / Cut line
-                      </span>
-                      <div className="flex-1 border-t border-dashed border-outline-variant print:border-slate-400" />
-                    </div>
-
-                    {/* Back */}
-                    <div>
-                      <span className="text-[9px] font-mono text-on-surface-variant uppercase tracking-widest block mb-1">
-                        Back
+                    {/* Back (Side-by-side with vertical fold line for compact A4 printing) */}
+                    <div className="w-full md:pl-2 print:pl-1.5 md:border-l print:border-l border-dashed border-outline-variant print:border-slate-400">
+                      <span className="no-print text-[9px] font-mono text-on-surface-variant uppercase tracking-widest block mb-1">
+                        Back (Fold along center dashed line)
                       </span>
                       <CreditCardVisual
                         student={student}
                         settings={settings}
                         interactive={false}
-                        compact={false}
+                        compact={printDensity !== 'standard'}
+                        printDensity={printDensity === 'standard' ? 'compact' : printDensity}
+                        hideMetricsRail={true}
                         forceSide="back"
                       />
                     </div>
@@ -424,20 +486,26 @@ export const PrintableCards: React.FC<PrintableCardsProps> = ({
                       student={student}
                       settings={settings}
                       interactive={false}
-                      compact={false}
+                      compact={printDensity !== 'standard'}
+                      printDensity={printDensity}
+                      hideMetricsRail={true}
                       forceSide={cardSide}
                     />
                   </div>
                 )}
 
-                {/* Cutout guideline footer */}
-                <div className="mt-3 flex items-center justify-between w-full text-[10px] text-on-surface-variant font-mono px-2 pt-2 border-t border-outline-variant/20 print:border-slate-300">
-                  <span className="flex items-center gap-1">
-                    <Scissors className="w-3 h-3 text-on-surface-variant" /> Trim along outer edge
-                  </span>
-                  <span>{student.studentIdNumber}</span>
-                  <span>{settings.schoolName || 'Oxford English Academy'}</span>
-                </div>
+                {/* Cutout guideline footer (only in standard mode or screen preview so compact print fits 10-15 cards per A4 page) */}
+                {printDensity === 'standard' && (
+                  <div className="mt-2 flex items-center justify-between w-full text-[9px] text-on-surface-variant font-mono px-1 pt-1.5 border-t border-outline-variant/20 print:border-slate-300">
+                    <span className="flex items-center gap-1">
+                      <Scissors className="w-2.5 h-2.5 text-on-surface-variant" /> Trim edge
+                    </span>
+                    <span>
+                      {student.studentIdNumber} • CVV: {student.cvv}
+                    </span>
+                    <span>{settings.schoolName || 'Oxford English Academy'}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>

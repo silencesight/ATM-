@@ -60,6 +60,7 @@ import { ManualBalanceAdjustModal } from './ManualBalanceAdjustModal';
 import { StudentReportsModal } from './StudentReportsModal';
 import { DataBackupModal } from './DataBackupModal';
 import { StudentYearlyHistory } from './StudentYearlyHistory';
+import { StudentPasswordModal } from './StudentPasswordModal';
 
 export interface TeacherDashboardProps {
   students: Student[];
@@ -133,6 +134,7 @@ export interface TeacherDashboardProps {
   onOpenApprovals?: () => void;
   onOpenCloudSync?: () => void;
   onResetStudentPassword?: (studentId: string) => void;
+  onChangeStudentPassword?: (studentId: string, newPassword: string | undefined) => void;
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
@@ -173,6 +175,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onOpenApprovals,
   onOpenCloudSync,
   onResetStudentPassword,
+  onChangeStudentPassword,
 }) => {
   const [localClassFilter, setLocalClassFilter] = useState<string>(selectedClassId);
   const effectiveClassFilter = onSelectClass ? selectedClassId : localClassFilter;
@@ -222,6 +225,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [studentForHistory, setStudentForHistory] = useState<Student | null>(null);
+  const [studentForPasswordModal, setStudentForPasswordModal] = useState<Student | null>(null);
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'grants' | 'adjustments' | 'loans'>(
     'all'
   );
@@ -1203,24 +1207,22 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       >
                         <Printer className="w-3.5 h-3.5" />
                       </button>
-                      {onResetStudentPassword && (
-                        <button
-                          type="button"
-                          onClick={() => onResetStudentPassword(student.id)}
-                          title={
-                            student.customPassword
-                              ? `Reset custom password back to Card CVV (${student.cvv})`
-                              : `Using default Card CVV (${student.cvv})`
-                          }
-                          className={`py-1.5 rounded-lg hover:bg-surface-container-high/60 transition-colors flex items-center justify-center ${
-                            student.customPassword
-                              ? 'text-amber-400 hover:text-amber-300'
-                              : 'text-on-surface-variant hover:text-primary-container'
-                          }`}
-                        >
-                          <KeyRound className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setStudentForPasswordModal(student)}
+                        title={
+                          student.customPassword
+                            ? `Manage / Change Password (currently custom: "${student.customPassword}")`
+                            : `Manage / Change Password (currently default CVV: ${student.cvv})`
+                        }
+                        className={`py-1.5 rounded-lg hover:bg-surface-container-high/60 transition-colors flex items-center justify-center ${
+                          student.customPassword
+                            ? 'text-amber-400 hover:text-amber-300'
+                            : 'text-on-surface-variant hover:text-primary-container'
+                        }`}
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                      </button>
                       {isDelisted ? (
                         <button
                           type="button"
@@ -1318,6 +1320,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         </span>
                       </div>
 
+                      {activeLoan.principalDisbursed === false && (
+                        <div className="px-2 py-1 rounded-lg bg-primary-container/10 border border-primary-container/25 text-[10px] font-mono text-primary-container flex items-center justify-between">
+                          <span>Principal E$ {activeLoan.principal}.00</span>
+                          <span className="font-bold">Disburses on Work Verification</span>
+                        </div>
+                      )}
+
                       <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-primary-container to-tertiary-container"
@@ -1382,9 +1391,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             setSelectedLoanForWork({ loan: activeLoan, student })
                           }
                           className="text-[10px] font-mono font-bold text-tertiary-fixed-dim hover:underline flex items-center gap-1"
+                          title="Verify Face-to-Face Notebook Work & Disburse Loan Principal"
                         >
                           <BookOpen className="w-3 h-3" />
-                          <span>Record English Work</span>
+                          <span>Verify Face-to-Face</span>
                         </button>
                       </div>
                     </div>
@@ -1429,6 +1439,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         onClick={() =>
                           setSelectedLoanForWork({ loan: activeLoan, student })
                         }
+                        title="Verify Face-to-Face Work & Release Loan Money"
                         className="py-2 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold text-[11px] transition-all flex items-center justify-center gap-1"
                       >
                         <BookOpen className="w-3 h-3" />
@@ -1528,6 +1539,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setStudentForPasswordModal(student)}
+                              title="Change or Reset Student Password"
+                              className="px-2 py-1 rounded-lg glass-well text-amber-300 hover:border-amber-400/50"
+                            >
+                              <KeyRound className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               type="button"
                               onClick={() => setSelectedStudentForDailyDollar(student)}
@@ -1842,6 +1861,23 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           </div>
         </div>
       )}
+
+      <StudentPasswordModal
+        isOpen={Boolean(studentForPasswordModal)}
+        onClose={() => setStudentForPasswordModal(null)}
+        student={
+          studentForPasswordModal
+            ? students.find((s) => s.id === studentForPasswordModal.id) || studentForPasswordModal
+            : null
+        }
+        onSavePassword={(studentId, newPassword) => {
+          if (onChangeStudentPassword) {
+            onChangeStudentPassword(studentId, newPassword);
+          } else if (newPassword === undefined && onResetStudentPassword) {
+            onResetStudentPassword(studentId);
+          }
+        }}
+      />
     </div>
   );
 };

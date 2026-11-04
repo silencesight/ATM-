@@ -13,6 +13,8 @@ import { ClassManagerModal } from './components/ClassManagerModal';
 import { StudentReportsModal } from './components/StudentReportsModal';
 import { TeacherApprovalCenterModal } from './components/TeacherApprovalCenterModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
+import { ContractsWallView } from './components/ContractsWallView';
+import { formatStoreAllocationsSummary } from './components/StoreRedemptionConfigModal';
 import { StudentWebApp } from './components/student-web/StudentWebApp';
 import {
   Student,
@@ -22,7 +24,9 @@ import {
   EnglishRewardTransaction,
   StoreItem,
   StorePurchaseTransaction,
+  StoreRedemptionAllocation,
   Classroom,
+  ClassroomContract,
   BalanceAdjustmentTransaction,
   CreditLimitRaiseTransaction,
   PendingStudentRequest,
@@ -50,10 +54,9 @@ import {
   calculateTotalDue,
   getCreditTier,
   getTodayDateString,
-  CURRENCY_SYMBOL,
 } from './utils/creditCalculator';
-import { loadStoreCatalog, saveStoreCatalog, calculateEffectiveItemPrice } from './data/storeCatalog';
-import { CheckCircle2, AlertTriangle, Sparkles, X, ShoppingBag } from 'lucide-react';
+import { loadStoreCatalog, saveStoreCatalog } from './data/storeCatalog';
+import { CheckCircle2, AlertTriangle, Sparkles, X } from 'lucide-react';
 
 interface Toast {
   id: string;
@@ -61,6 +64,37 @@ interface Toast {
   title: string;
   message: string;
 }
+
+const INITIAL_CONTRACTS: ClassroomContract[] = [
+  {
+    id: 'contract-initial-1',
+    title: 'Weekend Story Challenge: 10 Past Tense Sentences',
+    instructions:
+      'Write 10 original sentences in your notebook about your weekend using past tense verbs and highlight each verb. Take a clear photo of your notebook page!',
+    rewardAmount: 150,
+    creditScoreBonus: 15,
+    totalStock: 5,
+    spotsRemaining: 5,
+    classroomId: 'all',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    claims: [],
+  },
+  {
+    id: 'contract-initial-2',
+    title: 'Phrasal Verbs Master: 4 Illustrated Phrasal Verbs',
+    instructions:
+      'Choose 4 phrasal verbs from class, write a full example sentence for each in your notebook, and add a small drawing or border decoration. Upload a photo to claim!',
+    rewardAmount: 220,
+    creditScoreBonus: 20,
+    totalStock: 3,
+    spotsRemaining: 3,
+    classroomId: 'all',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    claims: [],
+  },
+];
 
 export default function App() {
   // Theme state with localStorage persistence ('dark' by default)
@@ -162,6 +196,15 @@ export default function App() {
     }
   });
 
+  const [contracts, setContracts] = useState<ClassroomContract[]>(() => {
+    try {
+      const saved = localStorage.getItem('esl_classroom_contracts_v1');
+      return saved ? JSON.parse(saved) : INITIAL_CONTRACTS;
+    } catch {
+      return INITIAL_CONTRACTS;
+    }
+  });
+
   const isStandaloneStudentWeb = React.useMemo(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -218,6 +261,14 @@ export default function App() {
       console.error(e);
     }
   }, [pendingRequests]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('esl_classroom_contracts_v1', JSON.stringify(contracts));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [contracts]);
 
   // Toast Helper
   const addToast = (type: 'success' | 'warning' | 'info', title: string, message: string) => {
@@ -284,18 +335,64 @@ export default function App() {
             if (cloud.storeCatalog?.length) setStoreCatalog(cloud.storeCatalog);
             if (cloud.classrooms?.length) setClassrooms(cloud.classrooms);
             if (cloud.pendingRequests?.length) setPendingRequests(cloud.pendingRequests);
+            if (cloud.contracts?.length) setContracts(cloud.contracts);
           } else {
-            // Merge any student profile updates (avatar, customPassword, disclaimers, reservedBalance)
+            // Merge any student profile updates, P2P transfers, and active loans from cloud
             if (Array.isArray(cloud.students) && cloud.students.length > 0) {
               const cloudStudentMap = new Map(cloud.students.map((cs) => [cs.id, cs]));
               setStudents((prev) =>
                 prev.map((localSt) => {
                   const remoteSt = cloudStudentMap.get(localSt.id);
                   if (!remoteSt) return localSt;
+
+                  // Merge any new P2P postal cards that arrived while ATM 4.0 was closed
+                  const localP2P = localSt.p2pTransfersHistory || [];
+                  const localP2PBaseIds = new Set(
+                    localP2P.map((t) => t.id.replace(/_(sent|received)$/, ''))
+                  );
+                  const newRemoteP2P = (remoteSt.p2pTransfersHistory || []).filter(
+                    (t) => !localP2PBaseIds.has(t.id.replace(/_(sent|received)$/, ''))
+                  );
+                  const p2pDelta = newRemoteP2P.reduce(
+                    (sum, t) => sum + (t.direction === 'received' ? t.amount : -t.amount),
+                    0
+                  );
+
+                  // Also sync any quickReply updates on existing P2P transfers
+                  const remoteP2PByBaseId = new Map(
+                    (remoteSt.p2pTransfersHistory || []).map((t) => [
+                      t.id.replace(/_(sent|received)$/, ''),
+                      t,
+                    ])
+                  );
+                  const updatedLocalP2P = localP2P.map((t) => {
+                    const remoteMatch = remoteP2PByBaseId.get(
+                      t.id.replace(/_(sent|received)$/, '')
+                    );
+                    if (remoteMatch?.quickReply && !t.quickReply) {
+                      return {
+                        ...t,
+                        quickReply: remoteMatch.quickReply,
+                        repliedAt: remoteMatch.repliedAt,
+                      };
+                    }
+                    return t;
+                  });
+
+                  // Merge disclaimers
+                  const localDiscIds = new Set((localSt.disclaimers || []).map((d) => d.id));
+                  const extraDisclaimers = (remoteSt.disclaimers || []).filter(
+                    (d) => !localDiscIds.has(d.id)
+                  );
+
                   return {
                     ...localSt,
                     avatarUrl: remoteSt.avatarUrl ?? localSt.avatarUrl,
                     customPassword: remoteSt.customPassword ?? localSt.customPassword,
+                    activeLoanId: localSt.activeLoanId || remoteSt.activeLoanId || null,
+                    currentBalance: Math.max(0, localSt.currentBalance + p2pDelta),
+                    p2pTransfersHistory: [...newRemoteP2P, ...updatedLocalP2P],
+                    disclaimers: [...extraDisclaimers, ...(localSt.disclaimers || [])],
                     reservedBalance: Math.max(
                       localSt.reservedBalance || 0,
                       remoteSt.reservedBalance || 0
@@ -303,6 +400,15 @@ export default function App() {
                   };
                 })
               );
+            }
+
+            // Merge any loans opened while ATM 4.0 was closed
+            if (Array.isArray(cloud.loans) && cloud.loans.length > 0) {
+              setLoans((prev) => {
+                const existingIds = new Set(prev.map((l) => l.id));
+                const newLoansFromCloud = cloud.loans.filter((l) => !existingIds.has(l.id));
+                return newLoansFromCloud.length > 0 ? [...newLoansFromCloud, ...prev] : prev;
+              });
             }
 
             // Merge any pending requests submitted while ATM 4.0 was closed
@@ -313,6 +419,31 @@ export default function App() {
                   (r) => !existingIds.has(r.id)
                 );
                 return newFromCloud.length > 0 ? [...newFromCloud, ...prev] : prev;
+              });
+            }
+
+            // Merge any contracts / claims updated in cloud (and recalculate spotsRemaining)
+            if (Array.isArray(cloud.contracts) && cloud.contracts.length > 0) {
+              setContracts((prev) => {
+                const cloudMap = new Map(cloud.contracts!.map((c) => [c.id, c]));
+                const merged = prev.map((localC) => {
+                  const remoteC = cloudMap.get(localC.id);
+                  if (!remoteC) return localC;
+                  const claimIds = new Set(localC.claims.map((cl) => cl.id));
+                  const claimStudentIds = new Set(localC.claims.map((cl) => cl.studentId));
+                  const extraClaims = (remoteC.claims || []).filter(
+                    (cl) => !claimIds.has(cl.id) && !claimStudentIds.has(cl.studentId)
+                  );
+                  const mergedClaims = [...localC.claims, ...extraClaims];
+                  return {
+                    ...localC,
+                    spotsRemaining: Math.max(0, localC.totalStock - mergedClaims.length),
+                    claims: mergedClaims,
+                  };
+                });
+                const localIds = new Set(prev.map((c) => c.id));
+                const extraContracts = cloud.contracts!.filter((c) => !localIds.has(c.id));
+                return [...merged, ...extraContracts];
               });
             }
           }
@@ -344,6 +475,7 @@ export default function App() {
       classrooms,
       settings,
       pendingRequests,
+      contracts,
     };
     const timer = window.setTimeout(() => {
       pushClassroomStateToCloud(
@@ -362,6 +494,7 @@ export default function App() {
     classrooms,
     settings,
     pendingRequests,
+    contracts,
   ]);
 
   // Listen for real-time Student Web App actions in Teacher Mode
@@ -396,6 +529,263 @@ export default function App() {
             };
           })
         );
+      } else if (action.type === 'OPEN_LOAN') {
+        const newLoan: Loan = { ...action.loan, principalDisbursed: false };
+        setLoans((prev) => {
+          if (prev.some((l) => l.id === newLoan.id)) return prev;
+          return [newLoan, ...prev];
+        });
+        setStudents((prev) =>
+          prev.map((s) => (s.id === newLoan.studentId ? { ...s, activeLoanId: newLoan.id } : s))
+        );
+        addToast(
+          'info',
+          '🏦 Student Opened a Loan',
+          `Loan for E$${newLoan.principal}.00 opened! E$${newLoan.principal}.00 will disburse into their wallet once you approve their English notebook work.`
+        );
+        removeCloudStudentAction(
+          action.id,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      } else if (action.type === 'SEND_P2P_POSTCARD') {
+        const nowIso = action.createdAt || new Date().toISOString();
+        const baseId = action.transferId.replace(/_(sent|received)$/, '');
+        setStudents((prev) => {
+          const sender = prev.find((s) => s.id === action.senderId);
+          const recipient = prev.find((s) => s.id === action.recipientId);
+          if (!sender || !recipient) return prev;
+          if (
+            (sender.p2pTransfersHistory || []).some(
+              (t) => t.id === baseId || t.id === `${baseId}_sent` || t.id === action.transferId
+            )
+          ) {
+            return prev;
+          }
+          const senderNewBal = Math.max(0, sender.currentBalance - action.amount);
+          const recipientNewBal = recipient.currentBalance + action.amount;
+
+          const sentRecord: P2PTransferRecord = {
+            id: baseId,
+            direction: 'sent',
+            counterpartyId: recipient.id,
+            counterpartyName: recipient.name,
+            counterpartyClassName: recipient.className,
+            amount: action.amount,
+            message: 'To you - from me',
+            isPostalCard: true,
+            timestamp: nowIso,
+          };
+
+          const receivedRecord: P2PTransferRecord = {
+            id: baseId,
+            direction: 'received',
+            counterpartyId: sender.id,
+            counterpartyName: sender.name,
+            counterpartyClassName: sender.className,
+            amount: action.amount,
+            message: 'To you - from me',
+            isPostalCard: true,
+            timestamp: nowIso,
+          };
+
+          const senderDisc: BalanceDisclaimerNotice = {
+            id: `disc-p2p-sent-${baseId}`,
+            studentId: sender.id,
+            previousBalance: sender.currentBalance,
+            newBalance: senderNewBal,
+            delta: -action.amount,
+            reason: `🎁 Gift Postal Card sent to ${recipient.name}: "To you - from me"`,
+            category: 'transfer',
+            createdAt: nowIso,
+          };
+
+          const recipientDisc: BalanceDisclaimerNotice = {
+            id: `disc-p2p-recv-${baseId}`,
+            studentId: recipient.id,
+            previousBalance: recipient.currentBalance,
+            newBalance: recipientNewBal,
+            delta: action.amount,
+            reason: `🎁 Gift Postal Card received from ${sender.name}: "To you - from me"`,
+            category: 'transfer',
+            createdAt: nowIso,
+          };
+
+          addToast(
+            'info',
+            '🎁 Gift Postal Card Sent',
+            `${sender.name} sent an E$${action.amount}.00 Gift Postal Card ("To you - from me") to ${recipient.name}.`
+          );
+
+          return prev.map((s) => {
+            if (s.id === sender.id) {
+              return {
+                ...s,
+                currentBalance: senderNewBal,
+                p2pTransfersHistory: [sentRecord, ...(s.p2pTransfersHistory || [])],
+                disclaimers: [
+                  senderDisc,
+                  ...(s.disclaimers || []).filter((d) => d.id !== `disc-p2p-sent-${baseId}`),
+                ],
+              };
+            }
+            if (s.id === recipient.id) {
+              return {
+                ...s,
+                currentBalance: recipientNewBal,
+                p2pTransfersHistory: [receivedRecord, ...(s.p2pTransfersHistory || [])],
+                disclaimers: [
+                  recipientDisc,
+                  ...(s.disclaimers || []).filter((d) => d.id !== `disc-p2p-recv-${baseId}`),
+                ],
+              };
+            }
+            return s;
+          });
+        });
+        removeCloudStudentAction(
+          action.id,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      } else if (action.type === 'REPLY_P2P_POSTCARD') {
+        const nowIso = action.createdAt || new Date().toISOString();
+        const baseId = action.transferId.replace(/_(sent|received)$/, '');
+        const matchesTransfer = (id: string) =>
+          id === baseId ||
+          id === `${baseId}_sent` ||
+          id === `${baseId}_received` ||
+          id === action.transferId;
+        setStudents((prev) => {
+          const sender = prev.find((s) => s.id === action.senderId);
+          const existing = (sender?.p2pTransfersHistory || []).find((t) => matchesTransfer(t.id));
+          if (existing?.quickReply === action.replyText) {
+            return prev;
+          }
+          const recipient = prev.find((s) => s.id === action.recipientId);
+          return prev.map((s) => {
+            if (s.id === action.recipientId) {
+              return {
+                ...s,
+                p2pTransfersHistory: (s.p2pTransfersHistory || []).map((t) =>
+                  matchesTransfer(t.id)
+                    ? { ...t, quickReply: action.replyText, repliedAt: nowIso }
+                    : t
+                ),
+              };
+            }
+            if (s.id === action.senderId) {
+              const replyDisc: BalanceDisclaimerNotice = {
+                id: `disc-p2p-reply-${baseId}`,
+                studentId: s.id,
+                previousBalance: s.currentBalance,
+                newBalance: s.currentBalance,
+                delta: 0,
+                reason: `💌 ${recipient?.name || action.recipientName || 'Your classmate'} replied to your Gift Postal Card: "${action.replyText}"`,
+                category: 'transfer',
+                createdAt: nowIso,
+              };
+              return {
+                ...s,
+                p2pTransfersHistory: (s.p2pTransfersHistory || []).map((t) =>
+                  matchesTransfer(t.id)
+                    ? { ...t, quickReply: action.replyText, repliedAt: nowIso }
+                    : t
+                ),
+                disclaimers: [
+                  replyDisc,
+                  ...(s.disclaimers || []).filter(
+                    (d) =>
+                      d.id !== `disc-p2p-reply-${baseId}` &&
+                      d.id !== `disc-p2p-reply-${action.transferId}`
+                  ),
+                ],
+              };
+            }
+            return s;
+          });
+        });
+        removeCloudStudentAction(
+          action.id,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      } else if (action.type === 'RESERVE_CONTRACT') {
+        setContracts((prev) =>
+          prev.map((c) => {
+            if (c.id !== action.contractId || !c.isActive) return c;
+            if (
+              c.claims.some(
+                (cl) => cl.id === action.claim.id || cl.studentId === action.claim.studentId
+              )
+            ) {
+              return c;
+            }
+            if (c.spotsRemaining <= 0 || c.claims.length >= c.totalStock) return c;
+            const nextClaims = [action.claim, ...c.claims];
+            return {
+              ...c,
+              spotsRemaining: Math.max(0, c.totalStock - nextClaims.length),
+              claims: nextClaims,
+            };
+          })
+        );
+        addToast(
+          'info',
+          '📜 Contract Spot Reserved',
+          `${action.claim.studentName} reserved a spot on the Contracts Wall!`
+        );
+        removeCloudStudentAction(
+          action.id,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      } else if (action.type === 'RELEASE_CONTRACT') {
+        setContracts((prev) =>
+          prev.map((c) => {
+            if (c.id !== action.contractId) return c;
+            const existingClaim = c.claims.find(
+              (cl) =>
+                (action.claimId ? cl.id === action.claimId : cl.studentId === action.studentId) &&
+                cl.status !== 'approved'
+            );
+            if (!existingClaim) return c;
+            const nextClaims = c.claims.filter((cl) => cl.id !== existingClaim.id);
+            return {
+              ...c,
+              spotsRemaining: Math.min(c.totalStock, Math.max(0, c.totalStock - nextClaims.length)),
+              claims: nextClaims,
+            };
+          })
+        );
+        setPendingRequests((prev) => {
+          const toRemove = prev.filter(
+            (r) =>
+              r.type === 'contract_submission' &&
+              r.status === 'pending' &&
+              (r.contractSubmissionData?.claimId === action.claimId ||
+                (r.studentId === action.studentId &&
+                  r.contractSubmissionData?.contractId === action.contractId))
+          );
+          toRemove.forEach((r) => {
+            removeCloudStudentAction(
+              `act_${r.id}`,
+              settings.cloudDatabaseUrl,
+              settings.cloudSupabaseKey
+            );
+          });
+          return prev.filter((r) => !toRemove.some((rem) => rem.id === r.id));
+        });
+        removeCloudStudentAction(
+          `act_res_${action.claimId}`,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+        removeCloudStudentAction(
+          action.id,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
       } else if (action.type === 'SUBMIT_REQUEST') {
         const req = action.request;
         setPendingRequests((prev) => {
@@ -419,11 +809,34 @@ export default function App() {
               )
             );
           }
+          if (req.type === 'contract_submission' && req.contractSubmissionData) {
+            const subData = req.contractSubmissionData;
+            setContracts((cPrev) =>
+              cPrev.map((c) => {
+                if (c.id !== subData.contractId) return c;
+                return {
+                  ...c,
+                  claims: c.claims.map((cl) =>
+                    cl.id === subData.claimId || cl.studentId === req.studentId
+                      ? {
+                          ...cl,
+                          status: 'pending_approval',
+                          submittedAt: req.createdAt,
+                          notebookPhotoDataUrl: subData.notebookPhotoDataUrl,
+                          studentNotes: subData.studentNotes,
+                        }
+                      : cl
+                  ),
+                };
+              })
+            );
+          }
           const labelMap: Record<PendingStudentRequest['type'], string> = {
             loan_payment: 'Notebook Photo Loan Payment',
             loan_request: 'New Loan Request',
             store_purchase: 'School Store Order',
             p2p_transfer: 'Friend Money Transfer',
+            contract_submission: 'Contract Notebook Photo',
           };
           addToast(
             'info',
@@ -448,6 +861,20 @@ export default function App() {
                     }
                   : s
               )
+            );
+          }
+          if (target && target.type === 'contract_submission' && target.contractSubmissionData) {
+            const subData = target.contractSubmissionData;
+            setContracts((cPrev) =>
+              cPrev.map((c) => {
+                if (c.id !== subData.contractId) return c;
+                return {
+                  ...c,
+                  claims: c.claims.map((cl) =>
+                    cl.id === subData.claimId ? { ...cl, status: 'reserved' } : cl
+                  ),
+                };
+              })
             );
           }
           return prev.filter((r) => r.id !== action.requestId);
@@ -631,6 +1058,7 @@ export default function App() {
       originalPrice: number;
       discountPercent: number;
       quantity?: number;
+      allocations?: StoreRedemptionAllocation[];
     }
   ) => {
     const student = students.find((s) => s.id === studentId);
@@ -656,7 +1084,6 @@ export default function App() {
     const scoreBonus = 5;
     const oldScore = student.creditScore;
     const newScore = Math.min(850, oldScore + scoreBonus);
-    const newTier = getCreditTier(newScore);
 
     const qty = storeDetails?.quantity || 1;
 
@@ -671,17 +1098,23 @@ export default function App() {
       );
     }
 
+    const allocSummary = formatStoreAllocationsSummary(storeDetails?.allocations);
+    const fullItemName = `${storeDetails?.itemName || reason || 'Classroom Store Purchase'}${
+      qty > 1 ? ` (x${qty})` : ''
+    }${allocSummary ? ` [${allocSummary}]` : ''}`;
+
     const purchaseRecord: StorePurchaseTransaction = {
       id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       studentId: student.id,
       studentName: student.name,
       itemId: storeDetails?.itemId,
-      itemName: `${storeDetails?.itemName || reason || 'Classroom Store Purchase'}${qty > 1 ? ` (x${qty})` : ''}`,
+      itemName: fullItemName,
       pricePaid: amountToDeduct,
-      originalPrice: (storeDetails?.originalPrice || amountToDeduct),
+      originalPrice: storeDetails?.originalPrice || amountToDeduct,
       discountPercent: storeDetails?.discountPercent || 0,
       quantity: qty,
       creditScoreBonusAwarded: scoreBonus,
+      allocations: storeDetails?.allocations,
       timestamp: new Date().toISOString(),
     };
 
@@ -689,7 +1122,7 @@ export default function App() {
       student.id,
       student.currentBalance,
       newBalance,
-      `Store Purchase: ${purchaseRecord.itemName}`,
+      `Store Purchase: ${purchaseRecord.itemName} • Your request will be done asap - Teacher Anthony's ATM`,
       'store'
     );
 
@@ -722,6 +1155,7 @@ export default function App() {
       item: StoreItem;
       quantity: number;
       effectiveUnitPrice: number;
+      allocations?: StoreRedemptionAllocation[];
     }[]
   ) => {
     const student = students.find((s) => s.id === studentId);
@@ -765,25 +1199,31 @@ export default function App() {
     );
 
     const timestamp = new Date().toISOString();
-    const purchaseRecords: StorePurchaseTransaction[] = cartItems.map((c) => ({
-      id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      studentId: student.id,
-      studentName: student.name,
-      itemId: c.item.id,
-      itemName: `${c.item.name}${c.quantity > 1 ? ` (x${c.quantity})` : ''}`,
-      pricePaid: c.effectiveUnitPrice * c.quantity,
-      originalPrice: c.item.basePrice * c.quantity,
-      discountPercent: c.item.discountPercent || 0,
-      quantity: c.quantity,
-      creditScoreBonusAwarded: 5,
-      timestamp,
-    }));
+    const purchaseRecords: StorePurchaseTransaction[] = cartItems.map((c) => {
+      const allocSummary = formatStoreAllocationsSummary(c.allocations);
+      return {
+        id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        studentId: student.id,
+        studentName: student.name,
+        itemId: c.item.id,
+        itemName: `${c.item.name}${c.quantity > 1 ? ` (x${c.quantity})` : ''}${
+          allocSummary ? ` [${allocSummary}]` : ''
+        }`,
+        pricePaid: c.effectiveUnitPrice * c.quantity,
+        originalPrice: c.item.basePrice * c.quantity,
+        discountPercent: c.item.discountPercent || 0,
+        quantity: c.quantity,
+        creditScoreBonusAwarded: 5,
+        allocations: c.allocations,
+        timestamp,
+      };
+    });
 
     const cartDisclaimer = buildBalanceDisclaimer(
       student.id,
       student.currentBalance,
       newBalance,
-      `Store Cart Purchase (${totalItemsCount} item${totalItemsCount > 1 ? 's' : ''})`,
+      `Store Cart Purchase (${purchaseRecords.map((p) => p.itemName).join('; ')}) • Your request will be done asap - Teacher Anthony's ATM`,
       'store'
     );
 
@@ -1026,7 +1466,7 @@ export default function App() {
     );
   };
 
-  // Issue new loan
+  // Issue new loan (Opens immediately; Principal disburses once English work is verified)
   const handleIssueLoan = (
     studentId: string,
     data: { principal: number; durationDays: number; loanType: 'short' | 'big'; notes: string }
@@ -1066,30 +1506,14 @@ export default function App() {
       status: 'active',
       submissions: [],
       notes: data.notes,
-    };
-
-    const prevBalance = student.currentBalance;
-    const newBalance = prevBalance + data.principal;
-
-    const disbursementTx: BalanceAdjustmentTransaction = {
-      id: `loan_disb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      studentId: student.id,
-      studentName: student.name,
-      type: 'increase',
-      amount: data.principal,
-      previousBalance: prevBalance,
-      newBalance,
-      reason: `Loan Disbursement: Instant cash for ${data.loanType} loan (${data.durationDays}d term)`,
-      category: 'other',
-      creditScoreChange: 0,
-      timestamp: now.toISOString(),
+      principalDisbursed: false,
     };
 
     const loanDisclaimer = buildBalanceDisclaimer(
       student.id,
-      prevBalance,
-      newBalance,
-      disbursementTx.reason,
+      student.currentBalance,
+      student.currentBalance,
+      `Loan Opened (E$${data.principal}.00): Complete your English notebook work (E$${totalDue}.00 total) and get Teacher approval to receive E$${data.principal}.00 in your wallet!`,
       'loan'
     );
 
@@ -1099,9 +1523,7 @@ export default function App() {
         s.id === studentId
           ? {
               ...s,
-              currentBalance: newBalance,
               activeLoanId: loanId,
-              balanceAdjustmentsHistory: [disbursementTx, ...(s.balanceAdjustmentsHistory || [])],
               disclaimers: [loanDisclaimer, ...(s.disclaimers || [])],
             }
           : s
@@ -1110,8 +1532,8 @@ export default function App() {
 
     addToast(
       'success',
-      'Loan Approved & Disbursed Instantly',
-      `E$${data.principal}.00 added instantly to ${student.name}'s balance! Total repayment due: E$${totalDue}.00 (${data.durationDays} days).`
+      'Loan Opened — Disburses on Work Approval!',
+      `Opened E$${data.principal}.00 loan for ${student.name}. Once their English work (E$${totalDue}.00) is verified (via photo or face-to-face), E$${data.principal}.00 will be deposited into their wallet!`
     );
   };
 
@@ -1157,7 +1579,7 @@ export default function App() {
     );
   };
 
-  // Submit English Work for repayment (or direct teacher in-class verification)
+  // Submit English Work for repayment (or direct teacher face-to-face verification)
   const handleSubmitEnglishWork = (submissionData: Omit<EnglishSubmission, 'id' | 'createdAt'>) => {
     const subId = `sub-${Date.now()}`;
     const newSubmission: EnglishSubmission = {
@@ -1175,6 +1597,9 @@ export default function App() {
       const extraMoney = Math.max(0, paymentCredit - remainingBeforePayment);
       const newRepaid = loan.amountRepaid + paymentCredit;
       const isFullyPaid = newRepaid >= loan.totalDue;
+      const shouldDisbursePrincipal = isFullyPaid && loan.principalDisbursed === false;
+      const principalToDisburse = shouldDisbursePrincipal ? loan.principal : 0;
+      const totalWalletDeposit = principalToDisburse + extraMoney;
 
       // Update Loan
       setLoans((prev) =>
@@ -1185,12 +1610,13 @@ export default function App() {
             amountRepaid: Math.min(newRepaid, l.totalDue),
             status: isFullyPaid ? 'paid' : 'active',
             paidAt: isFullyPaid ? new Date().toISOString() : undefined,
+            principalDisbursed: isFullyPaid ? true : l.principalDisbursed,
             submissions: [newSubmission, ...l.submissions],
           };
         })
       );
 
-      // Update Student credit score, limits, and deposit excess money directly to account
+      // Update Student credit score, limits, and deposit loan principal + extra money directly to account
       setStudents((prev) =>
         prev.map((student) => {
           if (student.id !== loan.studentId) return student;
@@ -1215,7 +1641,42 @@ export default function App() {
             ? Math.min(settings.maxLoanCap, Math.max(student.maxLoanLimit + 50, tier.maxLoanLimit))
             : student.maxLoanLimit;
 
-          const updatedBalance = student.currentBalance + extraMoney;
+          const prevBalance = student.currentBalance;
+          const updatedBalance = prevBalance + totalWalletDeposit;
+          const disclaimersList = [...(student.disclaimers || [])];
+          const adjustmentsList = [...(student.balanceAdjustmentsHistory || [])];
+
+          if (totalWalletDeposit > 0) {
+            const depositReason =
+              principalToDisburse > 0
+                ? `Face-to-Face Loan Work Approved! Disbursed E$${principalToDisburse}.00 Loan Principal${
+                    extraMoney > 0 ? ` + E$${extraMoney}.00 Extra English Bonus` : ''
+                  }`
+                : `Face-to-Face Loan Repayment Surplus (+E$${extraMoney}.00 extra work)`;
+
+            disclaimersList.unshift(
+              buildBalanceDisclaimer(
+                student.id,
+                prevBalance,
+                updatedBalance,
+                depositReason,
+                'loan'
+              )
+            );
+            adjustmentsList.unshift({
+              id: `loan_disb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              studentId: student.id,
+              studentName: student.name,
+              type: 'increase',
+              amount: totalWalletDeposit,
+              previousBalance: prevBalance,
+              newBalance: updatedBalance,
+              reason: depositReason,
+              category: 'reward',
+              creditScoreChange: scoreDelta,
+              timestamp: new Date().toISOString(),
+            });
+          }
 
           return {
             ...student,
@@ -1226,6 +1687,8 @@ export default function App() {
             totalLoansCompleted: isFullyPaid ? student.totalLoansCompleted + 1 : student.totalLoansCompleted,
             punctualPaymentsCount: punctualCount,
             decoratedStatementsCount: decoratedCount,
+            disclaimers: disclaimersList,
+            balanceAdjustmentsHistory: adjustmentsList,
           };
         })
       );
@@ -1233,10 +1696,14 @@ export default function App() {
       const targetStudent = students.find((s) => s.id === loan.studentId);
       addToast(
         'success',
-        isFullyPaid ? 'Loan Fully Settled!' : 'In-Class Statements Verified',
-        extraMoney > 0
-          ? `Loan settled! Extra $${extraMoney}.00 credited directly to ${targetStudent?.name || 'student'}'s account balance.`
-          : `Credited $${submissionData.totalCreditValue} toward loan.${isFullyPaid ? ' Loan is completely settled!' : ''}`
+        isFullyPaid ? 'Loan Verified & Money Disbursed!' : 'Face-to-Face Work Verified',
+        totalWalletDeposit > 0
+          ? `Loan settled! Deposited E$${totalWalletDeposit}.00 (${
+              principalToDisburse > 0
+                ? `E$${principalToDisburse} loan principal${extraMoney > 0 ? ` + E$${extraMoney} bonus` : ''}`
+                : `E$${extraMoney} bonus`
+            }) directly into ${targetStudent?.name || 'student'}'s wallet!`
+          : `Credited E$${submissionData.totalCreditValue} toward loan.${isFullyPaid ? ' Loan is completely settled!' : ''}`
       );
       return;
     }
@@ -1273,6 +1740,9 @@ export default function App() {
     const extraMoney = Math.max(0, paymentCredit - remainingBeforePayment);
     const newRepaid = loan.amountRepaid + paymentCredit;
     const isFullyPaid = newRepaid >= loan.totalDue;
+    const shouldDisbursePrincipal = isFullyPaid && loan.principalDisbursed === false;
+    const principalToDisburse = shouldDisbursePrincipal ? loan.principal : 0;
+    const totalWalletDeposit = principalToDisburse + extraMoney;
 
     // Update Loan
     setLoans((prev) =>
@@ -1283,6 +1753,7 @@ export default function App() {
           amountRepaid: Math.min(newRepaid, l.totalDue),
           status: isFullyPaid ? 'paid' : 'active',
           paidAt: isFullyPaid ? new Date().toISOString() : undefined,
+          principalDisbursed: isFullyPaid ? true : l.principalDisbursed,
           submissions: l.submissions.map((s) =>
             s.id === submissionId
               ? { ...s, status: 'approved', reviewedAt: new Date().toISOString() }
@@ -1321,7 +1792,25 @@ export default function App() {
           ? Math.min(settings.maxLoanCap, Math.max(student.maxLoanLimit + 50, tier.maxLoanLimit))
           : student.maxLoanLimit;
 
-        const updatedBalance = student.currentBalance + extraMoney;
+        const prevBalance = student.currentBalance;
+        const updatedBalance = prevBalance + totalWalletDeposit;
+        const disclaimersList = [...(student.disclaimers || [])];
+
+        if (totalWalletDeposit > 0) {
+          disclaimersList.unshift(
+            buildBalanceDisclaimer(
+              student.id,
+              prevBalance,
+              updatedBalance,
+              principalToDisburse > 0
+                ? `Loan Work Approved! Disbursed E$${principalToDisburse}.00 Loan Principal${
+                    extraMoney > 0 ? ` + E$${extraMoney}.00 Extra Work Bonus` : ''
+                  }`
+                : `Loan Repayment Surplus (+E$${extraMoney}.00 extra work)`,
+              'loan'
+            )
+          );
+        }
 
         return {
           ...student,
@@ -1334,6 +1823,7 @@ export default function App() {
             : student.totalLoansCompleted,
           punctualPaymentsCount: punctualCount,
           decoratedStatementsCount: decoratedCount,
+          disclaimers: disclaimersList,
         };
       })
     );
@@ -1343,10 +1833,10 @@ export default function App() {
       'success',
       'English Submission Approved!',
       isFullyPaid
-        ? extraMoney > 0
-          ? `Loan settled! Extra $${extraMoney}.00 credited directly to ${targetStudent?.name || 'student'}'s account balance.`
+        ? totalWalletDeposit > 0
+          ? `Loan settled! Deposited E$${totalWalletDeposit}.00 into ${targetStudent?.name || 'student'}'s account balance.`
           : `Loan fully settled! Credit score & loan limits increased.`
-        : `$${submission.totalCreditValue} credited toward loan balance.`
+        : `E$${submission.totalCreditValue} credited toward loan balance.`
     );
   };
 
@@ -1446,29 +1936,12 @@ export default function App() {
     return { success: true };
   };
 
-  // Export Data JSON
-  const handleExportData = () => {
-    const payload = {
-      exportDate: new Date().toISOString(),
-      settings,
-      students,
-      loans,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `english_classroom_credit_system_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addToast('success', 'Data Exported', 'Classroom JSON file downloaded.');
-  };
-
   // Reset to initial sample data
   const handleResetData = () => {
     if (window.confirm('Reset all classroom data, loans, and credit scores to original sample values?')) {
       setStudents(INITIAL_STUDENTS);
       setLoans(INITIAL_LOANS);
+      setContracts(INITIAL_CONTRACTS);
       setSettings(DEFAULT_TEACHER_SETTINGS);
       localStorage.clear();
       addToast('info', 'System Reset', 'Classroom data reset to default sample roster.');
@@ -1515,10 +1988,10 @@ export default function App() {
       storeCatalog,
       classrooms,
       pendingRequests,
+      contracts,
       settings,
     };
     try {
-      // Remove older timestamped snapshots to prevent localStorage quota overflow
       Object.keys(localStorage).forEach((k) => {
         if (k.startsWith('esl_snapshot_')) {
           localStorage.removeItem(k);
@@ -1545,12 +2018,447 @@ export default function App() {
     );
   };
 
+  // Teacher Manager Change Student Password to any custom password (or reset to CVV)
+  const handleChangeStudentPassword = (studentId: string, newPassword: string | undefined) => {
+    const target = students.find((s) => s.id === studentId);
+    if (!target) return;
+    const cleaned = newPassword?.trim() || undefined;
+    setStudents((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, customPassword: cleaned } : s))
+    );
+    if (cleaned) {
+      addToast(
+        'success',
+        'Student Password Updated!',
+        `${target.name}'s login password has been changed to "${cleaned}".`
+      );
+    } else {
+      addToast(
+        'info',
+        'Student Password Reset to Card CVV',
+        `${target.name}'s login password has been reset to their 3-digit Card CVV (${target.cvv}).`
+      );
+    }
+  };
+
+  // Contracts / Events Wall Management Handlers
+  const handleCreateContract = (newContractData: {
+    title: string;
+    instructions: string;
+    rewardAmount: number;
+    creditScoreBonus: number;
+    totalStock: number;
+    classroomId: string;
+    deadline?: string;
+  }) => {
+    const newContract: ClassroomContract = {
+      id: `contract_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      title: newContractData.title,
+      instructions: newContractData.instructions,
+      rewardAmount: newContractData.rewardAmount,
+      creditScoreBonus: newContractData.creditScoreBonus,
+      totalStock: newContractData.totalStock,
+      spotsRemaining: newContractData.totalStock,
+      classroomId: newContractData.classroomId,
+      deadline: newContractData.deadline,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      claims: [],
+    };
+    setContracts((prev) => [newContract, ...prev]);
+    addToast(
+      'success',
+      'Contract Posted to Wall! 📜',
+      `"${newContract.title}" is now live with ${newContract.totalStock} available spot(s) at +E$${newContract.rewardAmount}.00 each.`
+    );
+  };
+
+  const handleDeleteContract = (contractId: string) => {
+    const target = contracts.find((c) => c.id === contractId);
+    if (target) {
+      target.claims.forEach((cl) => {
+        removeCloudStudentAction(
+          `act_res_${cl.id}`,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      });
+    }
+    setContracts((prev) => prev.filter((c) => c.id !== contractId));
+    setPendingRequests((prev) => {
+      const toRemove = prev.filter(
+        (r) =>
+          r.type === 'contract_submission' &&
+          r.contractSubmissionData?.contractId === contractId
+      );
+      toRemove.forEach((r) => {
+        removeCloudStudentAction(
+          `act_${r.id}`,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      });
+      return prev.filter((r) => !toRemove.some((rem) => rem.id === r.id));
+    });
+    addToast('info', 'Contract Removed', `Removed "${target?.title || 'Contract'}" from the Contracts Wall.`);
+  };
+
+  const handleToggleContractActive = (contractId: string) => {
+    setContracts((prev) =>
+      prev.map((c) => (c.id === contractId ? { ...c, isActive: !c.isActive } : c))
+    );
+  };
+
+  const handleReleaseContractSpot = (contractId: string, claimId: string, studentId?: string) => {
+    removeCloudStudentAction(
+      `act_res_${claimId}`,
+      settings.cloudDatabaseUrl,
+      settings.cloudSupabaseKey
+    );
+    setContracts((prev) =>
+      prev.map((c) => {
+        if (c.id !== contractId) return c;
+        const existingClaim = c.claims.find(
+          (cl) =>
+            (claimId ? cl.id === claimId : Boolean(studentId && cl.studentId === studentId)) &&
+            cl.status !== 'approved'
+        );
+        if (!existingClaim) return c;
+        const nextClaims = c.claims.filter((cl) => cl.id !== existingClaim.id);
+        return {
+          ...c,
+          spotsRemaining: Math.min(c.totalStock, Math.max(0, c.totalStock - nextClaims.length)),
+          claims: nextClaims,
+        };
+      })
+    );
+    setPendingRequests((prev) => {
+      const toRemove = prev.filter(
+        (r) =>
+          r.type === 'contract_submission' &&
+          r.status === 'pending' &&
+          (r.contractSubmissionData?.claimId === claimId ||
+            (studentId &&
+              r.studentId === studentId &&
+              r.contractSubmissionData?.contractId === contractId))
+      );
+      toRemove.forEach((r) => {
+        removeCloudStudentAction(
+          `act_${r.id}`,
+          settings.cloudDatabaseUrl,
+          settings.cloudSupabaseKey
+        );
+      });
+      return prev.filter((r) => !toRemove.some((rem) => rem.id === r.id));
+    });
+    addToast('info', 'Contract Spot Released', 'Spot returned to the Contracts Wall for other students.');
+  };
+
+  const handleApproveContractClaim = (
+    contractId: string,
+    claimId: string,
+    teacherFeedback?: string
+  ) => {
+    const contract = contracts.find((c) => c.id === contractId);
+    if (!contract) return;
+    const claim = contract.claims.find((cl) => cl.id === claimId);
+    if (!claim || claim.status === 'approved') return;
+
+    const nowIso = new Date().toISOString();
+    const reward = contract.rewardAmount;
+    const scoreBonus = contract.creditScoreBonus || 0;
+
+    setContracts((prev) =>
+      prev.map((c) => {
+        if (c.id !== contractId) return c;
+        return {
+          ...c,
+          claims: c.claims.map((cl) =>
+            cl.id === claimId
+              ? {
+                  ...cl,
+                  status: 'approved',
+                  reviewedAt: nowIso,
+                  teacherFeedback: teacherFeedback || 'Approved by Teacher',
+                }
+              : cl
+          ),
+        };
+      })
+    );
+
+    setStudents((prev) =>
+      prev.map((student) => {
+        if (student.id !== claim.studentId) return student;
+        const prevBalance = student.currentBalance;
+        const newBalance = prevBalance + reward;
+        const newScore = Math.min(850, Math.max(300, student.creditScore + scoreBonus));
+        const reasonText = `Contract Completed: "${contract.title}"${
+          teacherFeedback ? ` (${teacherFeedback})` : ''
+        }`;
+
+        const adjustmentTx: BalanceAdjustmentTransaction = {
+          id: `contract_rew_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: student.id,
+          studentName: student.name,
+          type: 'increase',
+          amount: reward,
+          previousBalance: prevBalance,
+          newBalance,
+          reason: reasonText,
+          category: 'reward',
+          creditScoreChange: scoreBonus,
+          timestamp: nowIso,
+        };
+
+        const disclaimer = buildBalanceDisclaimer(
+          student.id,
+          prevBalance,
+          newBalance,
+          reasonText,
+          'reward'
+        );
+
+        return {
+          ...student,
+          currentBalance: newBalance,
+          creditScore: newScore,
+          balanceAdjustmentsHistory: [adjustmentTx, ...(student.balanceAdjustmentsHistory || [])],
+          disclaimers: [disclaimer, ...(student.disclaimers || [])],
+        };
+      })
+    );
+
+    // Also mark any matching pending request as approved
+    setPendingRequests((prev) =>
+      prev.map((r) => {
+        if (
+          r.type === 'contract_submission' &&
+          r.status === 'pending' &&
+          r.contractSubmissionData?.claimId === claimId
+        ) {
+          removeCloudStudentAction(
+            `act_${r.id}`,
+            settings.cloudDatabaseUrl,
+            settings.cloudSupabaseKey
+          );
+          return {
+            ...r,
+            status: 'approved',
+            reviewedAt: nowIso,
+            teacherNote: teacherFeedback || 'Contract verified & rewarded!',
+            contractSubmissionData: r.contractSubmissionData
+              ? { ...r.contractSubmissionData, notebookPhotoDataUrl: '' }
+              : undefined,
+          };
+        }
+        return r;
+      })
+    );
+
+    addToast(
+      'success',
+      'Contract Approved & E$ Paid! 🏆',
+      `Awarded +E$${reward}.00${scoreBonus > 0 ? ` and +${scoreBonus} FICO PTS` : ''} to ${claim.studentName} for "${contract.title}".`
+    );
+  };
+
+  const handleRejectContractClaim = (
+    contractId: string,
+    claimId: string,
+    teacherFeedback?: string,
+    releaseSpot: boolean = false
+  ) => {
+    const contract = contracts.find((c) => c.id === contractId);
+    const claim = contract?.claims.find((cl) => cl.id === claimId);
+    const nowIso = new Date().toISOString();
+
+    if (releaseSpot) {
+      removeCloudStudentAction(
+        `act_res_${claimId}`,
+        settings.cloudDatabaseUrl,
+        settings.cloudSupabaseKey
+      );
+    }
+
+    setContracts((prev) =>
+      prev.map((c) => {
+        if (c.id !== contractId) return c;
+        if (releaseSpot) {
+          const nextClaims = c.claims.filter((cl) => cl.id !== claimId);
+          return {
+            ...c,
+            spotsRemaining: Math.min(c.totalStock, Math.max(0, c.totalStock - nextClaims.length)),
+            claims: nextClaims,
+          };
+        }
+        return {
+          ...c,
+          claims: c.claims.map((cl) =>
+            cl.id === claimId
+              ? {
+                  ...cl,
+                  status: 'rejected',
+                  reviewedAt: nowIso,
+                  teacherFeedback:
+                    teacherFeedback ||
+                    'Please revise your notebook work and upload a new photo',
+                }
+              : cl
+          ),
+        };
+      })
+    );
+
+    setPendingRequests((prev) =>
+      prev.map((r) => {
+        if (
+          r.type === 'contract_submission' &&
+          r.status === 'pending' &&
+          r.contractSubmissionData?.claimId === claimId
+        ) {
+          removeCloudStudentAction(
+            `act_${r.id}`,
+            settings.cloudDatabaseUrl,
+            settings.cloudSupabaseKey
+          );
+          return {
+            ...r,
+            status: 'rejected',
+            reviewedAt: nowIso,
+            teacherNote: teacherFeedback || 'Please revise your contract notebook work',
+            contractSubmissionData: r.contractSubmissionData
+              ? { ...r.contractSubmissionData, notebookPhotoDataUrl: '' }
+              : undefined,
+          };
+        }
+        return r;
+      })
+    );
+
+    addToast(
+      'warning',
+      releaseSpot ? 'Contract Declined & Spot Released' : 'Contract Revision Requested',
+      releaseSpot
+        ? `Declined ${claim?.studentName || 'student'}'s submission and freed the spot.`
+        : `Asked ${claim?.studentName || 'student'} to upload a revised notebook photo.`
+    );
+  };
+
+  const handleManualCompleteContractFaceToFace = (contractId: string, studentId: string) => {
+    const contract = contracts.find((c) => c.id === contractId);
+    const student = students.find((s) => s.id === studentId);
+    if (!contract || !student) return;
+
+    const existingClaim = contract.claims.find(
+      (cl) =>
+        cl.studentId === student.id &&
+        (cl.status === 'reserved' || cl.status === 'pending_approval' || cl.status === 'rejected')
+    );
+
+    if (existingClaim) {
+      handleApproveContractClaim(
+        contractId,
+        existingClaim.id,
+        'Verified face-to-face in class by Teacher'
+      );
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    const claimId = `claim_f2f_${Date.now()}`;
+    const reward = contract.rewardAmount;
+    const scoreBonus = contract.creditScoreBonus || 0;
+
+    setContracts((prev) =>
+      prev.map((c) => {
+        if (c.id !== contractId) return c;
+        return {
+          ...c,
+          spotsRemaining: Math.max(0, c.spotsRemaining - 1),
+          claims: [
+            ...c.claims,
+            {
+              id: claimId,
+              contractId: c.id,
+              studentId: student.id,
+              studentName: student.name,
+              classId: student.classId,
+              className: student.className,
+              status: 'approved',
+              reservedAt: nowIso,
+              submittedAt: nowIso,
+              reviewedAt: nowIso,
+              teacherFeedback: 'Verified face-to-face in class by Teacher',
+            },
+          ],
+        };
+      })
+    );
+
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== student.id) return s;
+        const prevBalance = s.currentBalance;
+        const newBalance = prevBalance + reward;
+        const newScore = Math.min(850, Math.max(300, s.creditScore + scoreBonus));
+        const reasonText = `Contract Completed (Face-to-Face): "${contract.title}"`;
+
+        const adjustmentTx: BalanceAdjustmentTransaction = {
+          id: `contract_f2f_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: s.id,
+          studentName: s.name,
+          type: 'increase',
+          amount: reward,
+          previousBalance: prevBalance,
+          newBalance,
+          reason: reasonText,
+          category: 'reward',
+          creditScoreChange: scoreBonus,
+          timestamp: nowIso,
+        };
+
+        const disclaimer = buildBalanceDisclaimer(
+          s.id,
+          prevBalance,
+          newBalance,
+          reasonText,
+          'reward'
+        );
+
+        return {
+          ...s,
+          currentBalance: newBalance,
+          creditScore: newScore,
+          balanceAdjustmentsHistory: [adjustmentTx, ...(s.balanceAdjustmentsHistory || [])],
+          disclaimers: [disclaimer, ...(s.disclaimers || [])],
+        };
+      })
+    );
+
+    addToast(
+      'success',
+      'Face-to-Face Contract Rewarded! 🏆',
+      `Awarded +E$${reward}.00${scoreBonus > 0 ? ` and +${scoreBonus} FICO PTS` : ''} to ${student.name} for "${contract.title}".`
+    );
+  };
+
   // Approve a pending student request from the Student Web App
   const handleApprovePendingRequest = (requestId: string, teacherNote?: string) => {
     const req = pendingRequests.find((r) => r.id === requestId && r.status === 'pending');
     if (!req) return;
 
     const nowIso = new Date().toISOString();
+
+    if (req.type === 'contract_submission' && req.contractSubmissionData) {
+      const subData = req.contractSubmissionData;
+      handleApproveContractClaim(
+        subData.contractId,
+        subData.claimId,
+        teacherNote || 'Contract notebook photo approved!'
+      );
+      return;
+    }
 
     if (req.type === 'loan_request' && req.loanRequestData) {
       const student = students.find((s) => s.id === req.studentId);
@@ -1578,33 +2486,16 @@ export default function App() {
           status: 'active',
           submissions: [],
           notes: data.notes,
+          principalDisbursed: false,
         };
 
-        const prevBalance = student.currentBalance;
-        const newBalance = prevBalance + data.principal;
         const disclaimer = buildBalanceDisclaimer(
           student.id,
-          prevBalance,
-          newBalance,
-          `Approved Loan Disbursement: E$${data.principal}.00 (${data.durationDays}d term)${
-            teacherNote ? ` • Note: ${teacherNote}` : ''
-          }`,
+          student.currentBalance,
+          student.currentBalance,
+          `Loan Opened (E$${data.principal}.00): Complete your English notebook work (E$${totalDue}.00) and send your photo to receive E$${data.principal}.00 in your wallet!`,
           'loan'
         );
-
-        const disbursementTx: BalanceAdjustmentTransaction = {
-          id: `loan_disb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          studentId: student.id,
-          studentName: student.name,
-          type: 'increase',
-          amount: data.principal,
-          previousBalance: prevBalance,
-          newBalance,
-          reason: `Loan Disbursement: E$${data.principal} (${data.durationDays}d term)`,
-          category: 'other',
-          creditScoreChange: 0,
-          timestamp: nowIso,
-        };
 
         setLoans((prev) => [newLoan, ...prev]);
         setStudents((prev) =>
@@ -1612,12 +2503,7 @@ export default function App() {
             s.id === student.id
               ? {
                   ...s,
-                  currentBalance: newBalance,
                   activeLoanId: loanId,
-                  balanceAdjustmentsHistory: [
-                    disbursementTx,
-                    ...(s.balanceAdjustmentsHistory || []),
-                  ],
                   disclaimers: [disclaimer, ...(s.disclaimers || [])],
                 }
               : s
@@ -1625,8 +2511,8 @@ export default function App() {
         );
         addToast(
           'success',
-          'Loan Request Approved!',
-          `Disbursed E$${data.principal}.00 to ${student.name}'s wallet.`
+          'Loan Request Opened!',
+          `Opened E$${data.principal}.00 loan for ${student.name}. Money will disburse once they submit their notebook photo.`
         );
       }
     } else if (req.type === 'loan_payment' && req.loanPaymentData) {
@@ -1638,6 +2524,9 @@ export default function App() {
         const extraMoney = Math.max(0, paymentCredit - remainingBefore);
         const newRepaid = loan.amountRepaid + paymentCredit;
         const isFullyPaid = newRepaid >= loan.totalDue;
+        const shouldDisbursePrincipal = isFullyPaid && loan.principalDisbursed === false;
+        const principalToDisburse = shouldDisbursePrincipal ? loan.principal : 0;
+        const totalWalletDeposit = principalToDisburse + extraMoney;
 
         const newSub: EnglishSubmission = {
           id: `sub_${Date.now()}`,
@@ -1673,6 +2562,7 @@ export default function App() {
                   amountRepaid: Math.min(newRepaid, l.totalDue),
                   status: isFullyPaid ? 'paid' : 'active',
                   paidAt: isFullyPaid ? nowIso : undefined,
+                  principalDisbursed: isFullyPaid ? true : l.principalDisbursed,
                   submissions: [newSub, ...l.submissions],
                 }
               : l
@@ -1703,19 +2593,40 @@ export default function App() {
               : student.maxLoanLimit;
 
             const prevBalance = student.currentBalance;
-            const updatedBalance = prevBalance + extraMoney;
+            const updatedBalance = prevBalance + totalWalletDeposit;
             const disclaimersList = [...(student.disclaimers || [])];
+            const adjustmentsList = [...(student.balanceAdjustmentsHistory || [])];
 
-            if (extraMoney > 0) {
+            if (totalWalletDeposit > 0) {
+              const depositReason =
+                principalToDisburse > 0
+                  ? `Notebook Photo Approved! Disbursed E$${principalToDisburse}.00 Loan Principal${
+                      extraMoney > 0 ? ` + E$${extraMoney}.00 Extra English Bonus` : ''
+                    } into your wallet!`
+                  : `Notebook Loan Repayment Surplus (+E$${extraMoney}.00 after settling loan)`;
+
               disclaimersList.unshift(
                 buildBalanceDisclaimer(
                   student.id,
                   prevBalance,
                   updatedBalance,
-                  `Notebook Loan Repayment Surplus (+E$${extraMoney}.00 after settling loan)`,
+                  depositReason,
                   'loan'
                 )
               );
+              adjustmentsList.unshift({
+                id: `loan_disb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                studentId: student.id,
+                studentName: student.name,
+                type: 'increase',
+                amount: totalWalletDeposit,
+                previousBalance: prevBalance,
+                newBalance: updatedBalance,
+                reason: depositReason,
+                category: 'reward',
+                creditScoreChange: scoreDelta,
+                timestamp: nowIso,
+              });
             }
 
             return {
@@ -1730,16 +2641,23 @@ export default function App() {
               punctualPaymentsCount: punctualCount,
               decoratedStatementsCount: decoratedCount,
               disclaimers: disclaimersList,
+              balanceAdjustmentsHistory: adjustmentsList,
             };
           })
         );
 
         addToast(
           'success',
-          'Notebook Photo Verified & Approved!',
-          `Credited E$${paymentCredit}.00 toward ${req.studentName}'s loan.${
-            isFullyPaid ? ' Loan is now 100% PAID!' : ''
-          }`
+          isFullyPaid ? 'Notebook Photo Approved & Loan Money Disbursed!' : 'Notebook Photo Approved!',
+          totalWalletDeposit > 0
+            ? `Credited E$${paymentCredit}.00 work and deposited E$${totalWalletDeposit}.00 (${
+                principalToDisburse > 0
+                  ? `E$${principalToDisburse} loan principal${extraMoney > 0 ? ` + E$${extraMoney} bonus` : ''}`
+                  : `E$${extraMoney} bonus`
+              }) directly into ${req.studentName}'s wallet!`
+            : `Credited E$${paymentCredit}.00 toward ${req.studentName}'s loan.${
+                isFullyPaid ? ' Loan is now 100% PAID!' : ''
+              }`
         );
       }
     } else if (req.type === 'store_purchase' && req.storePurchaseData) {
@@ -1762,27 +2680,36 @@ export default function App() {
           })
         );
 
-        const purchaseRecords: StorePurchaseTransaction[] = storeData.items.map((it) => ({
-          id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          studentId: student.id,
-          studentName: student.name,
-          itemId: it.itemId,
-          itemName: `${it.itemName}${it.quantity > 1 ? ` (x${it.quantity})` : ''}`,
-          pricePaid: it.unitPrice * it.quantity,
-          originalPrice: it.originalPrice * it.quantity,
-          discountPercent: it.discountPercent,
-          quantity: it.quantity,
-          creditScoreBonusAwarded: 5,
-          timestamp: nowIso,
-        }));
+        const purchaseRecords: StorePurchaseTransaction[] = storeData.items.map((it) => {
+          const allocSummary = formatStoreAllocationsSummary(it.allocations);
+          return {
+            id: `purch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            studentId: student.id,
+            studentName: student.name,
+            itemId: it.itemId,
+            itemName: `${it.itemName}${it.quantity > 1 ? ` (x${it.quantity})` : ''}${
+              allocSummary ? ` [${allocSummary}]` : ''
+            }`,
+            pricePaid: it.unitPrice * it.quantity,
+            originalPrice: it.originalPrice * it.quantity,
+            discountPercent: it.discountPercent,
+            quantity: it.quantity,
+            creditScoreBonusAwarded: 5,
+            allocations: it.allocations,
+            timestamp: nowIso,
+          };
+        });
+
+        const autoConfirmMsg = "Your request will be done asap - Teacher Anthony's ATM";
+        const combinedNote = teacherNote
+          ? `${autoConfirmMsg} (${teacherNote})`
+          : autoConfirmMsg;
 
         const disclaimer = buildBalanceDisclaimer(
           student.id,
           prevBalance,
           newBalance,
-          `Approved Store Order: ${storeData.items.map((i) => i.itemName).join(', ')}${
-            teacherNote ? ` (${teacherNote})` : ''
-          }`,
+          `Approved Store Order (${purchaseRecords.map((p) => p.itemName).join('; ')}): "${combinedNote}"`,
           'store'
         );
 
@@ -1808,7 +2735,7 @@ export default function App() {
         addToast(
           'success',
           'Store Order Approved!',
-          `Approved ${req.studentName}'s store purchase of E$${totalCost}.00.`
+          `Approved ${req.studentName}'s store purchase of E$${totalCost}.00 and sent confirmation: "${autoConfirmMsg}".`
         );
       }
     } else if (req.type === 'p2p_transfer' && req.transferData) {
@@ -1829,7 +2756,8 @@ export default function App() {
           counterpartyName: recipient.name,
           counterpartyClassName: recipient.className,
           amount: tf.amount,
-          message: tf.message,
+          message: tf.message || 'To you - from me',
+          isPostalCard: true,
           timestamp: nowIso,
         };
 
@@ -1840,7 +2768,8 @@ export default function App() {
           counterpartyName: sender.name,
           counterpartyClassName: sender.className,
           amount: tf.amount,
-          message: tf.message,
+          message: tf.message || 'To you - from me',
+          isPostalCard: true,
           timestamp: nowIso,
         };
 
@@ -1848,7 +2777,7 @@ export default function App() {
           sender.id,
           senderPrev,
           senderNew,
-          `Approved Transfer to ${recipient.name}: "${tf.message}"`,
+          `Approved Gift Postal Card to ${recipient.name}: "To you - from me"`,
           'transfer'
         );
 
@@ -1856,7 +2785,7 @@ export default function App() {
           recipient.id,
           recipientPrev,
           recipientNew,
-          `Received Transfer from ${sender.name}: "${tf.message}"`,
+          `Received Gift Postal Card from ${sender.name}: "To you - from me"`,
           'transfer'
         );
 
@@ -1885,11 +2814,18 @@ export default function App() {
 
         addToast(
           'success',
-          'Friend Transfer Approved!',
+          'Gift Postal Card Approved!',
           `Moved E$${tf.amount}.00 from ${sender.name} to ${recipient.name}.`
         );
       }
     }
+
+    const defaultNote =
+      req.type === 'store_purchase'
+        ? teacherNote
+          ? `Your request will be done asap - Teacher Anthony's ATM (${teacherNote})`
+          : "Your request will be done asap - Teacher Anthony's ATM"
+        : teacherNote;
 
     setPendingRequests((prev) =>
       prev.map((r) =>
@@ -1898,9 +2834,9 @@ export default function App() {
               ...r,
               status: 'approved',
               reviewedAt: nowIso,
-              teacherNote,
+              teacherNote: defaultNote,
               loanPaymentData: r.loanPaymentData
-                ? { ...r.loanPaymentData, photoDataUrl: '' }
+                ? { ...r.loanPaymentData, notebookPhotoDataUrl: '' }
                 : undefined,
             }
           : r
@@ -1917,6 +2853,16 @@ export default function App() {
   const handleRejectPendingRequest = (requestId: string, teacherNote?: string) => {
     const req = pendingRequests.find((r) => r.id === requestId && r.status === 'pending');
     if (!req) return;
+
+    if (req.type === 'contract_submission' && req.contractSubmissionData) {
+      handleRejectContractClaim(
+        req.contractSubmissionData.contractId,
+        req.contractSubmissionData.claimId,
+        teacherNote || 'Please revise your contract notebook work',
+        false
+      );
+      return;
+    }
 
     if (req.reservedAmount > 0) {
       setStudents((prev) =>
@@ -1940,7 +2886,7 @@ export default function App() {
               reviewedAt: new Date().toISOString(),
               teacherNote: teacherNote || 'Declined by Teacher',
               loanPaymentData: r.loanPaymentData
-                ? { ...r.loanPaymentData, photoDataUrl: '' }
+                ? { ...r.loanPaymentData, notebookPhotoDataUrl: '' }
                 : undefined,
             }
           : r
@@ -1991,6 +2937,7 @@ export default function App() {
     classrooms,
     settings,
     pendingRequests,
+    contracts,
   };
 
   // If opened as the Standalone Student Web App (e.g. on GitHub Pages or ?portal=student)
@@ -2083,6 +3030,7 @@ export default function App() {
         activeLoansCount={activeLoansCount}
         pendingReviewsCount={pendingReviewsCount}
         storeItemsCount={storeCatalog.length}
+        contractsCount={contracts.filter((c) => c.isActive).length}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
         onResetDemo={handleResetData}
@@ -2118,7 +3066,7 @@ export default function App() {
         />
 
         {/* Main Views */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 md:pb-8 min-w-0 max-w-[1600px] w-full mx-auto">
           {currentView === 'teacher' && (
             <TeacherDashboard
               students={students}
@@ -2174,6 +3122,25 @@ export default function App() {
               onOpenApprovals={() => setIsApprovalCenterOpen(true)}
               onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
               onResetStudentPassword={handleResetStudentPassword}
+              onChangeStudentPassword={handleChangeStudentPassword}
+            />
+          )}
+
+          {currentView === 'contracts' && (
+            <ContractsWallView
+              contracts={contracts}
+              students={students}
+              classrooms={classrooms}
+              pendingRequests={pendingRequests}
+              selectedClassId={selectedClassId}
+              onSelectClassId={setSelectedClassId}
+              onCreateContract={handleCreateContract}
+              onDeleteContract={handleDeleteContract}
+              onToggleContractActive={handleToggleContractActive}
+              onReleaseContractSpot={handleReleaseContractSpot}
+              onApproveContractClaim={handleApproveContractClaim}
+              onRejectContractClaim={handleRejectContractClaim}
+              onManualCompleteContractFaceToFace={handleManualCompleteContractFaceToFace}
             />
           )}
 
@@ -2247,13 +3214,14 @@ export default function App() {
               onUpdateCatalog={setStoreCatalog}
               classrooms={classrooms}
               selectedClassId={selectedClassId}
-              onPurchaseItem={(studentId, amount, item, _finalPrice, quantity) => {
+              onPurchaseItem={(studentId, amount, item, _finalPrice, quantity, allocations) => {
                 handleReduceStudentBalance(studentId, amount, item.name, {
                   itemId: item.id,
                   itemName: item.name,
                   originalPrice: item.basePrice,
                   discountPercent: item.discountPercent,
                   quantity: quantity || 1,
+                  allocations,
                 });
               }}
               onCheckoutCart={handleCheckoutCart}

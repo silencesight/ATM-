@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   CreditCard,
-  GraduationCap,
   BookOpen,
   RotateCcw,
   Settings,
@@ -17,15 +16,22 @@ import {
   BarChart3,
   Database,
   FolderKanban,
-  ChevronRight,
   ShieldCheck,
   Globe,
   Bell,
   Smartphone,
+  ScrollText,
 } from 'lucide-react';
 import { Classroom } from '../types';
 
-export type ActiveAppView = 'teacher' | 'student' | 'store' | 'grants' | 'print' | 'student_web';
+export type ActiveAppView =
+  | 'teacher'
+  | 'contracts'
+  | 'student'
+  | 'store'
+  | 'grants'
+  | 'print'
+  | 'student_web';
 
 interface SidebarProps {
   activeView: ActiveAppView;
@@ -34,6 +40,7 @@ interface SidebarProps {
   activeLoansCount: number;
   pendingReviewsCount: number;
   storeItemsCount: number;
+  contractsCount?: number;
   onOpenSettings: () => void;
   onOpenRules: () => void;
   onResetDemo: () => void;
@@ -59,6 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeLoansCount,
   pendingReviewsCount,
   storeItemsCount,
+  contractsCount = 0,
   onOpenSettings,
   onOpenRules,
   onResetDemo,
@@ -96,6 +104,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: LayoutDashboard,
       badge: pendingReviewsCount > 0 ? `${pendingReviewsCount} due` : activeLoansCount > 0 ? activeLoansCount : undefined,
       badgeTone: pendingReviewsCount > 0 ? 'amber' : 'cyan',
+    },
+    {
+      id: 'contracts',
+      label: 'Contracts Wall',
+      sublabel: 'Limited Events & Bounties',
+      icon: ScrollText,
+      badge: contractsCount > 0 ? contractsCount : 'NEW',
+      badgeTone: 'amber',
     },
     {
       id: 'student',
@@ -171,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       <div
-        className={`no-print shrink-0 transition-all duration-300 ease-out ${
+        className={`no-print hidden md:block shrink-0 transition-all duration-300 ease-out ${
           isPinned ? 'w-64' : 'w-[72px]'
         }`}
       />
@@ -179,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`no-print fixed top-0 left-0 bottom-0 z-50 flex flex-col justify-between transition-all duration-300 ease-out select-none glass-panel border-r border-outline-variant/25 ${
+        className={`no-print hidden md:flex fixed top-0 left-0 bottom-0 z-50 flex-col justify-between transition-all duration-300 ease-out select-none glass-panel border-r border-outline-variant/25 ${
           isExpanded ? 'w-64' : 'w-[72px]'
         }`}
       >
@@ -511,6 +527,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
       </aside>
+
+      {/* Mobile Bottom Navigation Bar (Android APK & Mobile Screens) */}
+      <nav className="no-print md:hidden fixed bottom-0 left-0 right-0 z-50 glass-panel !bg-background/95 backdrop-blur-2xl border-t border-outline-variant/30 px-1.5 py-1.5 flex items-center justify-around gap-0.5 select-none">
+        {[
+          { id: 'teacher' as ActiveAppView, label: 'Hub', icon: LayoutDashboard },
+          { id: 'contracts' as ActiveAppView, label: 'Contracts', icon: ScrollText },
+          { id: 'student' as ActiveAppView, label: 'Portal', icon: CreditCard },
+          { id: 'store' as ActiveAppView, label: 'Store', icon: ShoppingBag },
+          { id: 'grants' as ActiveAppView, label: 'Award E$', icon: Sparkles },
+          { id: 'print' as ActiveAppView, label: 'Print', icon: Printer },
+          { id: 'student_web' as ActiveAppView, label: 'Web App', icon: Smartphone },
+        ].map((item) => {
+          const Icon = item.icon;
+          const isActive = activeView === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSelectView(item.id)}
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all relative ${
+                isActive
+                  ? 'bg-primary-container/20 text-primary-container font-bold'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <Icon className="w-4 h-4 mb-0.5" />
+              <span className="text-[9px] font-mono leading-none truncate max-w-full">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
     </>
   );
 };

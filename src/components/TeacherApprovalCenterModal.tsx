@@ -12,6 +12,8 @@ import {
   Sparkles,
   CheckCheck,
   Image as ImageIcon,
+  ScrollText,
+  Calendar,
 } from 'lucide-react';
 import { PendingStudentRequest, Student, TeacherSettings } from '../types';
 import { StudentAvatar } from './StudentAvatar';
@@ -37,7 +39,13 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
   onApproveAllPending,
 }) => {
   const [filterType, setFilterType] = useState<
-    'all' | 'loan_payment' | 'loan_request' | 'store_purchase' | 'p2p_transfer' | 'history'
+    | 'all'
+    | 'loan_payment'
+    | 'contract_submission'
+    | 'store_purchase'
+    | 'loan_request'
+    | 'p2p_transfer'
+    | 'history'
   >('all');
   const [notesByRequestId, setNotesByRequestId] = useState<Record<string, string>>({});
   const [zoomedPhoto, setZoomedPhoto] = useState<{
@@ -77,7 +85,7 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                   {zoomedPhoto.studentName} — Notebook English Work Photo
                 </h4>
                 <p className="text-xs font-mono text-tertiary-fixed-dim">
-                  Calculated Credit Value: E${zoomedPhoto.creditValue}.00
+                  Calculated Value: E${zoomedPhoto.creditValue}.00
                 </p>
               </div>
               <button
@@ -116,7 +124,7 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Review and approve notebook photo loan payments, new loans, store orders, and friend transfers in real time.
+                Review and approve notebook photo loan payments, contract submissions, and store orders in real time.
               </p>
             </div>
           </div>
@@ -148,26 +156,20 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
             { id: 'all', label: `All Pending (${pendingOnly.length})` },
             {
               id: 'loan_payment',
-              label: `Notebook Payments (${
+              label: `Loan Notebook Photos (${
                 pendingOnly.filter((r) => r.type === 'loan_payment').length
               })`,
             },
             {
-              id: 'loan_request',
-              label: `New Loans (${
-                pendingOnly.filter((r) => r.type === 'loan_request').length
+              id: 'contract_submission',
+              label: `Contracts Wall Photos (${
+                pendingOnly.filter((r) => r.type === 'contract_submission').length
               })`,
             },
             {
               id: 'store_purchase',
               label: `Store Orders (${
                 pendingOnly.filter((r) => r.type === 'store_purchase').length
-              })`,
-            },
-            {
-              id: 'p2p_transfer',
-              label: `Friend Transfers (${
-                pendingOnly.filter((r) => r.type === 'p2p_transfer').length
               })`,
             },
             { id: 'history', label: `Reviewed History (${historyOnly.length})` },
@@ -237,7 +239,7 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold">
                               <BookOpen className="w-3.5 h-3.5" />
                               Notebook Loan Payment • Credit Value: E$
-                              {req.loanPaymentData.totalCreditValue}.00
+                              {req.loanPaymentData.totalCreditValue}.00 (Disburses Loan Money on Approval!)
                             </div>
 
                             <div className="flex flex-wrap gap-2 text-xs font-mono">
@@ -306,6 +308,64 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                           </div>
                         )}
 
+                        {req.type === 'contract_submission' && req.contractSubmissionData && (
+                          <div className="space-y-3 pt-1">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold">
+                              <ScrollText className="w-3.5 h-3.5" />
+                              Contract Submission: "{req.contractSubmissionData.contractTitle}" • Reward: +E$
+                              {req.contractSubmissionData.rewardAmount}.00
+                              {req.contractSubmissionData.creditScoreBonus > 0
+                                ? ` (+${req.contractSubmissionData.creditScoreBonus} Score)`
+                                : ''}
+                            </div>
+
+                            {req.contractSubmissionData.studentNotes && (
+                              <p className="text-xs font-mono text-on-surface-variant italic">
+                                Student Note: "{req.contractSubmissionData.studentNotes}"
+                              </p>
+                            )}
+
+                            {req.contractSubmissionData.notebookPhotoDataUrl && (
+                              <div className="flex items-center gap-3 pt-1">
+                                <div
+                                  onClick={() =>
+                                    setZoomedPhoto({
+                                      url: req.contractSubmissionData!.notebookPhotoDataUrl,
+                                      studentName: `${req.studentName} (${req.contractSubmissionData!.contractTitle})`,
+                                      creditValue: req.contractSubmissionData!.rewardAmount,
+                                    })
+                                  }
+                                  className="relative group w-44 h-32 rounded-2xl overflow-hidden border-2 border-amber-400/50 cursor-pointer bg-black"
+                                >
+                                  <img
+                                    src={req.contractSubmissionData.notebookPhotoDataUrl}
+                                    alt="Contract Notebook Proof"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  />
+                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 text-white text-xs font-mono font-bold transition-opacity">
+                                    <ZoomIn className="w-4 h-4" />
+                                    Inspect Photo
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setZoomedPhoto({
+                                      url: req.contractSubmissionData!.notebookPhotoDataUrl,
+                                      studentName: `${req.studentName} (${req.contractSubmissionData!.contractTitle})`,
+                                      creditValue: req.contractSubmissionData!.rewardAmount,
+                                    })
+                                  }
+                                  className="px-3.5 py-2 rounded-xl glass-pill text-xs font-mono font-bold text-amber-300 hover:border-amber-400 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <ImageIcon className="w-4 h-4" />
+                                  Open Contract Notebook Photo
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {req.type === 'loan_request' && req.loanRequestData && (
                           <div className="space-y-1.5 pt-1">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-xs font-mono font-bold">
@@ -329,14 +389,34 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                               <ShoppingBag className="w-3.5 h-3.5" />
                               Store Order • E${req.storePurchaseData.totalPrice}.00 Reserved
                             </div>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="space-y-2">
                               {req.storePurchaseData.items.map((it, idx) => (
-                                <span
+                                <div
                                   key={idx}
-                                  className="px-2.5 py-1 rounded-lg glass-panel text-xs font-mono text-on-surface"
+                                  className="px-3 py-2 rounded-xl glass-panel text-xs font-mono text-on-surface space-y-1"
                                 >
-                                  {it.itemName} × {it.quantity} (E${it.unitPrice * it.quantity})
-                                </span>
+                                  <div className="font-bold">
+                                    {it.itemName} × {it.quantity} (E${it.unitPrice * it.quantity})
+                                  </div>
+                                  {it.allocations && it.allocations.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                      {it.allocations.map((alloc, aIdx) => (
+                                        <span
+                                          key={aIdx}
+                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-400/30 text-[11px] text-indigo-200"
+                                        >
+                                          <Calendar className="w-3 h-3 text-indigo-300" />
+                                          {alloc.pointsAllocated
+                                            ? `+${alloc.pointsAllocated} pt${
+                                                alloc.pointsAllocated > 1 ? 's' : ''
+                                              }: `
+                                            : 'Skip: '}
+                                          <strong>{alloc.targetName}</strong> ({alloc.targetDate})
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               ))}
                             </div>
                           </div>

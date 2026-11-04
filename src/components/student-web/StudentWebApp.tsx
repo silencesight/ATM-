@@ -32,6 +32,11 @@ import {
   Check,
   FileText,
   Award,
+  Gift,
+  ScrollText,
+  Calendar,
+  Layers,
+  RotateCcw,
 } from 'lucide-react';
 import {
   Student,
@@ -41,6 +46,10 @@ import {
   TeacherSettings,
   PendingStudentRequest,
   BalanceDisclaimerNotice,
+  ClassroomContract,
+  ContractClaim,
+  StoreRedemptionAllocation,
+  P2PTransferRecord,
 } from '../../types';
 import {
   getCreditTier,
@@ -52,6 +61,11 @@ import { calculateEffectiveItemPrice } from '../../data/storeCatalog';
 import { CreditCardVisual } from '../CreditCardVisual';
 import { StoreItemVisual } from '../StoreItemVisual';
 import { StudentAvatar } from '../StudentAvatar';
+import {
+  StoreRedemptionConfigModal,
+  getStoreRedemptionRequirement,
+  formatStoreAllocationsSummary,
+} from '../StoreRedemptionConfigModal';
 import {
   PRESET_BANK_AVATARS,
   compressImageFile,
@@ -71,9 +85,17 @@ interface StudentWebAppProps {
   onToggleTheme: () => void;
 }
 
-type StudentTab = 'wallet' | 'loans' | 'store' | 'transfer' | 'profile';
+type StudentTab = 'wallet' | 'loans' | 'contracts' | 'store' | 'transfer' | 'profile';
 
 const SAVED_STUDENT_SESSION_KEY = 'esl_student_web_logged_in_id';
+
+export const QUICK_GIFT_REPLIES = [
+  'thanks!',
+  'really appreciate it',
+  'Owww thanks!',
+  'I am grateful',
+  'God bless you!',
+];
 
 export const StudentWebApp: React.FC<StudentWebAppProps> = ({
   initialState,
@@ -170,6 +192,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
   const classrooms: Classroom[] = cloudState?.classrooms || [];
   const settings: TeacherSettings = cloudState?.settings || DEFAULT_TEACHER_SETTINGS;
   const pendingRequests: PendingStudentRequest[] = cloudState?.pendingRequests || [];
+  const contracts: ClassroomContract[] = cloudState?.contracts || [];
 
   const currentStudent = useMemo(
     () => students.find((s) => s.id === loggedInStudentId) || null,
@@ -307,7 +330,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
   };
 
   // ------------------------------------------------------------------
-  // 3. LOAN REQUEST & NOTEBOOK PHOTO REPAYMENT STATES & HANDLERS
+  // 3. LOAN REQUEST (INSTANT OPEN) & NOTEBOOK PHOTO REPAYMENT HANDLERS
   // ------------------------------------------------------------------
   const [loanPrincipalInput, setLoanPrincipalInput] = useState<number>(50);
   const [loanTypeInput, setLoanTypeInput] = useState<'short' | 'big'>('short');
@@ -360,7 +383,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
     if (!currentStudent) return;
 
     if (currentStudent.cardStatus === 'delisted') {
-      triggerToast('warning', 'Card Delisted', 'Delisted accounts cannot request new loans.');
+      triggerToast('warning', 'Card Delisted', 'Delisted accounts cannot open new loans.');
       return;
     }
 
@@ -369,47 +392,43 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       return;
     }
 
-    const existingPendingLoan = myPendingRequests.some(
-      (r) => r.type === 'loan_request' && r.status === 'pending'
-    );
-    if (existingPendingLoan) {
-      triggerToast(
-        'warning',
-        'Request Already Pending',
-        'You already have a loan request waiting for teacher approval.'
-      );
-      return;
-    }
-
     const clampedPrincipal = Math.min(
       currentStudent.maxLoanLimit,
       Math.max(10, Math.round(loanPrincipalInput))
     );
 
-    const request: PendingStudentRequest = {
-      id: `req_loan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: 'loan_request',
+    const now = new Date();
+    const dueDate = new Date(now.getTime() + loanDurationInput * 86400000).toISOString();
+    const effectiveRate = settings.baseInterestRate;
+    const totalDue = calculateTotalDue(clampedPrincipal, effectiveRate);
+
+    const newLoan: Loan = {
+      id: `ln-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      classId: currentStudent.classId,
-      className: currentStudent.className,
-      createdAt: new Date().toISOString(),
-      status: 'pending',
-      reservedAmount: 0,
-      loanRequestData: {
-        principal: clampedPrincipal,
-        durationDays: loanDurationInput,
-        loanType: loanTypeInput,
-        notes: loanNotesInput.trim() || 'Requested via Student Web App',
-      },
+      principal: clampedPrincipal,
+      baseInterestRate: settings.baseInterestRate,
+      delayPenaltyRate: settings.delayPenaltyIncrement,
+      delaysCount: 0,
+      effectiveInterestRate: effectiveRate,
+      totalDue,
+      amountRepaid: 0,
+      loanType: loanTypeInput,
+      durationDays: loanDurationInput,
+      createdAt: now.toISOString(),
+      dueDate,
+      status: 'active',
+      submissions: [],
+      notes: loanNotesInput.trim() || 'Opened via Student Web App',
+      principalDisbursed: false,
     };
 
     const res = await dispatchStudentAction(
       {
-        id: `act_${request.id}`,
-        type: 'SUBMIT_REQUEST',
-        request,
-        createdAt: request.createdAt,
+        id: `act_open_${newLoan.id}`,
+        type: 'OPEN_LOAN',
+        studentId: currentStudent.id,
+        loan: newLoan,
+        createdAt: newLoan.createdAt,
       },
       cloudState
     );
@@ -420,8 +439,8 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
     setLoanNotesInput('');
     triggerToast(
       'success',
-      'Loan Request Sent to Teacher!',
-      `Your request for E$${clampedPrincipal}.00 is now waiting for approval in ATM 4.0.`
+      'Loan Opened Immediately!',
+      `Complete your English notebook work (E$${totalDue} due) and send your photo or show Teacher Anthony in class to receive your E$${clampedPrincipal}.00 instantly!`
     );
   };
 
@@ -487,15 +506,194 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
     setNotebookStudentNotes('');
     triggerToast(
       'success',
-      'Notebook Payment Sent!',
-      `Submitted E$${calculatedRepaymentCredit}.00 notebook photo for teacher approval in ATM 4.0!`
+      'Notebook Photo Sent!',
+      `Once Teacher Anthony approves your photo in ATM 4.0, you will instantly receive your loan money (E$${activeLoan.principal}.00) in your wallet!`
     );
   };
 
   // ------------------------------------------------------------------
-  // 4. SCHOOL STORE CART & ORDER HANDLERS
+  // 3B. CONTRACTS / EVENTS WALL HANDLERS
+  // ------------------------------------------------------------------
+  const [activeContractUploadId, setActiveContractUploadId] = useState<string | null>(null);
+  const [contractPhotoDataUrl, setContractPhotoDataUrl] = useState<string>('');
+  const [contractStudentNotes, setContractStudentNotes] = useState<string>('');
+  const contractFileInputRef = useRef<HTMLInputElement>(null);
+
+  const availableContracts = useMemo(() => {
+    if (!currentStudent) return [];
+    return contracts.filter((c) => {
+      if (!c.isActive) {
+        // Still show if this student has a claim on it
+        return c.claims.some((cl) => cl.studentId === currentStudent.id);
+      }
+      if (!c.classroomId || c.classroomId === 'all') return true;
+      return c.classroomId === currentStudent.classId;
+    });
+  }, [contracts, currentStudent]);
+
+  const handleReserveContractSpot = async (contract: ClassroomContract) => {
+    if (!currentStudent) return;
+    if (currentStudent.cardStatus === 'delisted') {
+      triggerToast('warning', 'Card Delisted', 'Delisted cards cannot claim contracts.');
+      return;
+    }
+    if (contract.spotsRemaining <= 0) {
+      triggerToast('warning', 'No Spots Left', 'All spots for this contract have been taken.');
+      return;
+    }
+    const existingClaim = contract.claims.find((cl) => cl.studentId === currentStudent.id);
+    if (existingClaim) {
+      triggerToast('info', 'Already Reserved', 'You already reserved a spot on this contract!');
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    const claim: ContractClaim = {
+      id: `clm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      contractId: contract.id,
+      studentId: currentStudent.id,
+      studentName: currentStudent.name,
+      classId: currentStudent.classId,
+      className: currentStudent.className,
+      status: 'reserved',
+      reservedAt: nowIso,
+    };
+
+    const res = await dispatchStudentAction(
+      {
+        id: `act_res_${claim.id}`,
+        type: 'RESERVE_CONTRACT',
+        contractId: contract.id,
+        claim,
+        createdAt: nowIso,
+      },
+      cloudState
+    );
+    if (res.updatedState) {
+      setCloudState(res.updatedState);
+    }
+    setActiveContractUploadId(contract.id);
+    triggerToast(
+      'success',
+      'Contract Spot Reserved!',
+      `1 spot is reserved for you on "${contract.title}". Complete it in your notebook and upload a photo to earn +E$${contract.rewardAmount}!`
+    );
+  };
+
+  const handleReleaseContractSpot = async (contract: ClassroomContract, claim: ContractClaim) => {
+    if (!currentStudent) return;
+    const nowIso = new Date().toISOString();
+    const res = await dispatchStudentAction(
+      {
+        id: `act_rel_${claim.id}_${Date.now()}`,
+        type: 'RELEASE_CONTRACT',
+        contractId: contract.id,
+        claimId: claim.id,
+        studentId: currentStudent.id,
+        createdAt: nowIso,
+      },
+      cloudState
+    );
+    if (res.updatedState) {
+      setCloudState(res.updatedState);
+    }
+    if (activeContractUploadId === contract.id) {
+      setActiveContractUploadId(null);
+      setContractPhotoDataUrl('');
+      setContractStudentNotes('');
+    }
+    triggerToast(
+      'info',
+      'Spot Released',
+      `Your spot on "${contract.title}" has been returned to the Contracts Wall.`
+    );
+  };
+
+  const handleContractPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsCompressingPhoto(true);
+    try {
+      const compressed = await compressImageFile(file, {
+        maxDimension: 1200,
+        quality: 0.78,
+        squareCrop: false,
+      });
+      setContractPhotoDataUrl(compressed);
+      triggerToast('success', 'Contract Photo Attached!', 'Ready to send for teacher approval.');
+    } catch {
+      triggerToast('warning', 'Photo Error', 'Could not read image file.');
+    } finally {
+      setIsCompressingPhoto(false);
+    }
+  };
+
+  const handleSubmitContractPhoto = async (contract: ClassroomContract, claim: ContractClaim) => {
+    if (!currentStudent) return;
+    if (!contractPhotoDataUrl) {
+      triggerToast(
+        'warning',
+        'Notebook Photo Required',
+        'Please take or upload a photo of your notebook showing the completed contract.'
+      );
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    const request: PendingStudentRequest = {
+      id: `req_contract_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      type: 'contract_submission',
+      studentId: currentStudent.id,
+      studentName: currentStudent.name,
+      classId: currentStudent.classId,
+      className: currentStudent.className,
+      createdAt: nowIso,
+      status: 'pending',
+      reservedAmount: 0,
+      contractSubmissionData: {
+        contractId: contract.id,
+        claimId: claim.id,
+        contractTitle: contract.title,
+        rewardAmount: contract.rewardAmount,
+        creditScoreBonus: contract.creditScoreBonus,
+        notebookPhotoDataUrl: contractPhotoDataUrl,
+        studentNotes: contractStudentNotes.trim() || undefined,
+      },
+    };
+
+    const res = await dispatchStudentAction(
+      {
+        id: `act_${request.id}`,
+        type: 'SUBMIT_REQUEST',
+        request,
+        createdAt: nowIso,
+      },
+      cloudState
+    );
+    if (res.updatedState) {
+      setCloudState(res.updatedState);
+    }
+    setActiveContractUploadId(null);
+    setContractPhotoDataUrl('');
+    setContractStudentNotes('');
+    triggerToast(
+      'success',
+      'Contract Sent for Approval!',
+      `Once Teacher Anthony approves your notebook photo, you will receive +E$${contract.rewardAmount}.00 in your wallet!`
+    );
+  };
+
+  // ------------------------------------------------------------------
+  // 4. SCHOOL STORE CART & ORDER HANDLERS (WITH SKIP HW / EXTRA POINTS POPUP)
   // ------------------------------------------------------------------
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [cartAllocations, setCartAllocations] = useState<
+    Record<string, StoreRedemptionAllocation[]>
+  >({});
+  const [configuringStoreItem, setConfiguringStoreItem] = useState<{
+    item: StoreItem;
+    targetQty: number;
+  } | null>(null);
 
   const availableStoreItems = useMemo(() => {
     if (!currentStudent) return [];
@@ -518,10 +716,11 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
           quantity: qty,
           unitPrice,
           lineTotal: unitPrice * qty,
+          allocations: cartAllocations[itemId],
         };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
-  }, [cart, availableStoreItems]);
+  }, [cart, availableStoreItems, cartAllocations]);
 
   const cartTotal = useMemo(
     () => cartList.reduce((acc, c) => acc + c.lineTotal, 0),
@@ -534,19 +733,36 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       triggerToast('warning', 'Max Stock Reached', `Only ${item.stock} available in stock.`);
       return;
     }
-    setCart((prev) => ({ ...prev, [item.id]: currentQty + 1 }));
+    const nextQty = currentQty + 1;
+    if (getStoreRedemptionRequirement(item)) {
+      setConfiguringStoreItem({ item, targetQty: nextQty });
+      return;
+    }
+    setCart((prev) => ({ ...prev, [item.id]: nextQty }));
   };
 
   const handleUpdateCartQty = (itemId: string, delta: number) => {
-    setCart((prev) => {
-      const next = (prev[itemId] || 0) + delta;
-      if (next <= 0) {
+    const item = availableStoreItems.find((i) => i.id === itemId);
+    const currentQty = cart[itemId] || 0;
+    const next = currentQty + delta;
+    if (next <= 0) {
+      setCart((prev) => {
         const copy = { ...prev };
         delete copy[itemId];
         return copy;
-      }
-      return { ...prev, [itemId]: next };
-    });
+      });
+      setCartAllocations((prev) => {
+        const copy = { ...prev };
+        delete copy[itemId];
+        return copy;
+      });
+      return;
+    }
+    if (item && getStoreRedemptionRequirement(item)) {
+      setConfiguringStoreItem({ item, targetQty: next });
+      return;
+    }
+    setCart((prev) => ({ ...prev, [itemId]: next }));
   };
 
   const handleSubmitStoreOrder = async () => {
@@ -584,6 +800,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
           unitPrice: c.unitPrice,
           originalPrice: c.item.basePrice,
           discountPercent: c.item.discountPercent || 0,
+          allocations: c.allocations,
         })),
         totalPrice: cartTotal,
       },
@@ -603,19 +820,19 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       setCloudState(res.updatedState);
     }
     setCart({});
+    setCartAllocations({});
     triggerToast(
       'success',
       'Order Sent for Approval!',
-      `E$${cartTotal}.00 has been reserved. Once your teacher clicks Approve in ATM 4.0, your item pass will activate!`
+      `E$${cartTotal}.00 has been reserved. Once Teacher Anthony approves it, you will get the confirmation: "Your request will be done asap - Teacher Anthony's ATM"`
     );
   };
 
   // ------------------------------------------------------------------
-  // 5. P2P SEND MONEY TO FRIENDS HANDLERS
+  // 5. P2P GIFT POSTAL CARD ("To you - from me") & QUICK REPLIES
   // ------------------------------------------------------------------
   const [recipientId, setRecipientId] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
-  const [transferMessage, setTransferMessage] = useState<string>('');
   const [friendSearch, setFriendSearch] = useState<string>('');
 
   const eligibleClassmates = useMemo(() => {
@@ -644,7 +861,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
 
     const recipient = students.find((s) => s.id === recipientId);
     if (!recipient) {
-      triggerToast('warning', 'Select a Friend', 'Please choose a classmate to send money to.');
+      triggerToast('warning', 'Select a Friend', 'Please choose a classmate to send your Gift Postal Card to.');
       return;
     }
 
@@ -663,31 +880,22 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       return;
     }
 
-    const request: PendingStudentRequest = {
-      id: `req_p2p_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: 'p2p_transfer',
-      studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      classId: currentStudent.classId,
-      className: currentStudent.className,
-      createdAt: new Date().toISOString(),
-      status: 'pending',
-      reservedAmount: amountNum,
-      transferData: {
+    const nowIso = new Date().toISOString();
+    const transferId = `p2p_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const res = await dispatchStudentAction(
+      {
+        id: `act_${transferId}`,
+        type: 'SEND_P2P_POSTCARD',
+        transferId,
+        senderId: currentStudent.id,
+        senderName: currentStudent.name,
+        senderClassName: currentStudent.className,
         recipientId: recipient.id,
         recipientName: recipient.name,
         recipientClassName: recipient.className,
         amount: amountNum,
-        message: transferMessage.trim() || 'Classmate transfer',
-      },
-    };
-
-    const res = await dispatchStudentAction(
-      {
-        id: `act_${request.id}`,
-        type: 'SUBMIT_REQUEST',
-        request,
-        createdAt: request.createdAt,
+        createdAt: nowIso,
       },
       cloudState
     );
@@ -697,11 +905,36 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
     }
 
     setTransferAmount('');
-    setTransferMessage('');
     triggerToast(
       'success',
-      'Transfer Sent for Teacher Approval!',
-      `E$${amountNum}.00 is reserved and will be deposited into ${recipient.name}'s account as soon as your teacher approves it in ATM 4.0.`
+      'Gift Postal Card Sent Instantly! 🎁',
+      `Sent E$${amountNum}.00 to ${recipient.name} with postal card "To you - from me"!`
+    );
+  };
+
+  const handleReplyToPostalCard = async (tx: P2PTransferRecord, replyText: string) => {
+    if (!currentStudent || tx.direction !== 'received') return;
+    const nowIso = new Date().toISOString();
+    const res = await dispatchStudentAction(
+      {
+        id: `act_reply_${tx.id}_${Date.now()}`,
+        type: 'REPLY_P2P_POSTCARD',
+        transferId: tx.id,
+        recipientId: currentStudent.id,
+        recipientName: currentStudent.name,
+        senderId: tx.counterpartyId,
+        replyText,
+        createdAt: nowIso,
+      },
+      cloudState
+    );
+    if (res.updatedState) {
+      setCloudState(res.updatedState);
+    }
+    triggerToast(
+      'success',
+      'Thank-You Reply Sent! 💌',
+      `Replied "${replyText}" to ${tx.counterpartyName}!`
     );
   };
 
@@ -1169,15 +1402,52 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
           </div>
         )}
 
+        {/* Store Skip Homework / Extra Points Configuration Popup Modal */}
+        {configuringStoreItem && (
+          <StoreRedemptionConfigModal
+            item={configuringStoreItem.item}
+            quantity={configuringStoreItem.targetQty}
+            initialAllocations={cartAllocations[configuringStoreItem.item.id]}
+            onClose={() => setConfiguringStoreItem(null)}
+            onConfirm={(allocations, qty) => {
+              setCart((prev) => ({
+                ...prev,
+                [configuringStoreItem.item.id]: qty,
+              }));
+              setCartAllocations((prev) => ({
+                ...prev,
+                [configuringStoreItem.item.id]: allocations,
+              }));
+              setConfiguringStoreItem(null);
+              triggerToast(
+                'success',
+                'Added to Store Cart!',
+                `${configuringStoreItem.item.name} configured (${formatStoreAllocationsSummary(
+                  allocations
+                )}).`
+              );
+            }}
+          />
+        )}
+
         {/* DESKTOP TAB BAR */}
-        <div className="hidden md:flex items-center gap-2 glass-panel p-1.5 rounded-2xl specular-edge">
+        <div className="hidden md:flex items-center gap-1.5 glass-panel p-1.5 rounded-2xl specular-edge">
           {[
             { id: 'wallet', label: 'My Wallet & Card', icon: CreditCard },
             {
               id: 'loans',
-              label: activeLoan ? 'Pay Active Loan' : 'Request Loan',
+              label: activeLoan ? 'Pay Active Loan' : 'Open Loan',
               icon: BookOpen,
               badge: activeLoan ? `E$${remainingDebt}` : undefined,
+            },
+            {
+              id: 'contracts',
+              label: 'Contracts Wall',
+              icon: ScrollText,
+              badge:
+                availableContracts.filter((c) => c.isActive && c.spotsRemaining > 0).length > 0
+                  ? availableContracts.filter((c) => c.isActive && c.spotsRemaining > 0).length
+                  : undefined,
             },
             {
               id: 'store',
@@ -1185,7 +1455,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
               icon: ShoppingBag,
               badge: cartList.length > 0 ? cartList.length : undefined,
             },
-            { id: 'transfer', label: 'Send to Friend', icon: Send },
+            { id: 'transfer', label: 'Gift Postal Card', icon: Gift },
             { id: 'profile', label: 'My Profile & PIN', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1195,7 +1465,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as StudentTab)}
-                className={`flex-1 py-2.5 px-4 rounded-xl font-headline font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 px-3 rounded-xl font-headline font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   isActive
                     ? 'bg-primary-container text-on-primary-fixed shadow-md'
                     : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40'
@@ -1266,22 +1536,33 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                   </div>
 
                   {/* Quick Navigation Actions */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                     <button
                       type="button"
                       onClick={() => setActiveTab('loans')}
-                      className="glass-well hover:border-primary-container/50 p-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
+                      className="glass-well hover:border-primary-container/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
                     >
                       <BookOpen className="w-5 h-5 text-primary-container" />
                       <span className="text-xs font-headline font-bold text-on-surface">
-                        {activeLoan ? 'Pay My Loan' : 'Ask for Loan'}
+                        {activeLoan ? 'Pay My Loan' : 'Open Loan'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('contracts')}
+                      className="glass-well hover:border-amber-400/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
+                    >
+                      <ScrollText className="w-5 h-5 text-amber-400" />
+                      <span className="text-xs font-headline font-bold text-on-surface">
+                        Contracts Wall
                       </span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setActiveTab('store')}
-                      className="glass-well hover:border-tertiary-container/50 p-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
+                      className="glass-well hover:border-tertiary-container/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
                     >
                       <ShoppingBag className="w-5 h-5 text-tertiary-fixed-dim" />
                       <span className="text-xs font-headline font-bold text-on-surface">
@@ -1292,18 +1573,18 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     <button
                       type="button"
                       onClick={() => setActiveTab('transfer')}
-                      className="glass-well hover:border-primary-container/50 p-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
+                      className="glass-well hover:border-primary-container/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
                     >
-                      <Send className="w-5 h-5 text-cyan-400" />
+                      <Gift className="w-5 h-5 text-pink-400" />
                       <span className="text-xs font-headline font-bold text-on-surface">
-                        Send Money
+                        Gift Card E$
                       </span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setActiveTab('profile')}
-                      className="glass-well hover:border-primary-container/50 p-3.5 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
+                      className="glass-well hover:border-primary-container/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20 col-span-2 sm:col-span-1"
                     >
                       <User className="w-5 h-5 text-indigo-400" />
                       <span className="text-xs font-headline font-bold text-on-surface">
@@ -1326,8 +1607,8 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                           key={req.id}
                           className="glass-well rounded-2xl p-3.5 flex items-center justify-between gap-3 border border-outline-variant/20"
                         >
-                          <div className="space-y-0.5 min-w-0">
-                            <div className="flex items-center gap-2">
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span
                                 className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
                                   req.status === 'pending'
@@ -1343,16 +1624,34 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                                 {req.type === 'loan_request' &&
                                   `Loan Request: E$${req.loanRequestData?.principal}`}
                                 {req.type === 'loan_payment' &&
-                                  `Notebook Loan Payment: E$${req.loanPaymentData?.totalCreditValue}`}
+                                  `Notebook Loan Photo: E$${req.loanPaymentData?.totalCreditValue}`}
+                                {req.type === 'contract_submission' &&
+                                  `Contract Photo: "${req.contractSubmissionData?.contractTitle}" (+E$${req.contractSubmissionData?.rewardAmount})`}
                                 {req.type === 'store_purchase' &&
                                   `Store Order (${req.storePurchaseData?.items.length} items): E$${req.storePurchaseData?.totalPrice}`}
                                 {req.type === 'p2p_transfer' &&
                                   `Send E$${req.transferData?.amount} to ${req.transferData?.recipientName}`}
                               </span>
                             </div>
+                            {req.type === 'store_purchase' &&
+                              req.storePurchaseData?.items.some(
+                                (it) => it.allocations && it.allocations.length > 0
+                              ) && (
+                                <div className="text-[11px] font-mono text-indigo-300">
+                                  {req.storePurchaseData.items
+                                    .filter((it) => it.allocations && it.allocations.length > 0)
+                                    .map(
+                                      (it) =>
+                                        `${it.itemName}: ${formatStoreAllocationsSummary(
+                                          it.allocations
+                                        )}`
+                                    )
+                                    .join(' | ')}
+                                </div>
+                              )}
                             <p className="text-[11px] font-mono text-on-surface-variant">
                               {new Date(req.createdAt).toLocaleString()}
-                              {req.teacherNote ? ` • Teacher Note: "${req.teacherNote}"` : ''}
+                              {req.teacherNote ? ` • "${req.teacherNote}"` : ''}
                             </p>
                           </div>
 
@@ -1377,47 +1676,81 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
             <div className="glass-panel rounded-3xl p-6 specular-edge space-y-4">
               <h3 className="text-sm font-headline font-bold uppercase tracking-wider text-on-surface flex items-center gap-2">
                 <FileText className="w-4 h-4 text-primary-container" />
-                My Recent Transactions &amp; Disclaimers
+                My Recent Transactions, Gift Postal Cards &amp; Passes
               </h3>
 
               <div className="space-y-2.5">
                 {(currentStudent.p2pTransfersHistory || []).map((tx) => (
                   <div
                     key={tx.id}
-                    className="glass-well rounded-2xl p-3.5 flex items-center justify-between gap-3"
+                    className="glass-well rounded-2xl p-4 space-y-3 border border-pink-500/20"
                   >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                          tx.direction === 'received'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-cyan-500/20 text-cyan-400'
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            tx.direction === 'received'
+                              ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30'
+                              : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                          }`}
+                        >
+                          <Gift className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 border border-pink-500/30">
+                              🎁 Gift Postal Card: &ldquo;To you - from me&rdquo;
+                            </span>
+                            <span className="text-[11px] font-mono text-on-surface-variant">
+                              {new Date(tx.timestamp).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-xs font-headline font-bold text-on-surface mt-1">
+                            {tx.direction === 'received'
+                              ? `From: ${tx.counterpartyName} → To: You (${currentStudent.name})`
+                              : `From: You → To: ${tx.counterpartyName}`}
+                          </p>
+                          {tx.quickReply && (
+                            <p className="text-xs font-mono text-emerald-300 mt-1">
+                              💌 Reply: <strong>&ldquo;{tx.quickReply}&rdquo;</strong>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <span
+                        className={`text-sm font-mono font-extrabold ${
+                          tx.direction === 'received' ? 'text-emerald-400' : 'text-on-surface'
                         }`}
                       >
-                        {tx.direction === 'received' ? (
-                          <ArrowDownLeft className="w-4 h-4" />
-                        ) : (
-                          <ArrowUpRight className="w-4 h-4" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-xs font-headline font-bold text-on-surface">
-                          {tx.direction === 'received'
-                            ? `Received from ${tx.counterpartyName}`
-                            : `Sent to ${tx.counterpartyName}`}
-                        </p>
-                        <p className="text-[11px] font-mono text-on-surface-variant">
-                          "{tx.message}" • {new Date(tx.timestamp).toLocaleDateString()}
-                        </p>
-                      </div>
+                        {tx.direction === 'received' ? `+E$${tx.amount}.00` : `-E$${tx.amount}.00`}
+                      </span>
                     </div>
-                    <span
-                      className={`text-sm font-mono font-bold ${
-                        tx.direction === 'received' ? 'text-emerald-400' : 'text-on-surface'
-                      }`}
-                    >
-                      {tx.direction === 'received' ? `+E$${tx.amount}.00` : `-E$${tx.amount}.00`}
-                    </span>
+
+                    {/* 5 Quick Reply Options for Recipient */}
+                    {tx.direction === 'received' && (
+                      <div className="pt-2 border-t border-outline-variant/15 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant mr-1">
+                          {tx.quickReply ? 'Change thank-you reply:' : 'Send a quick reply:'}
+                        </span>
+                        {QUICK_GIFT_REPLIES.map((replyOpt) => {
+                          const isChosen = tx.quickReply === replyOpt;
+                          return (
+                            <button
+                              key={replyOpt}
+                              type="button"
+                              onClick={() => handleReplyToPostalCard(tx, replyOpt)}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-headline font-bold transition-all cursor-pointer ${
+                                isChosen
+                                  ? 'bg-emerald-500 text-slate-950 shadow'
+                                  : 'glass-pill text-pink-200 hover:border-pink-400/50'
+                              }`}
+                            >
+                              {isChosen ? `✓ ${replyOpt}` : replyOpt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -1434,8 +1767,14 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                         <p className="text-xs font-headline font-bold text-on-surface">
                           Store Pass: {purch.itemName}
                         </p>
+                        {purch.allocations && purch.allocations.length > 0 && (
+                          <p className="text-[11px] font-mono text-indigo-300">
+                            {formatStoreAllocationsSummary(purch.allocations)}
+                          </p>
+                        )}
                         <p className="text-[11px] font-mono text-on-surface-variant">
-                          Approved Redemption • {new Date(purch.timestamp).toLocaleDateString()}
+                          Your request will be done asap - Teacher Anthony&apos;s ATM •{' '}
+                          {new Date(purch.timestamp).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -1509,32 +1848,36 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
         )}
 
         {/* ============================================================== */}
-        {/* TAB 2: LOANS (VIEW, PAY WITH NOTEBOOK PHOTO, OR REQUEST NEW)   */}
+        {/* TAB 2: LOANS (INSTANT OPEN + 3 WAYS OF PAYMENT + PHOTO UPLOAD) */}
         {/* ============================================================== */}
         {activeTab === 'loans' && (
           <div className="space-y-6">
             {activeLoan ? (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Active Loan Status Card */}
+                {/* Active Loan Status Card + 3 Ways of Payment Guide */}
                 <div className="lg:col-span-5 glass-panel rounded-3xl p-6 specular-edge space-y-5">
                   <div className="flex items-center justify-between">
                     <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                      Active Loan Instrument
+                      Active Loan • Complete Work to Receive E${activeLoan.principal}
                     </span>
                     <span className="text-xs font-mono text-on-surface-variant">
                       ID: {activeLoan.id}
                     </span>
                   </div>
 
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3.5 text-xs text-emerald-200 leading-relaxed">
+                    💡 <strong>How You Get Your Money:</strong> Once you complete the English work below (via Notebook Photo here OR face-to-face with Teacher Anthony) and it is approved, <strong>E${activeLoan.principal}.00</strong> (plus any extra E$ you write) is deposited into your wallet immediately!
+                  </div>
+
                   <div>
                     <span className="text-xs font-mono uppercase text-on-surface-variant block">
-                      Remaining Balance to Pay
+                      Remaining English Work Value Required
                     </span>
                     <span className="text-3xl font-mono font-extrabold text-amber-400">
                       E$ {remainingDebt}.00
                     </span>
                     <p className="text-xs font-mono text-on-surface-variant mt-1">
-                      Total Due: E${activeLoan.totalDue}.00 (Principal E${activeLoan.principal} at{' '}
+                      Total Work Required: E${activeLoan.totalDue}.00 (Loan Principal E${activeLoan.principal} +{' '}
                       {activeLoan.effectiveInterestRate}% Interest)
                     </p>
                   </div>
@@ -1542,7 +1885,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                   {/* Progress bar */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs font-mono">
-                      <span>Repaid: E${activeLoan.amountRepaid}.00</span>
+                      <span>Completed: E${activeLoan.amountRepaid}.00</span>
                       <span>
                         {Math.min(
                           100,
@@ -1577,29 +1920,83 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     </div>
                   )}
 
-                  <div className="glass-well rounded-2xl p-4 space-y-2 text-xs font-mono">
-                    <p className="font-bold text-primary-container uppercase">
-                      Didactic English Repayment Rates:
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="p-2 rounded-xl bg-surface-container-lowest">
-                        <span className="block text-emerald-400 font-bold">
-                          E${settings.sentenceValue}
+                  {/* 3 WAYS OF PAYMENT INTERACTIVE SELECTOR */}
+                  <div className="glass-well rounded-2xl p-4 space-y-3 text-xs font-mono border border-primary-container/30">
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-primary-container uppercase">
+                        3 Ways of Payment (Tap to Auto-Fill E${remainingDebt}):
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      {/* Way 1: Phrasal Verbs */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhrasalVerbsCount(Math.ceil(remainingDebt / settings.phrasalVerbValue));
+                          setSentencesCount(0);
+                          setWordsCount(0);
+                        }}
+                        className="w-full p-2.5 rounded-xl bg-surface-container-lowest hover:border-indigo-400/50 border border-outline-variant/20 flex items-center justify-between text-left transition-all cursor-pointer"
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold uppercase text-indigo-400 block">
+                            Way 1 • Phrasal Verbs (E${settings.phrasalVerbValue} each)
+                          </span>
+                          <span className="text-xs font-bold text-on-surface">
+                            Write {Math.ceil(remainingDebt / settings.phrasalVerbValue)} Phrasal Verbs in Context
+                          </span>
+                        </div>
+                        <span className="px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-[11px]">
+                          Select
                         </span>
-                        <span className="text-[10px] text-on-surface-variant">1 Sentence</span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-surface-container-lowest">
-                        <span className="block text-cyan-400 font-bold">
-                          E${settings.wordValue}
+                      </button>
+
+                      {/* Way 2: English Sentences */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSentencesCount(Math.ceil(remainingDebt / settings.sentenceValue));
+                          setPhrasalVerbsCount(0);
+                          setWordsCount(0);
+                        }}
+                        className="w-full p-2.5 rounded-xl bg-surface-container-lowest hover:border-emerald-400/50 border border-outline-variant/20 flex items-center justify-between text-left transition-all cursor-pointer"
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold uppercase text-emerald-400 block">
+                            Way 2 • English Sentences (E${settings.sentenceValue} each)
+                          </span>
+                          <span className="text-xs font-bold text-on-surface">
+                            Write {Math.ceil(remainingDebt / settings.sentenceValue)} Complete Sentences
+                          </span>
+                        </div>
+                        <span className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold text-[11px]">
+                          Select
                         </span>
-                        <span className="text-[10px] text-on-surface-variant">1 Word</span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-surface-container-lowest">
-                        <span className="block text-indigo-400 font-bold">
-                          E${settings.phrasalVerbValue}
+                      </button>
+
+                      {/* Way 3: Book Vocabulary Words */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWordsCount(Math.ceil(remainingDebt / settings.wordValue));
+                          setPhrasalVerbsCount(0);
+                          setSentencesCount(0);
+                        }}
+                        className="w-full p-2.5 rounded-xl bg-surface-container-lowest hover:border-cyan-400/50 border border-outline-variant/20 flex items-center justify-between text-left transition-all cursor-pointer"
+                      >
+                        <div>
+                          <span className="text-[10px] font-bold uppercase text-cyan-400 block">
+                            Way 3 • Book Vocabulary Words (E${settings.wordValue} each)
+                          </span>
+                          <span className="text-xs font-bold text-on-surface">
+                            Write {Math.ceil(remainingDebt / settings.wordValue)} Vocabulary Words + Meaning
+                          </span>
+                        </div>
+                        <span className="px-2 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold text-[11px]">
+                          Select
                         </span>
-                        <span className="text-[10px] text-on-surface-variant">1 Phrasal Verb</span>
-                      </div>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1608,19 +2005,51 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                 <div className="lg:col-span-7 glass-panel rounded-3xl p-6 specular-edge space-y-5">
                   <div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-primary-container font-bold">
-                      Step-by-Step Loan Repayment
+                      Complete Loan &amp; Receive E${activeLoan.principal}.00
                     </span>
                     <h2 className="text-xl font-headline font-extrabold text-on-surface mt-0.5">
-                      Pay Loan by Uploading Your Notebook Photo
+                      Submit Notebook Photo (or Present Face-to-Face)
                     </h2>
                     <p className="text-xs text-on-surface-variant mt-1">
-                      Count how many sentences, words, or phrasal verbs are in your notebook, snap a clear photo, and send it to your teacher for approval!
+                      Pick one of the 3 Ways of Payment (or mix them), snap a clear photo of your notebook, and send it to Teacher Anthony. Once approved, you get your loan money instantly!
                     </p>
                   </div>
 
                   <form onSubmit={handleSubmitNotebookPayment} className="space-y-5">
                     {/* Task counters */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="glass-well rounded-2xl p-3.5 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-headline font-bold text-on-surface">
+                            Phrasal Verbs
+                          </span>
+                          <span className="text-[11px] font-mono text-indigo-400 font-bold">
+                            E${settings.phrasalVerbValue} ea
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPhrasalVerbsCount(Math.max(0, phrasalVerbsCount - 1))
+                            }
+                            className="p-2 rounded-xl glass-pill"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-lg font-mono font-extrabold text-on-surface">
+                            {phrasalVerbsCount}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setPhrasalVerbsCount(phrasalVerbsCount + 1)}
+                            className="p-2 rounded-xl glass-pill"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
                       <div className="glass-well rounded-2xl p-3.5 space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-headline font-bold text-on-surface">
@@ -1674,38 +2103,6 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                           <button
                             type="button"
                             onClick={() => setWordsCount(wordsCount + 1)}
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="glass-well rounded-2xl p-3.5 space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-headline font-bold text-on-surface">
-                            Phrasal Verbs
-                          </span>
-                          <span className="text-[11px] font-mono text-indigo-400 font-bold">
-                            E${settings.phrasalVerbValue} ea
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setPhrasalVerbsCount(Math.max(0, phrasalVerbsCount - 1))
-                            }
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="text-lg font-mono font-extrabold text-on-surface">
-                            {phrasalVerbsCount}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setPhrasalVerbsCount(phrasalVerbsCount + 1)}
                             className="p-2 rounded-xl glass-pill"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -1795,14 +2192,19 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     <div className="glass-well rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-primary-container/30">
                       <div>
                         <span className="text-[10px] font-mono uppercase text-on-surface-variant block">
-                          Calculated Notebook Value
+                          Calculated Notebook Work Value
                         </span>
                         <span className="text-2xl font-mono font-extrabold text-tertiary-fixed-dim">
                           E$ {calculatedRepaymentCredit}.00
                         </span>
-                        {calculatedRepaymentCredit > remainingDebt && (
+                        {calculatedRepaymentCredit >= remainingDebt ? (
                           <span className="block text-[11px] font-mono text-emerald-400">
-                            Pays off loan + deposits E${calculatedRepaymentCredit - remainingDebt}.00 extra to your wallet!
+                            ✓ Covers loan! Once approved, you receive E$
+                            {activeLoan.principal + Math.max(0, calculatedRepaymentCredit - remainingDebt)}.00 in your wallet!
+                          </span>
+                        ) : (
+                          <span className="block text-[11px] font-mono text-amber-300">
+                            Partial submission (E${remainingDebt - calculatedRepaymentCredit}.00 remaining before loan disburses)
                           </span>
                         )}
                       </div>
@@ -1812,24 +2214,24 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                         disabled={!notebookPhotoDataUrl || calculatedRepaymentCredit <= 0}
                         className="liquid-button-primary px-6 py-3.5 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider disabled:opacity-40 cursor-pointer"
                       >
-                        Send Notebook Photo for Approval
+                        Send Photo for Teacher Approval
                       </button>
                     </div>
                   </form>
                 </div>
               </div>
             ) : (
-              /* NO ACTIVE LOAN -> REQUEST A NEW LOAN */
-              <div className="max-w-2xl mx-auto glass-panel rounded-3xl p-6 sm:p-8 specular-edge space-y-6">
+              /* NO ACTIVE LOAN -> OPEN A NEW LOAN IMMEDIATELY */
+              <div className="max-w-3xl mx-auto glass-panel rounded-3xl p-6 sm:p-8 specular-edge space-y-6">
                 <div>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-primary-container font-bold">
-                    Classroom Credit Line • Ceiling E${currentStudent.maxLoanLimit}
+                    Instant Classroom Credit Line • Ceiling E${currentStudent.maxLoanLimit}
                   </span>
                   <h2 className="text-2xl font-headline font-extrabold text-on-surface mt-1">
-                    Request a New Eurodollar Loan
+                    Open a New Eurodollar Loan (No Initial Approval Needed!)
                   </h2>
                   <p className="text-xs text-on-surface-variant mt-1">
-                    Choose how much you want to borrow. Once your teacher approves your request in ATM 4.0, the Eurodollars are deposited into your wallet immediately!
+                    Your loan opens immediately! Then complete one of the <strong>3 Ways of Payment</strong> in your notebook and send a photo (or show Teacher Anthony face-to-face) — once approved, you receive the money in your wallet!
                   </p>
                 </div>
 
@@ -1837,7 +2239,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                   <div className="space-y-2">
                     <div className="flex justify-between items-baseline">
                       <label className="text-xs font-mono uppercase text-on-surface-variant font-bold">
-                        Loan Principal Amount
+                        Loan Amount You Want to Earn
                       </label>
                       <span className="text-2xl font-mono font-extrabold text-primary-container">
                         E$ {loanPrincipalInput}.00
@@ -1857,6 +2259,64 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                       <span>Your Max Limit: E${currentStudent.maxLoanLimit}</span>
                     </div>
                   </div>
+
+                  {/* 3 WAYS OF PAYMENT PREVIEW FOR THIS LOAN */}
+                  {(() => {
+                    const previewTotalDue = calculateTotalDue(
+                      loanPrincipalInput,
+                      settings.baseInterestRate
+                    );
+                    const reqPV = Math.ceil(previewTotalDue / settings.phrasalVerbValue);
+                    const reqSent = Math.ceil(previewTotalDue / settings.sentenceValue);
+                    const reqWords = Math.ceil(previewTotalDue / settings.wordValue);
+                    return (
+                      <div className="glass-well rounded-2xl p-4 space-y-3 border border-primary-container/25">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <span className="text-xs font-headline font-extrabold text-primary-container uppercase">
+                            3 Ways of Payment to Unlock E${loanPrincipalInput}.00 (Total Work Value: E${previewTotalDue}):
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-300">
+                            Choose 1 option or mix &amp; match in your notebook!
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono">
+                          <div className="p-3 rounded-xl bg-surface-container-lowest border border-indigo-500/30">
+                            <span className="text-[10px] text-indigo-400 font-bold uppercase block">
+                              Way 1 • Phrasal Verbs
+                            </span>
+                            <span className="text-lg font-extrabold text-on-surface block mt-0.5">
+                              {reqPV} Phrasal Verbs
+                            </span>
+                            <span className="text-[10px] text-on-surface-variant">
+                              E${settings.phrasalVerbValue} per phrasal verb
+                            </span>
+                          </div>
+                          <div className="p-3 rounded-xl bg-surface-container-lowest border border-emerald-500/30">
+                            <span className="text-[10px] text-emerald-400 font-bold uppercase block">
+                              Way 2 • Sentences
+                            </span>
+                            <span className="text-lg font-extrabold text-on-surface block mt-0.5">
+                              {reqSent} Sentences
+                            </span>
+                            <span className="text-[10px] text-on-surface-variant">
+                              E${settings.sentenceValue} per sentence
+                            </span>
+                          </div>
+                          <div className="p-3 rounded-xl bg-surface-container-lowest border border-cyan-500/30">
+                            <span className="text-[10px] text-cyan-400 font-bold uppercase block">
+                              Way 3 • Book Words
+                            </span>
+                            <span className="text-lg font-extrabold text-on-surface block mt-0.5">
+                              {reqWords} Vocab Words
+                            </span>
+                            <span className="text-[10px] text-on-surface-variant">
+                              E${settings.wordValue} per word
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
@@ -1902,7 +2362,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-mono uppercase text-on-surface-variant font-bold block">
-                      Reason / Notes for Teacher
+                      Optional Note
                     </label>
                     <input
                       type="text"
@@ -1913,10 +2373,10 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     />
                   </div>
 
-                  <div className="glass-well rounded-2xl p-4 flex items-center justify-between">
+                  <div className="glass-well rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] font-mono uppercase text-on-surface-variant block">
-                        Total Repayment Due ({settings.baseInterestRate}% Interest)
+                        Total English Work Required ({settings.baseInterestRate}% Interest)
                       </span>
                       <span className="text-xl font-mono font-extrabold text-amber-400">
                         E$ {calculateTotalDue(loanPrincipalInput, settings.baseInterestRate)}.00
@@ -1926,7 +2386,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                       type="submit"
                       className="liquid-button-primary px-6 py-3.5 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider cursor-pointer"
                     >
-                      Request Loan Approval
+                      Open Loan Now &amp; Start Notebook Work
                     </button>
                   </div>
                 </form>
@@ -1948,10 +2408,10 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                       <div>
                         <p className="text-xs font-headline font-bold text-on-surface">
                           {ln.loanType === 'short' ? 'Short Advance' : 'Extended Loan'} • Principal E$
-                          {ln.principal} (Total Due E${ln.totalDue})
+                          {ln.principal} (Total Work E${ln.totalDue})
                         </p>
                         <p className="text-[11px] font-mono text-on-surface-variant">
-                          Created {new Date(ln.createdAt).toLocaleDateString()} • Repaid: E$
+                          Created {new Date(ln.createdAt).toLocaleDateString()} • Completed: E$
                           {ln.amountRepaid}
                         </p>
                       </div>
@@ -1962,11 +2422,214 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                             : 'bg-amber-400/20 text-amber-300'
                         }`}
                       >
-                        {ln.status}
+                        {ln.status === 'paid' ? 'Paid & Disbursed' : ln.status}
                       </span>
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 2B: CONTRACTS / EVENTS WALL (LIMITED STOCK NOTEBOOK TASKS) */}
+        {/* ============================================================== */}
+        {activeTab === 'contracts' && (
+          <div className="space-y-6">
+            <div className="glass-panel rounded-3xl p-6 specular-edge flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-amber-500/30">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+                  <ScrollText className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold">
+                    Limited Stock Classroom Bounties
+                  </span>
+                  <h2 className="text-xl font-headline font-extrabold text-on-surface">
+                    Teacher Anthony&apos;s Contracts &amp; Events Wall
+                  </h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    Take a contract to reserve 1 spot! Complete the instructions in your notebook and send a photo for approval to earn E$ rewards!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <input
+              ref={contractFileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleContractPhotoSelect}
+              className="hidden"
+            />
+
+            {availableContracts.length === 0 ? (
+              <div className="glass-panel rounded-3xl p-12 text-center space-y-2">
+                <ScrollText className="w-10 h-10 text-on-surface-variant mx-auto" />
+                <p className="text-base font-headline font-bold text-on-surface">
+                  No Contracts Posted Right Now
+                </p>
+                <p className="text-xs font-mono text-on-surface-variant">
+                  Check back soon! When Teacher Anthony posts new limited-stock contracts, they will appear here live.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {availableContracts.map((contract) => {
+                  const myClaim = contract.claims.find(
+                    (cl) => cl.studentId === currentStudent.id
+                  );
+                  const isUploadingThis = activeContractUploadId === contract.id;
+
+                  return (
+                    <div
+                      key={contract.id}
+                      className="glass-panel rounded-3xl p-5 specular-edge flex flex-col justify-between gap-4 border border-outline-variant/25"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                              contract.spotsRemaining > 0
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            }`}
+                          >
+                            {contract.spotsRemaining > 0
+                              ? `${contract.spotsRemaining} / ${contract.totalStock} Spots Available`
+                              : `Sold Out (0 / ${contract.totalStock} Spots Left)`}
+                          </span>
+
+                          {contract.deadline && (
+                            <span className="text-[11px] font-mono text-amber-300 flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              Due: {contract.deadline}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="text-base font-headline font-extrabold text-on-surface">
+                            {contract.title}
+                          </h3>
+                          <div className="glass-well px-3 py-1.5 rounded-2xl text-right shrink-0 border border-emerald-500/30">
+                            <span className="text-base font-mono font-extrabold text-emerald-400 block">
+                              +E${contract.rewardAmount}
+                            </span>
+                            {contract.creditScoreBonus > 0 && (
+                              <span className="text-[10px] font-mono text-amber-300 block">
+                                +{contract.creditScoreBonus} Score
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="glass-well rounded-2xl p-3.5 text-xs text-on-surface whitespace-pre-line leading-relaxed">
+                          {contract.instructions}
+                        </div>
+                      </div>
+
+                      {/* Claim Status / Actions */}
+                      <div className="pt-3 border-t border-outline-variant/20 space-y-3">
+                        {!myClaim ? (
+                          <button
+                            type="button"
+                            disabled={!contract.isActive || contract.spotsRemaining <= 0}
+                            onClick={() => handleReserveContractSpot(contract)}
+                            className="w-full liquid-button-primary py-3 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider disabled:opacity-40 cursor-pointer"
+                          >
+                            {contract.spotsRemaining <= 0
+                              ? 'All Spots Taken by Classmates'
+                              : `Take Contract (Reserve 1 of ${contract.spotsRemaining} Spots)`}
+                          </button>
+                        ) : myClaim.status === 'approved' ? (
+                          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold flex items-center justify-between">
+                            <span>✅ Contract Approved &amp; Paid (+E${contract.rewardAmount}.00)!</span>
+                          </div>
+                        ) : myClaim.status === 'pending_approval' ? (
+                          <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 text-xs font-mono flex items-center justify-between gap-2">
+                            <span>📸 Notebook photo sent! Waiting for Teacher Anthony&apos;s approval.</span>
+                            <button
+                              type="button"
+                              onClick={() => handleReleaseContractSpot(contract, myClaim)}
+                              className="px-2.5 py-1 rounded-lg glass-pill text-rose-300 text-[10px] shrink-0"
+                            >
+                              Cancel &amp; Free Spot
+                            </button>
+                          </div>
+                        ) : (
+                          /* status is 'reserved' or 'rejected' */
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-mono font-bold text-cyan-300">
+                                {myClaim.status === 'rejected'
+                                  ? `❌ Teacher Feedback: "${myClaim.teacherFeedback || 'Please retry photo'}"`
+                                  : '🔒 Spot Reserved for You! Complete in your notebook & upload photo:'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleReleaseContractSpot(contract, myClaim)}
+                                className="px-2.5 py-1 rounded-xl glass-pill text-[10px] font-mono text-rose-300 flex items-center gap-1 shrink-0"
+                              >
+                                <RotateCcw className="w-3 h-3" /> Release Spot
+                              </button>
+                            </div>
+
+                            {isUploadingThis && contractPhotoDataUrl ? (
+                              <div className="space-y-2.5">
+                                <div className="relative rounded-2xl overflow-hidden border border-amber-400/40 bg-black/50 max-h-56 flex items-center justify-center">
+                                  <img
+                                    src={contractPhotoDataUrl}
+                                    alt="Contract Notebook Preview"
+                                    className="max-h-56 w-auto object-contain"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setContractPhotoDataUrl('')}
+                                    className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-black/80 text-white text-[10px] font-mono"
+                                  >
+                                    Retake
+                                  </button>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={contractStudentNotes}
+                                  onChange={(e) => setContractStudentNotes(e.target.value)}
+                                  placeholder="Optional note for Teacher Anthony..."
+                                  className="w-full glass-well rounded-xl px-3.5 py-2 text-xs font-mono text-on-surface"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleSubmitContractPhoto(contract, myClaim)}
+                                  className="w-full liquid-button-primary py-3 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider cursor-pointer"
+                                >
+                                  Submit Notebook Photo for +E${contract.rewardAmount}
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (activeContractUploadId !== contract.id) {
+                                    setContractPhotoDataUrl(null);
+                                    setContractStudentNotes('');
+                                  }
+                                  setActiveContractUploadId(contract.id);
+                                  contractFileInputRef.current?.click();
+                                }}
+                                className="w-full border-2 border-dashed border-amber-400/50 hover:border-amber-400 rounded-2xl p-4 glass-well flex items-center justify-center gap-2 text-xs font-headline font-bold text-amber-300 cursor-pointer"
+                              >
+                                <Camera className="w-4 h-4" />
+                                Tap to Upload / Take Notebook Photo for This Contract
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1985,7 +2648,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     Classroom Privilege &amp; Prize Store
                   </h2>
                   <p className="text-xs text-on-surface-variant">
-                    Select items to request a purchase. Funds are held safely until your teacher approves your order in ATM 4.0.
+                    Skip Homework &amp; Extra Points items will ask for the Homework/Lesson name and date. Once approved, you will get: &ldquo;Your request will be done asap - Teacher Anthony&apos;s ATM&rdquo;.
                   </p>
                 </div>
                 <div className="text-right font-mono">
@@ -2002,6 +2665,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                 {availableStoreItems.map((item) => {
                   const effectivePrice = calculateEffectiveItemPrice(item);
                   const outOfStock = !item.unlimitedStock && item.stock <= 0;
+                  const reqInfo = getStoreRedemptionRequirement(item);
                   return (
                     <div
                       key={item.id}
@@ -2023,6 +2687,14 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                               {item.description}
                             </p>
                           )}
+                          {reqInfo && (
+                            <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-400/30 text-[10px] font-mono text-indigo-300">
+                              <Calendar className="w-3 h-3" />
+                              {reqInfo.mode === 'skip'
+                                ? `Requires ${reqInfo.targetLabel} Name & Date`
+                                : `Choose 1 or Multiple ${reqInfo.targetLabel}s & Dates`}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -2036,7 +2708,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                           onClick={() => handleAddToCart(item)}
                           className="liquid-button-primary px-3.5 py-1.5 rounded-xl text-xs font-headline font-bold disabled:opacity-40 cursor-pointer"
                         >
-                          {outOfStock ? 'Sold Out' : '+ Add to Cart'}
+                          {outOfStock ? 'Sold Out' : '+ Buy / Add'}
                         </button>
                       </div>
                     </div>
@@ -2054,42 +2726,78 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
 
               {cartList.length === 0 ? (
                 <p className="text-xs font-mono text-on-surface-variant py-8 text-center">
-                  Your cart is empty. Tap "+ Add to Cart" on any store privilege!
+                  Your cart is empty. Tap &ldquo;+ Buy / Add&rdquo; on any store privilege!
                 </p>
               ) : (
                 <div className="space-y-3">
                   {cartList.map((entry) => (
                     <div
                       key={entry.item.id}
-                      className="glass-well rounded-2xl p-3 flex items-center justify-between gap-2"
+                      className="glass-well rounded-2xl p-3 space-y-2"
                     >
-                      <div className="min-w-0">
-                        <p className="text-xs font-headline font-bold text-on-surface truncate">
-                          {entry.item.name}
-                        </p>
-                        <p className="text-[11px] font-mono text-tertiary-fixed-dim">
-                          E${entry.unitPrice} × {entry.quantity} = E${entry.lineTotal}
-                        </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-xs font-headline font-bold text-on-surface truncate">
+                            {entry.item.name}
+                          </p>
+                          <p className="text-[11px] font-mono text-tertiary-fixed-dim">
+                            E${entry.unitPrice} × {entry.quantity} = E${entry.lineTotal}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateCartQty(entry.item.id, -1)}
+                            className="p-1.5 rounded-lg glass-pill"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-xs font-mono font-bold w-5 text-center">
+                            {entry.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleAddToCart(entry.item)}
+                            className="p-1.5 rounded-lg glass-pill"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateCartQty(entry.item.id, -1)}
-                          className="p-1.5 rounded-lg glass-pill"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-mono font-bold w-5 text-center">
-                          {entry.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart(entry.item)}
-                          className="p-1.5 rounded-lg glass-pill"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
+
+                      {entry.allocations && entry.allocations.length > 0 && (
+                        <div className="pt-1.5 border-t border-outline-variant/15 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono uppercase text-indigo-300 font-bold">
+                              Scheduled Lessons / HW:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setConfiguringStoreItem({
+                                  item: entry.item,
+                                  targetQty: entry.quantity,
+                                })
+                              }
+                              className="text-[10px] font-mono text-cyan-300 underline"
+                            >
+                              Edit Details
+                            </button>
+                          </div>
+                          {entry.allocations.map((a, idx) => (
+                            <div
+                              key={idx}
+                              className="text-[11px] font-mono text-on-surface-variant flex items-center justify-between"
+                            >
+                              <span className="truncate">
+                                {a.pointsAllocated ? `+${a.pointsAllocated} pts: ` : 'Skip: '}
+                                <strong className="text-on-surface">{a.targetName}</strong>
+                              </span>
+                              <span className="text-indigo-300 shrink-0 ml-2">{a.targetDate}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
 
@@ -2109,7 +2817,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     >
                       {cartTotal > availableBalance
                         ? 'Insufficient Available Balance'
-                        : `Request Purchase (Hold E$${cartTotal})`}
+                        : `Send Order for Teacher Approval (E$${cartTotal})`}
                     </button>
                   </div>
                 </div>
@@ -2119,110 +2827,199 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
         )}
 
         {/* ============================================================== */}
-        {/* TAB 4: SEND MONEY TO FRIENDS (P2P TRANSFER)                    */}
+        {/* TAB 4: SEND MONEY TO FRIENDS (GIFT POSTAL CARD & QUICK REPLIES) */}
         {/* ============================================================== */}
         {activeTab === 'transfer' && (
-          <div className="max-w-2xl mx-auto glass-panel rounded-3xl p-6 sm:p-8 specular-edge space-y-6">
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-bold">
-                Peer-to-Peer Classroom Transfer • Teacher Verified
-              </span>
-              <h2 className="text-2xl font-headline font-extrabold text-on-surface mt-1">
-                Send Eurodollars to a Friend
-              </h2>
-              <p className="text-xs text-on-surface-variant mt-1">
-                Send money to a classmate{currentStudent.className ? ` in ${currentStudent.className}` : ''}. The amount will be held from your available balance until your teacher approves the transfer in ATM 4.0.
-              </p>
-            </div>
-
-            <form onSubmit={handleSendP2PTransfer} className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-xs font-mono uppercase text-on-surface-variant font-bold block">
-                  1. Choose a Classmate ({eligibleClassmates.length} available)
-                </label>
-                <input
-                  type="text"
-                  value={friendSearch}
-                  onChange={(e) => setFriendSearch(e.target.value)}
-                  placeholder="Search friend by name..."
-                  className="w-full glass-well rounded-2xl px-4 py-2.5 text-xs font-mono text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto p-1">
-                  {eligibleClassmates.map((friend) => {
-                    const isSelected = recipientId === friend.id;
-                    return (
-                      <button
-                        key={friend.id}
-                        type="button"
-                        onClick={() => setRecipientId(friend.id)}
-                        className={`p-3 rounded-2xl flex items-center gap-3 text-left border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'glass-panel border-primary-container shadow-md'
-                            : 'glass-well border-outline-variant/15 hover:border-primary-container/40'
-                        }`}
-                      >
-                        <StudentAvatar
-                          name={friend.name}
-                          avatarUrl={friend.avatarUrl}
-                          size="sm"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-headline font-bold text-on-surface truncate">
-                            {friend.name}
-                          </p>
-                          <p className="text-[10px] font-mono text-on-surface-variant truncate">
-                            {friend.className || 'Classmate'}
-                          </p>
-                        </div>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-primary-container shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="glass-panel rounded-3xl p-6 sm:p-8 specular-edge space-y-6">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-pink-400 font-bold">
+                  Instant Peer-to-Peer Gift Postal Card • Safe &amp; Message-Free
+                </span>
+                <h2 className="text-2xl font-headline font-extrabold text-on-surface mt-1 flex items-center gap-2">
+                  <Gift className="w-6 h-6 text-pink-400" />
+                  Send a Gift Postal Card to a Friend
+                </h2>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Send Eurodollars as an official postal card saying <strong>&ldquo;To you - from me&rdquo;</strong> with a gift icon! Your friend receives it immediately and can reply with a thank-you button.
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+              <form onSubmit={handleSendP2PTransfer} className="space-y-5">
+                <div className="space-y-2">
                   <label className="text-xs font-mono uppercase text-on-surface-variant font-bold block">
-                    2. Amount to Send (Max E${availableBalance})
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={Math.max(1, availableBalance)}
-                    required
-                    value={transferAmount}
-                    onChange={(e) => setTransferAmount(e.target.value)}
-                    placeholder="e.g. 25"
-                    className="w-full glass-well rounded-2xl px-4 py-3 text-base font-mono font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono uppercase text-on-surface-variant font-bold block">
-                    3. Message / Reason
+                    1. Choose a Classmate ({eligibleClassmates.length} available)
                   </label>
                   <input
                     type="text"
-                    required
-                    value={transferMessage}
-                    onChange={(e) => setTransferMessage(e.target.value)}
-                    placeholder="e.g. Thanks for helping me practice!"
-                    className="w-full glass-well rounded-2xl px-4 py-3 text-xs font-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
+                    value={friendSearch}
+                    onChange={(e) => setFriendSearch(e.target.value)}
+                    placeholder="Search friend by name..."
+                    className="w-full glass-well rounded-2xl px-4 py-2.5 text-xs font-mono text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
                   />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto p-1">
+                    {eligibleClassmates.map((friend) => {
+                      const isSelected = recipientId === friend.id;
+                      return (
+                        <button
+                          key={friend.id}
+                          type="button"
+                          onClick={() => setRecipientId(friend.id)}
+                          className={`p-3 rounded-2xl flex items-center gap-3 text-left border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'glass-panel border-pink-400 shadow-md'
+                              : 'glass-well border-outline-variant/15 hover:border-pink-400/40'
+                          }`}
+                        >
+                          <StudentAvatar
+                            name={friend.name}
+                            avatarUrl={friend.avatarUrl}
+                            size="sm"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-headline font-bold text-on-surface truncate">
+                              {friend.name}
+                            </p>
+                            <p className="text-[10px] font-mono text-on-surface-variant truncate">
+                              {friend.className || 'Classmate'}
+                            </p>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-pink-400 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Amount + Postal Card Live Preview */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-stretch">
+                  <div className="sm:col-span-5 space-y-1.5 flex flex-col justify-center">
+                    <label className="text-xs font-mono uppercase text-on-surface-variant font-bold block">
+                      2. Gift Amount (Max E${availableBalance})
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={Math.max(1, availableBalance)}
+                      required
+                      value={transferAmount}
+                      onChange={(e) => setTransferAmount(e.target.value)}
+                      placeholder="e.g. 25"
+                      className="w-full glass-well rounded-2xl px-4 py-3 text-lg font-mono font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-pink-400"
+                    />
+                  </div>
+
+                  {/* Postal Card Visual */}
+                  <div className="sm:col-span-7 rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/15 to-indigo-500/20 border-2 border-pink-400/40 p-4 flex items-center justify-between gap-4 shadow-lg">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-pink-500/25 border border-pink-400/50 flex items-center justify-center text-pink-300 shadow-inner shrink-0">
+                        <Gift className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-pink-300 font-bold block">
+                          Official ATM Gift Postal Card
+                        </span>
+                        <p className="text-base font-headline font-extrabold text-white">
+                          &ldquo;To you - from me&rdquo;
+                        </p>
+                        <p className="text-[11px] font-mono text-pink-200/90 mt-0.5">
+                          To: {students.find((s) => s.id === recipientId)?.name || 'Select a Friend'} • From: {currentStudent.name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right font-mono shrink-0">
+                      <span className="text-xl font-extrabold text-emerald-400">
+                        E${transferAmount || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!recipientId || !transferAmount || Number(transferAmount) > availableBalance}
+                  className="w-full liquid-button-primary py-3.5 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Gift className="w-4 h-4" />
+                  Send Gift Postal Card &ldquo;To you - from me&rdquo; (E${transferAmount || 0})
+                </button>
+              </form>
+            </div>
+
+            {/* Received & Sent Postal Cards with Quick Reply Buttons */}
+            {(currentStudent.p2pTransfersHistory || []).length > 0 && (
+              <div className="glass-panel rounded-3xl p-6 specular-edge space-y-4">
+                <h3 className="text-xs font-mono uppercase tracking-wider text-on-surface-variant font-bold flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-pink-400" />
+                  My Gift Postal Cards &amp; Quick Replies
+                </h3>
+                <div className="space-y-3">
+                  {(currentStudent.p2pTransfersHistory || []).map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="glass-well rounded-2xl p-4 space-y-3 border border-pink-400/25"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-pink-300">
+                            <Gift className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-headline font-extrabold text-on-surface">
+                              🎁 &ldquo;To you - from me&rdquo; •{' '}
+                              {tx.direction === 'received'
+                                ? `From ${tx.counterpartyName}`
+                                : `Sent to ${tx.counterpartyName}`}
+                            </p>
+                            <p className="text-[11px] font-mono text-on-surface-variant">
+                              {new Date(tx.timestamp).toLocaleString()}
+                            </p>
+                            {tx.quickReply && (
+                              <p className="text-xs font-mono text-emerald-300 mt-1">
+                                💌 Quick Reply: <strong>&ldquo;{tx.quickReply}&rdquo;</strong>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-base font-mono font-extrabold ${
+                            tx.direction === 'received' ? 'text-emerald-400' : 'text-on-surface'
+                          }`}
+                        >
+                          {tx.direction === 'received' ? `+E$${tx.amount}.00` : `-E$${tx.amount}.00`}
+                        </span>
+                      </div>
+
+                      {tx.direction === 'received' && (
+                        <div className="pt-2 border-t border-outline-variant/15 flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] font-mono uppercase text-on-surface-variant mr-1">
+                            Tap to reply:
+                          </span>
+                          {QUICK_GIFT_REPLIES.map((replyOpt) => {
+                            const isChosen = tx.quickReply === replyOpt;
+                            return (
+                              <button
+                                key={replyOpt}
+                                type="button"
+                                onClick={() => handleReplyToPostalCard(tx, replyOpt)}
+                                className={`px-3 py-1 rounded-full text-xs font-headline font-bold transition-all cursor-pointer ${
+                                  isChosen
+                                    ? 'bg-emerald-500 text-slate-950 shadow'
+                                    : 'glass-pill text-pink-200 hover:border-pink-400/50'
+                                }`}
+                              >
+                                {isChosen ? `✓ ${replyOpt}` : replyOpt}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              <button
-                type="submit"
-                disabled={!recipientId || !transferAmount || Number(transferAmount) > availableBalance}
-                className="w-full liquid-button-primary py-3.5 rounded-2xl font-headline font-bold text-xs uppercase tracking-wider disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Send className="w-4 h-4" />
-                Send Money (Hold E${transferAmount || 0} for Teacher Approval)
-              </button>
-            </form>
+            )}
           </div>
         )}
 
@@ -2247,7 +3044,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     Profile Picture &amp; Holo Avatar
                   </h2>
                   <p className="text-xs text-on-surface-variant mt-0.5">
-                    Pick a 3D Holo Bank Avatar below or upload your own photo. It updates immediately on your teacher's ATM 4.0!
+                    Pick a 3D Holo Bank Avatar below or upload your own photo. It updates immediately on your teacher&apos;s ATM 4.0!
                   </p>
                 </div>
               </div>
@@ -2377,12 +3174,13 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       </main>
 
       {/* MOBILE BOTTOM NAVIGATION DOCK */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-outline-variant/25 px-2 py-2 flex items-center justify-around">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-outline-variant/25 px-1 py-1.5 flex items-center justify-around">
         {[
           { id: 'wallet', label: 'Wallet', icon: CreditCard },
           { id: 'loans', label: 'Loans', icon: BookOpen },
+          { id: 'contracts', label: 'Contracts', icon: ScrollText },
           { id: 'store', label: 'Store', icon: ShoppingBag },
-          { id: 'transfer', label: 'Send E$', icon: Send },
+          { id: 'transfer', label: 'Gift Card', icon: Gift },
           { id: 'profile', label: 'Profile', icon: User },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -2392,7 +3190,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as StudentTab)}
-              className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-headline font-bold transition-all ${
+              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-headline font-bold transition-all ${
                 isActive ? 'text-primary-container bg-primary-container/15' : 'text-on-surface-variant'
               }`}
             >

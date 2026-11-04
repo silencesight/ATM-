@@ -6,6 +6,10 @@ import {
   Classroom,
   TeacherSettings,
   PendingStudentRequest,
+  ClassroomContract,
+  ContractClaim,
+  P2PTransferRecord,
+  BalanceDisclaimerNotice,
 } from '../types';
 
 export interface CloudClassroomState {
@@ -17,6 +21,7 @@ export interface CloudClassroomState {
   classrooms: Classroom[];
   settings: TeacherSettings;
   pendingRequests: PendingStudentRequest[];
+  contracts?: ClassroomContract[];
 }
 
 export type StudentActionPayload =
@@ -45,6 +50,51 @@ export type StudentActionPayload =
       id: string;
       type: 'CANCEL_REQUEST';
       requestId: string;
+      studentId: string;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      type: 'OPEN_LOAN';
+      studentId: string;
+      loan: Loan;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      type: 'SEND_P2P_POSTCARD';
+      transferId: string;
+      senderId: string;
+      senderName: string;
+      senderClassName?: string;
+      recipientId: string;
+      recipientName: string;
+      recipientClassName?: string;
+      amount: number;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      type: 'REPLY_P2P_POSTCARD';
+      transferId: string;
+      recipientId: string;
+      recipientName: string;
+      senderId: string;
+      replyText: string;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      type: 'RESERVE_CONTRACT';
+      contractId: string;
+      claim: ContractClaim;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      type: 'RELEASE_CONTRACT';
+      contractId: string;
+      claimId: string;
       studentId: string;
       createdAt: string;
     };
@@ -322,6 +372,15 @@ function getActionStudentId(action: StudentActionPayload): string {
   if (action.type === 'SUBMIT_REQUEST') {
     return action.request.studentId;
   }
+  if (action.type === 'SEND_P2P_POSTCARD') {
+    return action.senderId;
+  }
+  if (action.type === 'REPLY_P2P_POSTCARD') {
+    return action.recipientId;
+  }
+  if (action.type === 'RESERVE_CONTRACT') {
+    return action.claim.studentId;
+  }
   return action.studentId;
 }
 
@@ -390,11 +449,33 @@ export function applyStudentActionToState(
       return s;
     });
 
+    let updatedContracts = state.contracts || [];
+    if (req.type === 'contract_submission' && req.contractSubmissionData) {
+      const subData = req.contractSubmissionData;
+      updatedContracts = updatedContracts.map((contract) => {
+        if (contract.id !== subData.contractId) return contract;
+        return {
+          ...contract,
+          claims: contract.claims.map((c) => {
+            if (c.id !== subData.claimId && c.studentId !== req.studentId) return c;
+            return {
+              ...c,
+              status: 'pending_approval',
+              submittedAt: req.createdAt,
+              notebookPhotoDataUrl: subData.notebookPhotoDataUrl,
+              studentNotes: subData.studentNotes,
+            };
+          }),
+        };
+      });
+    }
+
     return {
       ...state,
       updatedAt: new Date().toISOString(),
       students: updatedStudents,
       pendingRequests: updatedRequests,
+      contracts: updatedContracts,
     };
   }
 
@@ -416,10 +497,288 @@ export function applyStudentActionToState(
       return s;
     });
 
+    let updatedContracts = state.contracts || [];
+    if (existing.type === 'contract_submission' && existing.contractSubmissionData) {
+      const subData = existing.contractSubmissionData;
+      updatedContracts = updatedContracts.map((contract) => {
+        if (contract.id !== subData.contractId) return contract;
+        return {
+          ...contract,
+          claims: contract.claims.map((c) => {
+            if (c.id !== subData.claimId && c.studentId !== existing.studentId) return c;
+            return {
+              ...c,
+              status: 'reserved',
+            };
+          }),
+        };
+      });
+    }
+
     return {
       ...state,
       updatedAt: new Date().toISOString(),
       students: updatedStudents,
+      pendingRequests: updatedRequests,
+      contracts: updatedContracts,
+    };
+  }
+
+  if (action.type === 'OPEN_LOAN') {
+    if (state.loans.some((l) => l.id === action.loan.id)) {
+      return state;
+    }
+    const student = state.students.find((s) => s.id === action.studentId);
+    if (!student || student.cardStatus === 'delisted' || student.activeLoanId) {
+      return state;
+    }
+    const newLoan: Loan = {
+      ...action.loan,
+      principalDisbursed: false,
+    };
+    const updatedStudents = state.students.map((s) =>
+      s.id === action.studentId
+        ? {
+            ...s,
+            activeLoanId: newLoan.id,
+          }
+        : s
+    );
+    return {
+      ...state,
+      updatedAt: new Date().toISOString(),
+      students: updatedStudents,
+      loans: [newLoan, ...state.loans],
+    };
+  }
+
+  if (action.type === 'SEND_P2P_POSTCARD') {
+    const sender = state.students.find((s) => s.id === action.senderId);
+    const recipient = state.students.find((s) => s.id === action.recipientId);
+    if (!sender || !recipient || action.amount <= 0) return state;
+
+    const baseId = action.transferId.replace(/_(sent|received)$/, '');
+    if (
+      (sender.p2pTransfersHistory || []).some(
+        (t) => t.id === baseId || t.id === `${baseId}_sent` || t.id === action.transferId
+      )
+    ) {
+      return state;
+    }
+
+    const available = Math.max(0, sender.currentBalance - (sender.reservedBalance || 0));
+    if (action.amount > available) return state;
+
+    const nowIso = action.createdAt || new Date().toISOString();
+    const sentRecord: P2PTransferRecord = {
+      id: baseId,
+      direction: 'sent',
+      counterpartyId: recipient.id,
+      counterpartyName: recipient.name,
+      counterpartyClassName: recipient.className,
+      amount: action.amount,
+      message: 'To you - from me',
+      timestamp: nowIso,
+      isPostalCard: true,
+    };
+    const receivedRecord: P2PTransferRecord = {
+      id: baseId,
+      direction: 'received',
+      counterpartyId: sender.id,
+      counterpartyName: sender.name,
+      counterpartyClassName: sender.className,
+      amount: action.amount,
+      message: 'To you - from me',
+      timestamp: nowIso,
+      isPostalCard: true,
+    };
+
+    const updatedStudents = state.students.map((s) => {
+      if (s.id === sender.id) {
+        const nextBal = Math.max(0, s.currentBalance - action.amount);
+        const senderDisclaimer: BalanceDisclaimerNotice = {
+          id: `disc-p2p-sent-${baseId}`,
+          studentId: s.id,
+          previousBalance: s.currentBalance,
+          newBalance: nextBal,
+          delta: -action.amount,
+          reason: `🎁 Gift Postal Card sent to ${recipient.name}: "To you - from me"`,
+          category: 'transfer',
+          createdAt: nowIso,
+        };
+        return {
+          ...s,
+          currentBalance: nextBal,
+          p2pTransfersHistory: [sentRecord, ...(s.p2pTransfersHistory || [])],
+          disclaimers: [
+            senderDisclaimer,
+            ...(s.disclaimers || []).filter((d) => d.id !== `disc-p2p-sent-${baseId}`),
+          ],
+        };
+      }
+      if (s.id === recipient.id) {
+        const nextBal = s.currentBalance + action.amount;
+        const recipientDisclaimer: BalanceDisclaimerNotice = {
+          id: `disc-p2p-recv-${baseId}`,
+          studentId: s.id,
+          previousBalance: s.currentBalance,
+          newBalance: nextBal,
+          delta: action.amount,
+          reason: `🎁 Gift Postal Card received from ${sender.name}: "To you - from me"`,
+          category: 'transfer',
+          createdAt: nowIso,
+        };
+        return {
+          ...s,
+          currentBalance: nextBal,
+          p2pTransfersHistory: [receivedRecord, ...(s.p2pTransfersHistory || [])],
+          disclaimers: [
+            recipientDisclaimer,
+            ...(s.disclaimers || []).filter((d) => d.id !== `disc-p2p-recv-${baseId}`),
+          ],
+        };
+      }
+      return s;
+    });
+
+    return {
+      ...state,
+      updatedAt: new Date().toISOString(),
+      students: updatedStudents,
+    };
+  }
+
+  if (action.type === 'REPLY_P2P_POSTCARD') {
+    const sender = state.students.find((s) => s.id === action.senderId);
+    if (!sender) return state;
+
+    const baseId = action.transferId.replace(/_(sent|received)$/, '');
+    const matchesTransfer = (id: string) =>
+      id === baseId || id === `${baseId}_sent` || id === `${baseId}_received` || id === action.transferId;
+
+    const existingTransfer = (sender.p2pTransfersHistory || []).find((t) => matchesTransfer(t.id));
+    if (existingTransfer?.quickReply === action.replyText) {
+      return state;
+    }
+
+    const nowIso = action.createdAt || new Date().toISOString();
+    const updatedStudents = state.students.map((s) => {
+      if (s.id === action.recipientId) {
+        return {
+          ...s,
+          p2pTransfersHistory: (s.p2pTransfersHistory || []).map((t) =>
+            matchesTransfer(t.id)
+              ? { ...t, quickReply: action.replyText, repliedAt: nowIso }
+              : t
+          ),
+        };
+      }
+      if (s.id === action.senderId) {
+        const replyDisclaimer: BalanceDisclaimerNotice = {
+          id: `disc-p2p-reply-${baseId}`,
+          studentId: s.id,
+          previousBalance: s.currentBalance,
+          newBalance: s.currentBalance,
+          delta: 0,
+          reason: `💌 ${action.recipientName} replied to your Gift Postal Card: "${action.replyText}"`,
+          category: 'transfer',
+          createdAt: nowIso,
+        };
+        return {
+          ...s,
+          p2pTransfersHistory: (s.p2pTransfersHistory || []).map((t) =>
+            matchesTransfer(t.id)
+              ? { ...t, quickReply: action.replyText, repliedAt: nowIso }
+              : t
+          ),
+          disclaimers: [
+            replyDisclaimer,
+            ...(s.disclaimers || []).filter(
+              (d) => d.id !== `disc-p2p-reply-${baseId}` && d.id !== `disc-p2p-reply-${action.transferId}`
+            ),
+          ],
+        };
+      }
+      return s;
+    });
+
+    return {
+      ...state,
+      updatedAt: new Date().toISOString(),
+      students: updatedStudents,
+    };
+  }
+
+  if (action.type === 'RESERVE_CONTRACT') {
+    const contracts = state.contracts || [];
+    const target = contracts.find((c) => c.id === action.contractId);
+    if (!target || !target.isActive) return state;
+
+    // Prevent duplicate reservation by same student
+    if (
+      target.claims.some(
+        (cl) => cl.id === action.claim.id || cl.studentId === action.claim.studentId
+      )
+    ) {
+      return state;
+    }
+
+    if (target.spotsRemaining <= 0 || target.claims.length >= target.totalStock) return state;
+
+    const updatedContracts = contracts.map((c) => {
+      if (c.id !== action.contractId) return c;
+      const nextClaims = [action.claim, ...c.claims];
+      return {
+        ...c,
+        spotsRemaining: Math.max(0, c.totalStock - nextClaims.length),
+        claims: nextClaims,
+      };
+    });
+
+    return {
+      ...state,
+      updatedAt: new Date().toISOString(),
+      contracts: updatedContracts,
+    };
+  }
+
+  if (action.type === 'RELEASE_CONTRACT') {
+    const contracts = state.contracts || [];
+    const target = contracts.find((c) => c.id === action.contractId);
+    if (!target) return state;
+
+    const existingClaim = target.claims.find(
+      (cl) =>
+        (action.claimId ? cl.id === action.claimId : cl.studentId === action.studentId) &&
+        cl.status !== 'approved'
+    );
+    if (!existingClaim) return state;
+
+    const updatedContracts = contracts.map((c) => {
+      if (c.id !== action.contractId) return c;
+      const nextClaims = c.claims.filter((cl) => cl.id !== existingClaim.id);
+      return {
+        ...c,
+        spotsRemaining: Math.min(c.totalStock, Math.max(0, c.totalStock - nextClaims.length)),
+        claims: nextClaims,
+      };
+    });
+
+    const updatedRequests = state.pendingRequests.filter(
+      (r) =>
+        !(
+          r.type === 'contract_submission' &&
+          r.status === 'pending' &&
+          (r.contractSubmissionData?.claimId === existingClaim.id ||
+            (r.studentId === action.studentId &&
+              r.contractSubmissionData?.contractId === action.contractId))
+        )
+    );
+
+    return {
+      ...state,
+      updatedAt: new Date().toISOString(),
+      contracts: updatedContracts,
       pendingRequests: updatedRequests,
     };
   }
@@ -496,6 +855,7 @@ export async function pushClassroomStateToCloud(
     cl: state.classrooms,
     st: state.settings,
     p: state.pendingRequests,
+    ct: state.contracts || [],
   });
 
   if (!options?.force && contentFingerprint === lastPushedContentFingerprint) {
@@ -588,6 +948,7 @@ export async function fetchClassroomStateFromCloud(
             classrooms: Array.isArray(rawState.classrooms) ? rawState.classrooms : [],
             settings: (rawState.settings || {}) as TeacherSettings,
             pendingRequests: Array.isArray(rawState.pendingRequests) ? rawState.pendingRequests : [],
+            contracts: Array.isArray(rawState.contracts) ? rawState.contracts : [],
           };
 
           // Also fetch and merge any unmerged atomic student_actions rows
@@ -689,6 +1050,7 @@ export function loadLocalClassroomStateFallback(): CloudClassroomState | null {
     const storeRaw = localStorage.getItem('esl_classroom_store_catalog_v1');
     const classesRaw = localStorage.getItem('esl_classroom_classes_v1');
     const pendingRaw = localStorage.getItem('esl_classroom_pending_requests');
+    const contractsRaw = localStorage.getItem('esl_classroom_contracts_v1');
 
     if (studentsRaw) {
       return {
@@ -700,6 +1062,7 @@ export function loadLocalClassroomStateFallback(): CloudClassroomState | null {
         classrooms: classesRaw ? JSON.parse(classesRaw) : [],
         settings: settingsRaw ? JSON.parse(settingsRaw) : undefined,
         pendingRequests: pendingRaw ? JSON.parse(pendingRaw) : [],
+        contracts: contractsRaw ? JSON.parse(contractsRaw) : [],
       };
     }
   } catch {
@@ -777,6 +1140,25 @@ export async function dispatchStudentAction(
     // If the student cancelled a pending request, also remove the original request action from the queue
     if (action.type === 'CANCEL_REQUEST') {
       await supabase.from('atm_student_actions').delete().eq('id', `act_${action.requestId}`);
+      await supabase.from('atm_student_actions').delete().eq('id', action.id);
+    }
+
+    // If the student released a contract spot, also remove the original reservation and any pending photo submission from the queue
+    if (action.type === 'RELEASE_CONTRACT') {
+      await supabase.from('atm_student_actions').delete().eq('id', `act_res_${action.claimId}`);
+      if (currentState?.pendingRequests) {
+        const matchingReqs = currentState.pendingRequests.filter(
+          (r) =>
+            r.type === 'contract_submission' &&
+            r.status === 'pending' &&
+            (r.contractSubmissionData?.claimId === action.claimId ||
+              (r.studentId === action.studentId &&
+                r.contractSubmissionData?.contractId === action.contractId))
+        );
+        for (const req of matchingReqs) {
+          await supabase.from('atm_student_actions').delete().eq('id', `act_${req.id}`);
+        }
+      }
       await supabase.from('atm_student_actions').delete().eq('id', action.id);
     }
 

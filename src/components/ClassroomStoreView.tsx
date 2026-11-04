@@ -35,7 +35,13 @@ import {
   Globe,
   Building2,
 } from 'lucide-react';
-import { Student, StoreItem, StorePurchaseTransaction, Classroom } from '../types';
+import {
+  Student,
+  StoreItem,
+  StorePurchaseTransaction,
+  Classroom,
+  StoreRedemptionAllocation,
+} from '../types';
 import { StoreItemVisual } from './StoreItemVisual';
 import {
   calculateEffectiveItemPrice,
@@ -43,6 +49,11 @@ import {
   resetDefaultStoreItems
 } from '../data/storeCatalog';
 import { getCreditTier } from '../utils/creditCalculator';
+import {
+  StoreRedemptionConfigModal,
+  getStoreRedemptionRequirement,
+  formatStoreAllocationsSummary,
+} from './StoreRedemptionConfigModal';
 
 interface ClassroomStoreViewProps {
   students: Student[];
@@ -57,11 +68,17 @@ interface ClassroomStoreViewProps {
     amount: number,
     item: StoreItem,
     finalPrice: number,
-    quantity?: number
+    quantity?: number,
+    allocations?: StoreRedemptionAllocation[]
   ) => void;
   onCheckoutCart?: (
     studentId: string,
-    cartItems: { item: StoreItem; quantity: number; effectiveUnitPrice: number }[]
+    cartItems: {
+      item: StoreItem;
+      quantity: number;
+      effectiveUnitPrice: number;
+      allocations?: StoreRedemptionAllocation[];
+    }[]
   ) => void;
   onCustomDeduction?: (studentId: string, amount: number, note: string) => void;
   isTeacher?: boolean;
@@ -124,6 +141,14 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
 
   // Multi-item Shopping Cart state
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [cartAllocations, setCartAllocations] = useState<
+    Record<string, StoreRedemptionAllocation[]>
+  >({});
+  const [pendingRedemptionConfig, setPendingRedemptionConfig] = useState<{
+    item: StoreItem;
+    quantity: number;
+    actionType: 'cart' | 'instant';
+  } | null>(null);
   const [settlementTab, setSettlementTab] = useState<'single' | 'cart'>('single');
 
   // Unified Add / Edit Modal state
@@ -200,10 +225,11 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
           quantity,
           effectiveUnitPrice,
           subtotal: effectiveUnitPrice * quantity,
+          allocations: cartAllocations[itemId],
         };
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
-  }, [cart, storeCatalog]);
+  }, [cart, storeCatalog, cartAllocations]);
 
   const totalCartCount = useMemo(() => {
     return cartItemsList.reduce((sum, item) => sum + item.quantity, 0);
@@ -217,15 +243,21 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
 
   // Cart operations
   const handleAddToCart = (item: StoreItem, qtyToAdd: number = 1) => {
-    setCart((prev) => {
-      const currentInCart = prev[item.id] || 0;
-      const maxAvailable = item.unlimitedStock ? 9999 : item.stock;
-      const targetQty = Math.min(maxAvailable, currentInCart + qtyToAdd);
-      return {
-        ...prev,
-        [item.id]: targetQty,
-      };
-    });
+    const currentInCart = cart[item.id] || 0;
+    const maxAvailable = item.unlimitedStock ? 9999 : item.stock;
+    const targetQty = Math.min(maxAvailable, currentInCart + qtyToAdd);
+    if (getStoreRedemptionRequirement(item)) {
+      setPendingRedemptionConfig({
+        item,
+        quantity: targetQty,
+        actionType: 'cart',
+      });
+      return;
+    }
+    setCart((prev) => ({
+      ...prev,
+      [item.id]: targetQty,
+    }));
   };
 
   const handleUpdateCartItemQty = (itemId: string, newQty: number) => {
@@ -237,6 +269,14 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
     }
     const maxAvailable = item.unlimitedStock ? 9999 : item.stock;
     const clampedQty = Math.min(maxAvailable, newQty);
+    if (getStoreRedemptionRequirement(item)) {
+      setPendingRedemptionConfig({
+        item,
+        quantity: clampedQty,
+        actionType: 'cart',
+      });
+      return;
+    }
     setCart((prev) => ({
       ...prev,
       [itemId]: clampedQty,
@@ -249,10 +289,16 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       delete updated[itemId];
       return updated;
     });
+    setCartAllocations((prev) => {
+      const updated = { ...prev };
+      delete updated[itemId];
+      return updated;
+    });
   };
 
   const handleClearCart = () => {
     setCart({});
+    setCartAllocations({});
   };
 
   // Filtered students for shopper picker modal
@@ -424,6 +470,15 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
       return;
     }
 
+    if (getStoreRedemptionRequirement(activeSelectedItem)) {
+      setPendingRedemptionConfig({
+        item: activeSelectedItem,
+        quantity: singleQty,
+        actionType: 'instant',
+      });
+      return;
+    }
+
     onPurchaseItem(
       currentStudent.id,
       singleTotalCost,
@@ -450,10 +505,12 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
           item: c.item,
           quantity: c.quantity,
           effectiveUnitPrice: c.effectiveUnitPrice,
+          allocations: c.allocations,
         }))
       );
     }
     setCart({});
+    setCartAllocations({});
   };
 
   const getInitials = (name?: string) => {
@@ -467,6 +524,38 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
 
   return (
     <div className="w-full space-y-6">
+      {pendingRedemptionConfig && (
+        <StoreRedemptionConfigModal
+          item={pendingRedemptionConfig.item}
+          quantity={pendingRedemptionConfig.quantity}
+          initialAllocations={cartAllocations[pendingRedemptionConfig.item.id]}
+          onClose={() => setPendingRedemptionConfig(null)}
+          onConfirm={(allocations, qty) => {
+            if (pendingRedemptionConfig.actionType === 'cart') {
+              setCart((prev) => ({
+                ...prev,
+                [pendingRedemptionConfig.item.id]: qty,
+              }));
+              setCartAllocations((prev) => ({
+                ...prev,
+                [pendingRedemptionConfig.item.id]: allocations,
+              }));
+            } else if (currentStudent) {
+              const unitPrice = calculateEffectiveItemPrice(pendingRedemptionConfig.item);
+              onPurchaseItem(
+                currentStudent.id,
+                unitPrice * qty,
+                pendingRedemptionConfig.item,
+                unitPrice,
+                qty,
+                allocations
+              );
+              setSingleQty(1);
+            }
+            setPendingRedemptionConfig(null);
+          }}
+        />
+      )}
       {/* ======================================================== */}
       {/* 1. TOP AMBIENT GLASS HEADER: STUDENT HUD & STORE CONTROLS */}
       {/* ======================================================== */}
@@ -1177,6 +1266,24 @@ export const ClassroomStoreView: React.FC<ClassroomStoreViewProps> = ({
                               <div className="text-[10px] text-on-surface-variant font-mono">
                                 E$ {c.effectiveUnitPrice} ea
                               </div>
+                              {c.allocations && c.allocations.length > 0 && (
+                                <div className="mt-0.5 text-[9px] font-mono text-primary-container truncate max-w-[140px]">
+                                  📋 {formatStoreAllocationsSummary(c.allocations)}
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setPendingRedemptionConfig({
+                                        item: c.item,
+                                        quantity: c.quantity,
+                                        actionType: 'cart',
+                                      })
+                                    }
+                                    className="ml-1.5 underline hover:text-on-surface cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
 

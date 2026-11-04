@@ -689,8 +689,8 @@ html.light [data-credit-card-canvas] * {
 /* Print styles for classroom credit card didactic cutouts */
 @media print {
   @page {
-    size: auto;
-    margin: 8mm;
+    size: A4 portrait;
+    margin: 5mm;
   }
 
   *,
@@ -727,5 +727,52 @@ html.light [data-credit-card-canvas] * {
 
   .print-only {
     display: block !important;
+  }
+
+  .print-grid-ultra {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 2mm !important;
+  }
+
+  .print-grid-ultra .credit-card-surface {
+    max-width: 63mm !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .print-grid-compact {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 2mm !important;
+  }
+
+  .print-grid-compact .credit-card-surface {
+    max-width: 82mm !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .print-grid-standard {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5mm !important;
+  }
+
+  .print-grid-foldable {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 2mm !important;
+  }
+
+  .print-grid-foldable .credit-card-surface {
+    max-width: 82mm !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .printable-card-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 }

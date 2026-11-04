@@ -14,9 +14,14 @@ import {
   TrendingUp,
   Package
 } from 'lucide-react';
-import { Student, StoreItem } from '../types';
+import { Student, StoreItem, StoreRedemptionAllocation } from '../types';
 import { StoreItemVisual } from './StoreItemVisual';
 import { calculateEffectiveItemPrice, DEFAULT_STORE_ITEMS } from '../data/storeCatalog';
+import {
+  StoreRedemptionConfigModal,
+  getStoreRedemptionRequirement,
+  formatStoreAllocationsSummary,
+} from './StoreRedemptionConfigModal';
 
 interface StorePurchaseModalProps {
   isOpen: boolean;
@@ -31,6 +36,7 @@ interface StorePurchaseModalProps {
       itemName: string;
       originalPrice: number;
       discountPercent: number;
+      allocations?: StoreRedemptionAllocation[];
     }
   ) => void;
   storeCatalog?: StoreItem[];
@@ -50,6 +56,9 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
   const [customNote, setCustomNote] = useState<string>('Classroom Store Purchase');
   const [mode, setMode] = useState<'catalog' | 'custom' | 'manage'>('catalog');
   const [error, setError] = useState<string | null>(null);
+  const [configuringRedemptionItem, setConfiguringRedemptionItem] = useState<StoreItem | null>(
+    null
+  );
 
   if (!isOpen) return null;
 
@@ -116,6 +125,11 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
         return;
       }
 
+      if (getStoreRedemptionRequirement(selectedItem)) {
+        setConfiguringRedemptionItem(selectedItem);
+        return;
+      }
+
       onConfirmDeduction(
         student.id,
         deductionAmount,
@@ -140,6 +154,30 @@ export const StorePurchaseModal: React.FC<StorePurchaseModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
+      {configuringRedemptionItem && (
+        <StoreRedemptionConfigModal
+          item={configuringRedemptionItem}
+          quantity={1}
+          onClose={() => setConfiguringRedemptionItem(null)}
+          onConfirm={(allocations) => {
+            const summary = formatStoreAllocationsSummary(allocations);
+            onConfirmDeduction(
+              student.id,
+              deductionAmount,
+              summary ? `${configuringRedemptionItem.name} (${summary})` : configuringRedemptionItem.name,
+              {
+                itemId: configuringRedemptionItem.id,
+                itemName: configuringRedemptionItem.name,
+                originalPrice: configuringRedemptionItem.basePrice,
+                discountPercent: configuringRedemptionItem.discountPercent,
+                allocations,
+              }
+            );
+            setConfiguringRedemptionItem(null);
+            onClose();
+          }}
+        />
+      )}
       <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col text-slate-100 animate-in fade-in zoom-in-95 duration-200 my-auto max-h-[92vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 shrink-0">

@@ -7,13 +7,12 @@ import {
   Sun,
   Moon,
   Sparkles,
-  ShieldCheck,
-  Search,
   Printer,
   ShoppingBag,
   LayoutDashboard,
   Bell,
   Globe,
+  ScrollText,
 } from 'lucide-react';
 import { Student, TeacherSettings } from '../types';
 import { StudentSelectorNav } from './StudentSelectorNav';
@@ -100,6 +99,11 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       title: 'Teacher Hub & Classroom Ledger',
       subtitle: settings.classroomTitle || 'ESL Financial Literacy & Micro-Banking',
     },
+    contracts: {
+      badge: 'LIMITED NOTEBOOK BOUNTY BOARD',
+      title: 'Contracts & Classroom Events Wall',
+      subtitle: 'Create limited-stock English notebook contracts and verify student photo submissions',
+    },
     student: {
       badge: 'VIRTUAL INSTRUMENT PORTAL',
       title: 'Student SmartPass & Credit Telemetry',
@@ -183,6 +187,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             >
               <LayoutDashboard className="w-3 h-3" />
               <span>Hub</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectView('contracts')}
+              className={`px-3 py-1 rounded-full text-[11px] font-headline font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'contracts'
+                  ? 'bg-amber-400 text-black shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <ScrollText className="w-3 h-3" />
+              <span>Contracts</span>
             </button>
             <button
               type="button"

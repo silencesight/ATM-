@@ -60,6 +60,43 @@ export interface BalanceDisclaimerNotice {
   acknowledgedAt?: string;
 }
 
+export interface StoreRedemptionAllocation {
+  targetName: string; // Homework or Lesson name
+  targetDate: string; // YYYY-MM-DD
+  pointsAllocated?: number; // e.g., 1, 2, or 3
+}
+
+export interface ContractClaim {
+  id: string;
+  contractId: string;
+  studentId: string;
+  studentName: string;
+  classId?: string;
+  className?: string;
+  status: 'reserved' | 'pending_approval' | 'approved' | 'rejected';
+  reservedAt: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  notebookPhotoDataUrl?: string;
+  studentNotes?: string;
+  teacherFeedback?: string;
+}
+
+export interface ClassroomContract {
+  id: string;
+  title: string;
+  instructions: string;
+  rewardAmount: number;
+  creditScoreBonus: number;
+  totalStock: number;
+  spotsRemaining: number;
+  classroomId?: string; // 'all' or specific classId
+  deadline?: string;
+  createdAt: string;
+  isActive: boolean;
+  claims: ContractClaim[];
+}
+
 export interface P2PTransferRecord {
   id: string;
   direction: 'sent' | 'received';
@@ -69,13 +106,17 @@ export interface P2PTransferRecord {
   amount: number;
   message: string;
   timestamp: string;
+  isPostalCard?: boolean;
+  quickReply?: string;
+  repliedAt?: string;
 }
 
 export type PendingRequestType =
   | 'loan_request'
   | 'loan_payment'
   | 'store_purchase'
-  | 'p2p_transfer';
+  | 'p2p_transfer'
+  | 'contract_submission';
 
 export interface PendingStudentRequest {
   id: string;
@@ -116,6 +157,7 @@ export interface PendingStudentRequest {
       unitPrice: number;
       originalPrice: number;
       discountPercent: number;
+      allocations?: StoreRedemptionAllocation[];
     }[];
     totalPrice: number;
   };
@@ -126,6 +168,16 @@ export interface PendingStudentRequest {
     recipientClassName?: string;
     amount: number;
     message: string;
+  };
+
+  contractSubmissionData?: {
+    contractId: string;
+    claimId: string;
+    contractTitle: string;
+    rewardAmount: number;
+    creditScoreBonus: number;
+    notebookPhotoDataUrl: string;
+    studentNotes?: string;
   };
 }
 
@@ -147,6 +199,7 @@ export interface Loan {
   submissions: EnglishSubmission[];
   notes?: string;
   paidAt?: string;
+  principalDisbursed?: boolean; // false when opened; becomes true when work is approved & principal is paid to student
 }
 
 export interface EnglishRewardTransaction {
@@ -293,6 +346,7 @@ export interface StorePurchaseTransaction {
   quantity?: number;
   creditScoreBonusAwarded: number; // e.g. +5 pts
   timestamp: string;
+  allocations?: StoreRedemptionAllocation[];
 }
 
 export interface TeacherSettings {
