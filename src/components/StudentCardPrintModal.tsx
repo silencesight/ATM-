@@ -327,50 +327,66 @@ export const StudentCardPrintModal: React.FC<StudentCardPrintModalProps> = ({
           <div
             style={{
               border: '1.5px dashed #475569',
-              borderRadius: '12px',
-              padding: '5mm',
+              borderRadius: '8px',
+              padding: '3mm',
               backgroundColor: '#ffffff',
               position: 'relative',
               pageBreakInside: 'avoid',
               breakInside: 'avoid',
+              maxWidth: '175mm',
+              margin: '0 auto',
             }}
           >
             {/* Cut Guide Label */}
             <div
               style={{
-                fontSize: '8pt',
+                fontSize: '7pt',
                 fontWeight: 700,
                 color: '#64748b',
-                marginBottom: '4mm',
+                marginBottom: '2mm',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 borderBottom: '1px dashed #cbd5e1',
-                paddingBottom: '2mm',
+                paddingBottom: '1mm',
               }}
             >
               <span>✂ CUT ALONG OUTER DASHED RECTANGLE</span>
-              <span>STANDARD ID-1 SMARTPASS WALLET SIZE</span>
+              <span>STANDARD ID-1 SMARTPASS WALLET SIZE (85.6mm × 53.98mm)</span>
             </div>
 
             {cardSide === 'both' ? (
               <div
+                className="student-card-print-grid"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '5mm',
-                  alignItems: 'center',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'stretch',
+                  width: '100%',
+                  maxWidth: '171.2mm',
+                  margin: '0 auto',
+                  boxSizing: 'border-box',
                 }}
               >
                 {/* Front Side */}
-                <div>
+                <div
+                  className="student-card-print-cell"
+                  style={{
+                    width: '85.6mm',
+                    minWidth: '85.6mm',
+                    maxWidth: '85.6mm',
+                    boxSizing: 'border-box',
+                    paddingRight: '1.5mm',
+                  }}
+                >
                   <div
                     style={{
-                      fontSize: '7.5pt',
+                      fontSize: '7pt',
                       fontWeight: 800,
                       textTransform: 'uppercase',
                       color: '#0f172a',
-                      marginBottom: '1.5mm',
+                      marginBottom: '1mm',
                     }}
                   >
                     Front Side
@@ -379,8 +395,8 @@ export const StudentCardPrintModal: React.FC<StudentCardPrintModalProps> = ({
                     student={student}
                     settings={settings}
                     interactive={false}
-                    compact={printDensity !== 'standard'}
-                    printDensity={printDensity}
+                    compact={true}
+                    printDensity="compact"
                     hideMetricsRail={true}
                     forceSide="front"
                   />
@@ -388,18 +404,23 @@ export const StudentCardPrintModal: React.FC<StudentCardPrintModalProps> = ({
 
                 {/* Back Side with Fold Center Line */}
                 <div
+                  className="student-card-print-cell"
                   style={{
+                    width: '85.6mm',
+                    minWidth: '85.6mm',
+                    maxWidth: '85.6mm',
+                    boxSizing: 'border-box',
                     borderLeft: '1.5px dashed #475569',
-                    paddingLeft: '5mm',
+                    paddingLeft: '1.5mm',
                   }}
                 >
                   <div
                     style={{
-                      fontSize: '7.5pt',
+                      fontSize: '7pt',
                       fontWeight: 800,
                       textTransform: 'uppercase',
                       color: '#0f172a',
-                      marginBottom: '1.5mm',
+                      marginBottom: '1mm',
                       display: 'flex',
                       justifyContent: 'space-between',
                     }}
@@ -411,21 +432,29 @@ export const StudentCardPrintModal: React.FC<StudentCardPrintModalProps> = ({
                     student={student}
                     settings={settings}
                     interactive={false}
-                    compact={printDensity !== 'standard'}
-                    printDensity={printDensity}
+                    compact={true}
+                    printDensity="compact"
                     hideMetricsRail={true}
                     forceSide="back"
                   />
                 </div>
               </div>
             ) : (
-              <div style={{ maxWidth: '95mm', margin: '0 auto' }}>
+              <div
+                style={{
+                  width: '85.6mm',
+                  minWidth: '85.6mm',
+                  maxWidth: '85.6mm',
+                  margin: '0 auto',
+                  boxSizing: 'border-box',
+                }}
+              >
                 <CreditCardVisual
                   student={student}
                   settings={settings}
                   interactive={false}
-                  compact={printDensity !== 'standard'}
-                  printDensity={printDensity}
+                  compact={true}
+                  printDensity="compact"
                   hideMetricsRail={true}
                   forceSide={cardSide}
                 />
