@@ -434,7 +434,7 @@ export const ContractsWallView: React.FC<ContractsWallViewProps> = ({
                         <select
                           value={faceToFaceStudentId}
                           onChange={(e) => setFaceToFaceStudentId(e.target.value)}
-                          className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white"
+                          className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white"
                         >
                           <option value="">Select student presenting notebook in person...</option>
                           {students
@@ -529,7 +529,7 @@ export const ContractsWallView: React.FC<ContractsWallViewProps> = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Write 10 Sentences Using Phrasal Verbs in Your Notebook"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
                   required
                 />
               </div>
@@ -543,7 +543,7 @@ export const ContractsWallView: React.FC<ContractsWallViewProps> = ({
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
                   placeholder="e.g., Write 10 original sentences in your English notebook using unit vocabulary, underline the verbs in color, and take a clear photo of your page."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
                   required
                 />
               </div>
@@ -604,7 +604,7 @@ export const ContractsWallView: React.FC<ContractsWallViewProps> = ({
                   <select
                     value={classroomId}
                     onChange={(e) => setClassroomId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-white"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white"
                   >
                     <option value="all">All Classrooms (Universal)</option>
                     {classrooms.map((c) => (
@@ -623,7 +623,7 @@ export const ContractsWallView: React.FC<ContractsWallViewProps> = ({
                     type="date"
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white"
                   />
                 </div>
               </div>

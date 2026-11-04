@@ -12,16 +12,36 @@ import {
 } from 'lucide-react';
 
 interface StudentPasswordModalProps {
-  student: Student;
-  onChangePassword: (studentId: string, newPassword: string | undefined) => void;
+  isOpen?: boolean;
+  student: Student | null;
+  onChangePassword?: (studentId: string, newPassword: string | undefined) => void;
+  onSavePassword?: (studentId: string, newPassword: string | undefined) => void;
   onClose: () => void;
 }
 
 export const StudentPasswordModal: React.FC<StudentPasswordModalProps> = ({
+  isOpen = true,
   student,
   onChangePassword,
+  onSavePassword,
   onClose,
 }) => {
+  if (!isOpen || !student) return null;
+
+  return (
+    <StudentPasswordModalInner
+      student={student}
+      onChangePassword={onChangePassword || onSavePassword || (() => {})}
+      onClose={onClose}
+    />
+  );
+};
+
+const StudentPasswordModalInner: React.FC<{
+  student: Student;
+  onChangePassword: (studentId: string, newPassword: string | undefined) => void;
+  onClose: () => void;
+}> = ({ student, onChangePassword, onClose }) => {
   const [newPassword, setNewPassword] = useState(student.customPassword || '');
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -166,7 +186,7 @@ export const StudentPasswordModal: React.FC<StudentPasswordModalProps> = ({
                   setSavedNotice(null);
                 }}
                 placeholder={`Enter new password or leave blank for CVV (${student.cvv})`}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-mono text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
               />
               <p className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />

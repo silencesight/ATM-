@@ -1862,22 +1862,22 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         </div>
       )}
 
-      <StudentPasswordModal
-        isOpen={Boolean(studentForPasswordModal)}
-        onClose={() => setStudentForPasswordModal(null)}
-        student={
-          studentForPasswordModal
-            ? students.find((s) => s.id === studentForPasswordModal.id) || studentForPasswordModal
-            : null
-        }
-        onSavePassword={(studentId, newPassword) => {
-          if (onChangeStudentPassword) {
-            onChangeStudentPassword(studentId, newPassword);
-          } else if (newPassword === undefined && onResetStudentPassword) {
-            onResetStudentPassword(studentId);
+      {studentForPasswordModal && (
+        <StudentPasswordModal
+          isOpen={Boolean(studentForPasswordModal)}
+          onClose={() => setStudentForPasswordModal(null)}
+          student={
+            students.find((s) => s.id === studentForPasswordModal.id) || studentForPasswordModal
           }
-        }}
-      />
+          onSavePassword={(studentId, newPassword) => {
+            if (onChangeStudentPassword) {
+              onChangeStudentPassword(studentId, newPassword);
+            } else if (newPassword === undefined && onResetStudentPassword) {
+              onResetStudentPassword(studentId);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

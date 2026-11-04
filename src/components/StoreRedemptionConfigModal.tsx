@@ -25,10 +25,7 @@ export function getStoreRedemptionRequirement(
   const lowerName = (item.name || '').toLowerCase();
   const lowerSub = (item.subtitle || '').toLowerCase();
 
-  if (item.iconType === 'skip-lesson' || item.iconType === 'half-lesson') {
-    return null;
-  }
-
+  // 1. Skip Homework
   if (
     item.iconType === 'skip-hw' ||
     lowerName.includes('skip homework') ||
@@ -38,11 +35,26 @@ export function getStoreRedemptionRequirement(
     return { mode: 'skip', targetLabel: 'Homework', pointsPerUnit: 0 };
   }
 
+  // 2. Skip Lessons (including Half Lesson)
+  if (
+    item.iconType === 'skip-lesson' ||
+    item.iconType === 'half-lesson' ||
+    lowerName.includes('skip lesson') ||
+    lowerName.includes('half lesson') ||
+    (lowerName.includes('skip') && lowerName.includes('lesson')) ||
+    (lowerName.includes('half') && lowerName.includes('lesson'))
+  ) {
+    return { mode: 'skip', targetLabel: 'Lesson', pointsPerUnit: 0 };
+  }
+
+  // 3. Extra Points (Homework or Lesson)
   if (
     item.iconType === 'extra-points-hw' ||
     item.iconType === 'extra-points-lss' ||
     lowerName.includes('extra point') ||
-    lowerName.includes('points in')
+    lowerName.includes('points in') ||
+    lowerName.includes('bonus point') ||
+    (lowerName.includes('point') && (lowerName.includes('lesson') || lowerName.includes('hw') || lowerName.includes('homework')))
   ) {
     const numMatch = (item.name || '').match(/(\d+)/);
     const pointsPerUnit = numMatch ? Math.max(1, parseInt(numMatch[1], 10)) : 3;
@@ -188,6 +200,31 @@ export const StoreRedemptionConfigModal: React.FC<StoreRedemptionConfigModalProp
       }));
       setAllocations(nextRows);
     }
+  };
+
+  const handleQuickSplit = (targetCount: number) => {
+    const count = Math.max(1, Math.min(targetCount, totalPointsToAllocate));
+    setError(null);
+    if (count === 1) {
+      setSplitMode('single');
+      setAllocations([
+        {
+          targetName: allocations[0]?.targetName || '',
+          targetDate: allocations[0]?.targetDate || todayStr,
+          pointsAllocated: totalPointsToAllocate,
+        },
+      ]);
+      return;
+    }
+    setSplitMode('split');
+    const basePts = Math.floor(totalPointsToAllocate / count);
+    const remainder = totalPointsToAllocate % count;
+    const nextRows: StoreRedemptionAllocation[] = Array.from({ length: count }, (_, idx) => ({
+      targetName: allocations[idx]?.targetName || '',
+      targetDate: allocations[idx]?.targetDate || todayStr,
+      pointsAllocated: basePts + (idx === 0 ? remainder : 0),
+    }));
+    setAllocations(nextRows);
   };
 
   const handleUpdateRow = (index: number, patch: Partial<StoreRedemptionAllocation>) => {
@@ -355,6 +392,36 @@ export const StoreRedemptionConfigModal: React.FC<StoreRedemptionConfigModalProp
                     </p>
                   </div>
                 </button>
+              </div>
+
+              {/* Quick Split Buttons 1, 2, 3, 4 */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Quick Split ({requirement.targetLabel}s):
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 4]
+                    .filter((n) => n <= totalPointsToAllocate)
+                    .map((num) => {
+                      const isActive =
+                        (num === 1 && splitMode === 'single') ||
+                        (splitMode === 'split' && allocations.length === num);
+                      return (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => handleQuickSplit(num)}
+                          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-mono font-bold border transition-all ${
+                            isActive
+                              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 border-indigo-400 text-white shadow-md shadow-indigo-600/30'
+                              : 'bg-slate-900 border-slate-700/80 text-slate-300 hover:bg-slate-800'
+                          }`}
+                        >
+                          {num} {num === 1 ? requirement.targetLabel : `${requirement.targetLabel}s`}
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
             </div>
           )}

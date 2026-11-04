@@ -144,7 +144,15 @@ export default function App() {
   const [loans, setLoans] = useState<Loan[]>(() => {
     try {
       const saved = localStorage.getItem('esl_classroom_loans');
-      return saved ? JSON.parse(saved) : INITIAL_LOANS;
+      const loaded: Loan[] = saved ? JSON.parse(saved) : INITIAL_LOANS;
+      return loaded.map((loan) => ({
+        ...loan,
+        submissions: (loan.submissions || []).map((sub) =>
+          sub.status === 'approved' && sub.notebookPhotoDataUrl
+            ? { ...sub, notebookPhotoDataUrl: '' }
+            : sub
+        ),
+      }));
     } catch {
       return INITIAL_LOANS;
     }
@@ -190,7 +198,21 @@ export default function App() {
   const [pendingRequests, setPendingRequests] = useState<PendingStudentRequest[]>(() => {
     try {
       const saved = localStorage.getItem('esl_classroom_pending_requests');
-      return saved ? JSON.parse(saved) : [];
+      const loaded: PendingStudentRequest[] = saved ? JSON.parse(saved) : [];
+      return loaded.map((req) => {
+        if (req.status !== 'pending') {
+          return {
+            ...req,
+            loanPaymentData: req.loanPaymentData
+              ? { ...req.loanPaymentData, notebookPhotoDataUrl: '' }
+              : undefined,
+            contractSubmissionData: req.contractSubmissionData
+              ? { ...req.contractSubmissionData, notebookPhotoDataUrl: '' }
+              : undefined,
+          };
+        }
+        return req;
+      });
     } catch {
       return [];
     }
@@ -199,7 +221,15 @@ export default function App() {
   const [contracts, setContracts] = useState<ClassroomContract[]>(() => {
     try {
       const saved = localStorage.getItem('esl_classroom_contracts_v1');
-      return saved ? JSON.parse(saved) : INITIAL_CONTRACTS;
+      const loaded: ClassroomContract[] = saved ? JSON.parse(saved) : INITIAL_CONTRACTS;
+      return loaded.map((contract) => ({
+        ...contract,
+        claims: (contract.claims || []).map((claim) =>
+          claim.status === 'approved' && claim.notebookPhotoDataUrl
+            ? { ...claim, notebookPhotoDataUrl: '' }
+            : claim
+        ),
+      }));
     } catch {
       return INITIAL_CONTRACTS;
     }
@@ -1756,7 +1786,7 @@ export default function App() {
           principalDisbursed: isFullyPaid ? true : l.principalDisbursed,
           submissions: l.submissions.map((s) =>
             s.id === submissionId
-              ? { ...s, status: 'approved', reviewedAt: new Date().toISOString() }
+              ? { ...s, status: 'approved', reviewedAt: new Date().toISOString(), notebookPhotoDataUrl: '' }
               : s
           ),
         };
@@ -1848,7 +1878,7 @@ export default function App() {
         return {
           ...l,
           submissions: l.submissions.map((s) =>
-            s.id === submissionId ? { ...s, status: 'rejected' } : s
+            s.id === submissionId ? { ...s, status: 'rejected', notebookPhotoDataUrl: '' } : s
           ),
         };
       })
@@ -2180,6 +2210,7 @@ export default function App() {
                   status: 'approved',
                   reviewedAt: nowIso,
                   teacherFeedback: teacherFeedback || 'Approved by Teacher',
+                  notebookPhotoDataUrl: '',
                 }
               : cl
           ),
@@ -2303,6 +2334,7 @@ export default function App() {
                   teacherFeedback:
                     teacherFeedback ||
                     'Please revise your notebook work and upload a new photo',
+                  notebookPhotoDataUrl: '',
                 }
               : cl
           ),
@@ -2550,7 +2582,7 @@ export default function App() {
           status: 'approved',
           teacherFeedback: teacherNote,
           reviewedAt: nowIso,
-          notebookPhotoDataUrl: payData.notebookPhotoDataUrl,
+          notebookPhotoDataUrl: '',
           studentNotes: payData.studentNotes,
         };
 
@@ -2838,6 +2870,9 @@ export default function App() {
               loanPaymentData: r.loanPaymentData
                 ? { ...r.loanPaymentData, notebookPhotoDataUrl: '' }
                 : undefined,
+              contractSubmissionData: r.contractSubmissionData
+                ? { ...r.contractSubmissionData, notebookPhotoDataUrl: '' }
+                : undefined,
             }
           : r
       )
@@ -2887,6 +2922,9 @@ export default function App() {
               teacherNote: teacherNote || 'Declined by Teacher',
               loanPaymentData: r.loanPaymentData
                 ? { ...r.loanPaymentData, notebookPhotoDataUrl: '' }
+                : undefined,
+              contractSubmissionData: r.contractSubmissionData
+                ? { ...r.contractSubmissionData, notebookPhotoDataUrl: '' }
                 : undefined,
             }
           : r

@@ -111,6 +111,16 @@ export interface P2PTransferRecord {
   repliedAt?: string;
 }
 
+export type LoanRepaymentMethod = 'sentences' | 'words' | 'phrasal_verbs';
+
+export interface LoanRepaymentRequirement {
+  method: LoanRepaymentMethod;
+  methodLabel: string; // "Sentences" | "New Words" | "Phrasal Verbs"
+  unitValue: number; // e.g. 25, 5, 50
+  requiredCount: number; // e.g. Math.ceil(totalDue / unitValue)
+  totalCreditValue: number; // requiredCount * unitValue
+}
+
 export type PendingRequestType =
   | 'loan_request'
   | 'loan_payment'
@@ -140,6 +150,10 @@ export interface PendingStudentRequest {
 
   loanPaymentData?: {
     loanId: string;
+    repaymentMethod?: LoanRepaymentMethod;
+    repaymentMethodLabel?: string;
+    requiredCount?: number;
+    unitValue?: number;
     sentencesCount: number;
     wordsCount: number;
     phrasalVerbsCount: number;
@@ -200,6 +214,8 @@ export interface Loan {
   notes?: string;
   paidAt?: string;
   principalDisbursed?: boolean; // false when opened; becomes true when work is approved & principal is paid to student
+  repaymentMethod?: LoanRepaymentMethod; // Non-changeable chosen payment method
+  repaymentRequirement?: LoanRepaymentRequirement; // Calculated non-changeable requirement details
 }
 
 export interface EnglishRewardTransaction {

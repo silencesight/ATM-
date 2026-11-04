@@ -807,12 +807,49 @@ function formatSupabaseError(error: { code?: string; message?: string; details?:
 /**
  * Push full authoritative state from ATM 4.0 Teacher App to Supabase & Local BroadcastChannel.
  */
+export function sanitizeClassroomStateForStorage(state: CloudClassroomState): CloudClassroomState {
+  return {
+    ...state,
+    loans: (state.loans || []).map((l) => ({
+      ...l,
+      submissions: (l.submissions || []).map((s) =>
+        s.status === 'approved' && s.notebookPhotoDataUrl
+          ? { ...s, notebookPhotoDataUrl: '' }
+          : s
+      ),
+    })),
+    contracts: (state.contracts || []).map((c) => ({
+      ...c,
+      claims: (c.claims || []).map((cl) =>
+        (cl.status === 'approved' || cl.status === 'rejected') && cl.notebookPhotoDataUrl
+          ? { ...cl, notebookPhotoDataUrl: '' }
+          : cl
+      ),
+    })),
+    pendingRequests: (state.pendingRequests || []).map((r) => {
+      if (r.status !== 'pending') {
+        return {
+          ...r,
+          loanPaymentData: r.loanPaymentData
+            ? { ...r.loanPaymentData, notebookPhotoDataUrl: '' }
+            : undefined,
+          contractSubmissionData: r.contractSubmissionData
+            ? { ...r.contractSubmissionData, notebookPhotoDataUrl: '' }
+            : undefined,
+        };
+      }
+      return r;
+    }),
+  };
+}
+
 export async function pushClassroomStateToCloud(
-  state: CloudClassroomState,
+  rawState: CloudClassroomState,
   dbUrl?: string,
   supabaseKey?: string,
   options?: { force?: boolean }
 ): Promise<{ ok: boolean; error?: string }> {
+  const state = sanitizeClassroomStateForStorage(rawState);
   // 1. Broadcast locally across browser windows/tabs (0ms on same PC)
   try {
     const bc = new BroadcastChannel(BROADCAST_CHANNEL_NAME);

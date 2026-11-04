@@ -282,13 +282,18 @@ export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
                       style={{ width: `${percentPaid}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant flex-wrap gap-1">
                     <span>
                       {percentPaid}% Repaid (E$ {loan.amountRepaid} / E$ {loan.totalDue})
                     </span>
-                    <span>
+                    <div className="flex items-center gap-2">
+                      {loan.repaymentRequirement && (
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-400/30 text-[10px] text-indigo-300">
+                          🔒 {loan.repaymentRequirement.requiredCount} {loan.repaymentRequirement.methodLabel}
+                        </span>
+                      )}
                       {loan.delaysCount > 0 && (
-                        <span className="text-amber-400 mr-2">
+                        <span className="text-amber-400">
                           ⚠️ {loan.delaysCount} delay penalty
                         </span>
                       )}
@@ -298,7 +303,7 @@ export const StudentLoansLedger: React.FC<StudentLoansLedgerProps> = ({
                           {totalSubmissions === 1 ? 'record' : 'records'}
                         </span>
                       )}
-                    </span>
+                    </div>
                   </div>
                 </div>
 

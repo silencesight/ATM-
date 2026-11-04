@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
   ScrollText,
   Calendar,
+  ShieldCheck,
 } from 'lucide-react';
 import { PendingStudentRequest, Student, TeacherSettings } from '../types';
 import { StudentAvatar } from './StudentAvatar';
@@ -236,29 +237,50 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                         {/* Request Specific Details */}
                         {req.type === 'loan_payment' && req.loanPaymentData && (
                           <div className="space-y-3 pt-1">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold">
-                              <BookOpen className="w-3.5 h-3.5" />
-                              Notebook Loan Payment • Credit Value: E$
-                              {req.loanPaymentData.totalCreditValue}.00 (Disburses Loan Money on Approval!)
+                            {/* Chosen Way of Payment Banner (Non-Changeable) */}
+                            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-purple-950/90 border-2 border-indigo-500/50 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-mono font-black uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                                  <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                                  Chosen Way of Payment (Non-Changeable):
+                                </span>
+                                <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-indigo-500 text-white shadow-md">
+                                  {req.loanPaymentData.repaymentMethodLabel ||
+                                    (req.loanPaymentData.phrasalVerbsCount > 0
+                                      ? 'Phrasal Verbs'
+                                      : req.loanPaymentData.wordsCount > 0
+                                      ? 'Vocabulary Words'
+                                      : 'English Sentences')}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-sm font-bold text-slate-200">
+                                  Verify in Notebook:
+                                </span>
+                                <span className="px-2.5 py-1 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono text-base font-black">
+                                  {req.loanPaymentData.requiredCount ||
+                                    (req.loanPaymentData.phrasalVerbsCount ||
+                                      req.loanPaymentData.wordsCount ||
+                                      req.loanPaymentData.sentencesCount)}{' '}
+                                  {req.loanPaymentData.repaymentMethodLabel ||
+                                    (req.loanPaymentData.phrasalVerbsCount > 0
+                                      ? 'Phrasal Verbs'
+                                      : req.loanPaymentData.wordsCount > 0
+                                      ? 'Vocabulary Words'
+                                      : 'Sentences')}
+                                </span>
+                                <span className="text-xs font-mono text-emerald-300 font-bold">
+                                  • Covers E${req.loanPaymentData.totalCreditValue}.00 (Disburses E$
+                                  {req.reservedAmount || req.loanPaymentData.totalCreditValue} to Student on Approval)
+                                </span>
+                              </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 text-xs font-mono">
-                              <span className="px-2.5 py-1 rounded-lg glass-panel">
-                                Sentences: <strong>{req.loanPaymentData.sentencesCount}</strong>
-                              </span>
-                              <span className="px-2.5 py-1 rounded-lg glass-panel">
-                                Words: <strong>{req.loanPaymentData.wordsCount}</strong>
-                              </span>
-                              <span className="px-2.5 py-1 rounded-lg glass-panel">
-                                Phrasal Verbs:{' '}
-                                <strong>{req.loanPaymentData.phrasalVerbsCount}</strong>
-                              </span>
-                              {req.loanPaymentData.hasDecoratedPresentation && (
-                                <span className="px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                                  ✨ Decorated Notebook Claimed
-                                </span>
-                              )}
-                            </div>
+                            {req.loanPaymentData.hasDecoratedPresentation && (
+                              <div className="px-3 py-1.5 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5" /> Decorated Notebook Presentation Claimed
+                              </div>
+                            )}
 
                             {req.loanPaymentData.studentNotes && (
                               <p className="text-xs font-mono text-on-surface-variant italic">
@@ -395,25 +417,32 @@ export const TeacherApprovalCenterModal: React.FC<TeacherApprovalCenterModalProp
                                   key={idx}
                                   className="px-3 py-2 rounded-xl glass-panel text-xs font-mono text-on-surface space-y-1"
                                 >
-                                  <div className="font-bold">
-                                    {it.itemName} × {it.quantity} (E${it.unitPrice * it.quantity})
+                                  <div className="font-bold flex items-center justify-between">
+                                    <span>{it.itemName} × {it.quantity}</span>
+                                    <span className="text-tertiary-fixed-dim font-extrabold">E${it.unitPrice * it.quantity}.00</span>
                                   </div>
                                   {it.allocations && it.allocations.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 pt-1">
-                                      {it.allocations.map((alloc, aIdx) => (
-                                        <span
-                                          key={aIdx}
-                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-400/30 text-[11px] text-indigo-200"
-                                        >
-                                          <Calendar className="w-3 h-3 text-indigo-300" />
-                                          {alloc.pointsAllocated
-                                            ? `+${alloc.pointsAllocated} pt${
-                                                alloc.pointsAllocated > 1 ? 's' : ''
-                                              }: `
-                                            : 'Skip: '}
-                                          <strong>{alloc.targetName}</strong> ({alloc.targetDate})
-                                        </span>
-                                      ))}
+                                    <div className="pt-1.5 space-y-1">
+                                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-300 block">
+                                        🎯 Target Assignment / Lesson &amp; Date (No Guessing):
+                                      </span>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {it.allocations.map((alloc, aIdx) => (
+                                          <span
+                                            key={aIdx}
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-400/40 text-xs font-mono font-bold text-indigo-200"
+                                          >
+                                            <Calendar className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+                                            {alloc.pointsAllocated ? (
+                                              <span className="text-amber-300 font-black">+{alloc.pointsAllocated} pts → </span>
+                                            ) : (
+                                              <span className="text-emerald-300 font-black">Skip Pass → </span>
+                                            )}
+                                            <span className="text-white">"{alloc.targetName}"</span>
+                                            <span className="text-indigo-300 text-[11px] font-normal">({alloc.targetDate})</span>
+                                          </span>
+                                        ))}
+                                      </div>
                                     </div>
                                   )}
                                 </div>

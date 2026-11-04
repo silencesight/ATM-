@@ -37,10 +37,13 @@ import {
   Calendar,
   Layers,
   RotateCcw,
+  Printer,
+  Scissors,
 } from 'lucide-react';
 import {
   Student,
   Loan,
+  LoanRepaymentMethod,
   StoreItem,
   Classroom,
   TeacherSettings,
@@ -66,6 +69,7 @@ import {
   getStoreRedemptionRequirement,
   formatStoreAllocationsSummary,
 } from '../StoreRedemptionConfigModal';
+import { StudentCardPrintModal } from '../StudentCardPrintModal';
 import {
   PRESET_BANK_AVATARS,
   compressImageFile,
@@ -336,24 +340,41 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
   const [loanTypeInput, setLoanTypeInput] = useState<'short' | 'big'>('short');
   const [loanDurationInput, setLoanDurationInput] = useState<number>(5);
   const [loanNotesInput, setLoanNotesInput] = useState<string>('');
+  const [selectedRepaymentMethod, setSelectedRepaymentMethod] = useState<LoanRepaymentMethod>('sentences');
+  const [activeRepaymentMethodChoice, setActiveRepaymentMethodChoice] = useState<LoanRepaymentMethod>('sentences');
 
   // Notebook Repayment state
-  const [sentencesCount, setSentencesCount] = useState<number>(2);
-  const [wordsCount, setWordsCount] = useState<number>(0);
-  const [phrasalVerbsCount, setPhrasalVerbsCount] = useState<number>(0);
   const [hasDecoratedNotebook, setHasDecoratedNotebook] = useState<boolean>(false);
   const [notebookPhotoDataUrl, setNotebookPhotoDataUrl] = useState<string>('');
   const [notebookStudentNotes, setNotebookStudentNotes] = useState<string>('');
   const [isCompressingPhoto, setIsCompressingPhoto] = useState<boolean>(false);
+  const [isPrintCardModalOpen, setIsPrintCardModalOpen] = useState<boolean>(false);
   const notebookFileInputRef = useRef<HTMLInputElement>(null);
 
-  const calculatedRepaymentCredit = useMemo(() => {
-    return (
-      sentencesCount * settings.sentenceValue +
-      wordsCount * settings.wordValue +
-      phrasalVerbsCount * settings.phrasalVerbValue
-    );
-  }, [sentencesCount, wordsCount, phrasalVerbsCount, settings]);
+  const remainingDebt = activeLoan ? Math.max(0, activeLoan.totalDue - activeLoan.amountRepaid) : 0;
+
+  const currentRepaymentMethod: LoanRepaymentMethod =
+    activeLoan?.repaymentMethod || activeRepaymentMethodChoice;
+
+  const currentRepaymentUnitValue =
+    currentRepaymentMethod === 'phrasal_verbs'
+      ? settings.phrasalVerbValue
+      : currentRepaymentMethod === 'words'
+      ? settings.wordValue
+      : settings.sentenceValue;
+
+  const currentRepaymentMethodLabel =
+    currentRepaymentMethod === 'phrasal_verbs'
+      ? 'Phrasal Verbs'
+      : currentRepaymentMethod === 'words'
+      ? 'Vocabulary Words'
+      : 'English Sentences';
+
+  const currentRequiredCount =
+    activeLoan?.repaymentRequirement?.requiredCount ||
+    Math.max(1, Math.ceil(remainingDebt / currentRepaymentUnitValue));
+
+  const calculatedRepaymentCredit = currentRequiredCount * currentRepaymentUnitValue;
 
   const handleNotebookPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -402,6 +423,20 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
     const effectiveRate = settings.baseInterestRate;
     const totalDue = calculateTotalDue(clampedPrincipal, effectiveRate);
 
+    const unitVal =
+      selectedRepaymentMethod === 'phrasal_verbs'
+        ? settings.phrasalVerbValue
+        : selectedRepaymentMethod === 'words'
+        ? settings.wordValue
+        : settings.sentenceValue;
+    const reqCount = Math.max(1, Math.ceil(totalDue / unitVal));
+    const methodLabel =
+      selectedRepaymentMethod === 'phrasal_verbs'
+        ? 'Phrasal Verbs'
+        : selectedRepaymentMethod === 'words'
+        ? 'Vocabulary Words'
+        : 'English Sentences';
+
     const newLoan: Loan = {
       id: `ln-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       studentId: currentStudent.id,
@@ -420,6 +455,14 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       submissions: [],
       notes: loanNotesInput.trim() || 'Opened via Student Web App',
       principalDisbursed: false,
+      repaymentMethod: selectedRepaymentMethod,
+      repaymentRequirement: {
+        method: selectedRepaymentMethod,
+        methodLabel,
+        unitValue: unitVal,
+        requiredCount: reqCount,
+        totalCreditValue: reqCount * unitVal,
+      },
     };
 
     const res = await dispatchStudentAction(
@@ -440,7 +483,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
     triggerToast(
       'success',
       'Loan Opened Immediately!',
-      `Complete your English notebook work (E$${totalDue} due) and send your photo or show Teacher Anthony in class to receive your E$${clampedPrincipal}.00 instantly!`
+      `Task: Write ${reqCount} ${methodLabel} in your notebook. Send your photo to receive E$${clampedPrincipal}.00 instantly!`
     );
   };
 
@@ -466,6 +509,26 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       return;
     }
 
+    const effectiveMethod: LoanRepaymentMethod =
+      activeLoan.repaymentMethod || activeRepaymentMethodChoice;
+    const unitVal =
+      effectiveMethod === 'phrasal_verbs'
+        ? settings.phrasalVerbValue
+        : effectiveMethod === 'words'
+        ? settings.wordValue
+        : settings.sentenceValue;
+    const reqCount =
+      activeLoan.repaymentRequirement?.requiredCount ||
+      Math.max(1, Math.ceil(remainingDebt / unitVal));
+    const methodLabel =
+      activeLoan.repaymentRequirement?.methodLabel ||
+      (effectiveMethod === 'phrasal_verbs'
+        ? 'Phrasal Verbs'
+        : effectiveMethod === 'words'
+        ? 'Vocabulary Words'
+        : 'English Sentences');
+    const totalCreditValue = reqCount * unitVal;
+
     const request: PendingStudentRequest = {
       id: `req_pay_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       type: 'loan_payment',
@@ -478,10 +541,14 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
       reservedAmount: 0,
       loanPaymentData: {
         loanId: activeLoan.id,
-        sentencesCount,
-        wordsCount,
-        phrasalVerbsCount,
-        totalCreditValue: calculatedRepaymentCredit,
+        repaymentMethod: effectiveMethod,
+        repaymentMethodLabel: methodLabel,
+        requiredCount: reqCount,
+        unitValue: unitVal,
+        sentencesCount: effectiveMethod === 'sentences' ? reqCount : 0,
+        wordsCount: effectiveMethod === 'words' ? reqCount : 0,
+        phrasalVerbsCount: effectiveMethod === 'phrasal_verbs' ? reqCount : 0,
+        totalCreditValue,
         hasDecoratedPresentation: hasDecoratedNotebook,
         notebookPhotoDataUrl,
         studentNotes: notebookStudentNotes.trim() || undefined,
@@ -1217,9 +1284,6 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
 
   const tier = getCreditTier(currentStudent.creditScore);
   const isDelisted = currentStudent.cardStatus === 'delisted';
-  const remainingDebt = activeLoan
-    ? Math.max(0, activeLoan.totalDue - activeLoan.amountRepaid)
-    : 0;
   const daysInfo = activeLoan ? getDaysDifference(activeLoan.dueDate) : null;
 
   // ==================================================================
@@ -1490,8 +1554,16 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left 5 cols: 3D SmartPass Card */}
-              <div className="lg:col-span-5 glass-panel rounded-3xl p-5 sm:p-6 specular-edge">
+              <div className="lg:col-span-5 glass-panel rounded-3xl p-5 sm:p-6 specular-edge space-y-3">
                 <CreditCardVisual student={currentStudent} settings={settings} interactive={true} />
+                <button
+                  type="button"
+                  onClick={() => setIsPrintCardModalOpen(true)}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-headline font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-cyan-500/10"
+                >
+                  <Printer className="w-4 h-4 text-cyan-400" />
+                  <span>Lost Card? Print Replacement Card</span>
+                </button>
               </div>
 
               {/* Right 7 cols: Live Balance Telemetry & Quick Actions */}
@@ -1536,7 +1608,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                   </div>
 
                   {/* Quick Navigation Actions */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                     <button
                       type="button"
                       onClick={() => setActiveTab('loans')}
@@ -1583,8 +1655,19 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
 
                     <button
                       type="button"
+                      onClick={() => setIsPrintCardModalOpen(true)}
+                      className="glass-well hover:border-cyan-400/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
+                    >
+                      <Printer className="w-5 h-5 text-cyan-400" />
+                      <span className="text-xs font-headline font-bold text-on-surface">
+                        Print Card
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => setActiveTab('profile')}
-                      className="glass-well hover:border-primary-container/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20 col-span-2 sm:col-span-1"
+                      className="glass-well hover:border-primary-container/50 p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer border border-outline-variant/20"
                     >
                       <User className="w-5 h-5 text-indigo-400" />
                       <span className="text-xs font-headline font-bold text-on-surface">
@@ -1920,84 +2003,86 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     </div>
                   )}
 
-                  {/* 3 WAYS OF PAYMENT INTERACTIVE SELECTOR */}
-                  <div className="glass-well rounded-2xl p-4 space-y-3 text-xs font-mono border border-primary-container/30">
+                  {/* NON-CHANGEABLE WAY OF PAYMENT STATUS CARD */}
+                  <div className="glass-well rounded-2xl p-4 space-y-3 text-xs font-mono border-2 border-primary-container/40">
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-primary-container uppercase">
-                        3 Ways of Payment (Tap to Auto-Fill E${remainingDebt}):
+                      <p className="font-extrabold text-primary-container uppercase flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        Way of Payment (Non-Changeable):
                       </p>
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-black bg-primary-container text-on-primary-fixed shadow-sm">
+                        {currentRepaymentMethodLabel}
+                      </span>
                     </div>
 
-                    <div className="space-y-2">
-                      {/* Way 1: Phrasal Verbs */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPhrasalVerbsCount(Math.ceil(remainingDebt / settings.phrasalVerbValue));
-                          setSentencesCount(0);
-                          setWordsCount(0);
-                        }}
-                        className="w-full p-2.5 rounded-xl bg-surface-container-lowest hover:border-indigo-400/50 border border-outline-variant/20 flex items-center justify-between text-left transition-all cursor-pointer"
-                      >
-                        <div>
-                          <span className="text-[10px] font-bold uppercase text-indigo-400 block">
-                            Way 1 • Phrasal Verbs (E${settings.phrasalVerbValue} each)
+                    {activeLoan.repaymentMethod ? (
+                      <div className="p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant/30 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-on-surface">
+                            Locked Requirement:
                           </span>
-                          <span className="text-xs font-bold text-on-surface">
-                            Write {Math.ceil(remainingDebt / settings.phrasalVerbValue)} Phrasal Verbs in Context
+                          <span className="text-sm font-mono font-black text-amber-300">
+                            {currentRequiredCount} {currentRepaymentMethodLabel}
                           </span>
                         </div>
-                        <span className="px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold text-[11px]">
-                          Select
-                        </span>
-                      </button>
-
-                      {/* Way 2: English Sentences */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSentencesCount(Math.ceil(remainingDebt / settings.sentenceValue));
-                          setPhrasalVerbsCount(0);
-                          setWordsCount(0);
-                        }}
-                        className="w-full p-2.5 rounded-xl bg-surface-container-lowest hover:border-emerald-400/50 border border-outline-variant/20 flex items-center justify-between text-left transition-all cursor-pointer"
-                      >
-                        <div>
-                          <span className="text-[10px] font-bold uppercase text-emerald-400 block">
-                            Way 2 • English Sentences (E${settings.sentenceValue} each)
-                          </span>
-                          <span className="text-xs font-bold text-on-surface">
-                            Write {Math.ceil(remainingDebt / settings.sentenceValue)} Complete Sentences
-                          </span>
+                        <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                          Write <strong>{currentRequiredCount} {currentRepaymentMethodLabel}</strong> in your English notebook (E${currentRepaymentUnitValue}.00 ea = E${calculatedRepaymentCredit}.00 total work value).
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-[11px] text-on-surface-variant">
+                          Choose your 1 non-changeable payment method for this active loan:
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveRepaymentMethodChoice('sentences')}
+                            className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
+                              currentRepaymentMethod === 'sentences'
+                                ? 'bg-emerald-500/20 border-emerald-400 text-white shadow-md'
+                                : 'bg-surface-container-lowest border-outline-variant/20 text-on-surface-variant'
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold uppercase text-emerald-300 block">Sentences</span>
+                            <span className="text-xs font-extrabold text-on-surface block mt-0.5">
+                              {Math.ceil(remainingDebt / settings.sentenceValue)} Sentences
+                            </span>
+                            <span className="text-[10px] opacity-75">E${settings.sentenceValue} ea</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveRepaymentMethodChoice('words')}
+                            className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
+                              currentRepaymentMethod === 'words'
+                                ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-md'
+                                : 'bg-surface-container-lowest border-outline-variant/20 text-on-surface-variant'
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold uppercase text-cyan-300 block">Vocab Words</span>
+                            <span className="text-xs font-extrabold text-on-surface block mt-0.5">
+                              {Math.ceil(remainingDebt / settings.wordValue)} Words
+                            </span>
+                            <span className="text-[10px] opacity-75">E${settings.wordValue} ea</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveRepaymentMethodChoice('phrasal_verbs')}
+                            className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
+                              currentRepaymentMethod === 'phrasal_verbs'
+                                ? 'bg-indigo-500/20 border-indigo-400 text-white shadow-md'
+                                : 'bg-surface-container-lowest border-outline-variant/20 text-on-surface-variant'
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold uppercase text-indigo-300 block">Phrasal Verbs</span>
+                            <span className="text-xs font-extrabold text-on-surface block mt-0.5">
+                              {Math.ceil(remainingDebt / settings.phrasalVerbValue)} Verbs
+                            </span>
+                            <span className="text-[10px] opacity-75">E${settings.phrasalVerbValue} ea</span>
+                          </button>
                         </div>
-                        <span className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold text-[11px]">
-                          Select
-                        </span>
-                      </button>
-
-                      {/* Way 3: Book Vocabulary Words */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setWordsCount(Math.ceil(remainingDebt / settings.wordValue));
-                          setPhrasalVerbsCount(0);
-                          setSentencesCount(0);
-                        }}
-                        className="w-full p-2.5 rounded-xl bg-surface-container-lowest hover:border-cyan-400/50 border border-outline-variant/20 flex items-center justify-between text-left transition-all cursor-pointer"
-                      >
-                        <div>
-                          <span className="text-[10px] font-bold uppercase text-cyan-400 block">
-                            Way 3 • Book Vocabulary Words (E${settings.wordValue} each)
-                          </span>
-                          <span className="text-xs font-bold text-on-surface">
-                            Write {Math.ceil(remainingDebt / settings.wordValue)} Vocabulary Words + Meaning
-                          </span>
-                        </div>
-                        <span className="px-2 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold text-[11px]">
-                          Select
-                        </span>
-                      </button>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -2011,104 +2096,28 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                       Submit Notebook Photo (or Present Face-to-Face)
                     </h2>
                     <p className="text-xs text-on-surface-variant mt-1">
-                      Pick one of the 3 Ways of Payment (or mix them), snap a clear photo of your notebook, and send it to Teacher Anthony. Once approved, you get your loan money instantly!
+                      Snap a clear photo of your notebook showing your completed work for your chosen way of payment. Once approved, you get your loan money instantly!
                     </p>
                   </div>
 
                   <form onSubmit={handleSubmitNotebookPayment} className="space-y-5">
-                    {/* Task counters */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="glass-well rounded-2xl p-3.5 space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-headline font-bold text-on-surface">
-                            Phrasal Verbs
-                          </span>
-                          <span className="text-[11px] font-mono text-indigo-400 font-bold">
-                            E${settings.phrasalVerbValue} ea
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setPhrasalVerbsCount(Math.max(0, phrasalVerbsCount - 1))
-                            }
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="text-lg font-mono font-extrabold text-on-surface">
-                            {phrasalVerbsCount}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setPhrasalVerbsCount(phrasalVerbsCount + 1)}
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                    {/* Locked-in Task Card */}
+                    <div className="glass-well rounded-2xl p-4 border border-primary-container/40 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-primary-container font-extrabold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          Work to Show in Notebook Photo:
+                        </span>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-mono font-black bg-primary-container text-on-primary-fixed">
+                          {currentRepaymentMethodLabel}
+                        </span>
                       </div>
-
-                      <div className="glass-well rounded-2xl p-3.5 space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-headline font-bold text-on-surface">
-                            Sentences
-                          </span>
-                          <span className="text-[11px] font-mono text-emerald-400 font-bold">
-                            E${settings.sentenceValue} ea
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSentencesCount(Math.max(0, sentencesCount - 1))}
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="text-lg font-mono font-extrabold text-on-surface">
-                            {sentencesCount}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setSentencesCount(sentencesCount + 1)}
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                      <div className="text-xl font-headline font-black text-on-surface">
+                        Write <span className="text-amber-300 font-mono text-2xl font-black">{currentRequiredCount}</span> {currentRepaymentMethodLabel} in your English notebook
                       </div>
-
-                      <div className="glass-well rounded-2xl p-3.5 space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-headline font-bold text-on-surface">
-                            Vocab Words
-                          </span>
-                          <span className="text-[11px] font-mono text-cyan-400 font-bold">
-                            E${settings.wordValue} ea
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setWordsCount(Math.max(0, wordsCount - 1))}
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="text-lg font-mono font-extrabold text-on-surface">
-                            {wordsCount}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setWordsCount(wordsCount + 1)}
-                            className="p-2 rounded-xl glass-pill"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
+                      <p className="text-xs text-on-surface-variant font-mono">
+                        Worth E${currentRepaymentUnitValue}.00 each • Total Credit: <strong className="text-emerald-400">E${calculatedRepaymentCredit}.00</strong> (Sufficient to clear your E${remainingDebt}.00 debt).
+                      </p>
                     </div>
 
                     {/* Decorated presentation toggle */}
@@ -2173,7 +2182,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                               : 'Tap to Take Photo or Upload Notebook Image'}
                           </span>
                           <span className="text-xs font-mono text-on-surface-variant">
-                            Make sure your sentences, words, or phrasal verbs are clearly visible
+                            Make sure your {currentRequiredCount} {currentRepaymentMethodLabel.toLowerCase()} are clearly visible
                           </span>
                         </button>
                       )}
@@ -2260,7 +2269,7 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     </div>
                   </div>
 
-                  {/* 3 WAYS OF PAYMENT PREVIEW FOR THIS LOAN */}
+                  {/* CHOOSE FROM 3 WAYS OF PAYMENT (NON-CHANGEABLE) */}
                   {(() => {
                     const previewTotalDue = calculateTotalDue(
                       loanPrincipalInput,
@@ -2270,49 +2279,76 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                     const reqSent = Math.ceil(previewTotalDue / settings.sentenceValue);
                     const reqWords = Math.ceil(previewTotalDue / settings.wordValue);
                     return (
-                      <div className="glass-well rounded-2xl p-4 space-y-3 border border-primary-container/25">
+                      <div className="glass-well rounded-2xl p-4 space-y-3 border-2 border-primary-container/30">
                         <div className="flex items-center justify-between flex-wrap gap-2">
-                          <span className="text-xs font-headline font-extrabold text-primary-container uppercase">
-                            3 Ways of Payment to Unlock E${loanPrincipalInput}.00 (Total Work Value: E${previewTotalDue}):
+                          <span className="text-xs font-headline font-extrabold text-primary-container uppercase flex items-center gap-1.5">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            Choose Your Way of Payment (Non-Changeable):
                           </span>
-                          <span className="text-[10px] font-mono text-emerald-300">
-                            Choose 1 option or mix &amp; match in your notebook!
+                          <span className="text-[10px] font-mono text-amber-300 font-bold">
+                            🔒 Locked upon loan creation
                           </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono">
-                          <div className="p-3 rounded-xl bg-surface-container-lowest border border-indigo-500/30">
-                            <span className="text-[10px] text-indigo-400 font-bold uppercase block">
-                              Way 1 • Phrasal Verbs
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRepaymentMethod('sentences')}
+                            className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                              selectedRepaymentMethod === 'sentences'
+                                ? 'bg-emerald-500/25 border-emerald-400 text-white shadow-lg ring-2 ring-emerald-400/40'
+                                : 'bg-surface-container-lowest border-outline-variant/30 text-on-surface-variant hover:border-emerald-400/40'
+                            }`}
+                          >
+                            <span className="text-[10px] text-emerald-300 font-bold uppercase block">
+                              Way 1 • Sentences
                             </span>
-                            <span className="text-lg font-extrabold text-on-surface block mt-0.5">
-                              {reqPV} Phrasal Verbs
-                            </span>
-                            <span className="text-[10px] text-on-surface-variant">
-                              E${settings.phrasalVerbValue} per phrasal verb
-                            </span>
-                          </div>
-                          <div className="p-3 rounded-xl bg-surface-container-lowest border border-emerald-500/30">
-                            <span className="text-[10px] text-emerald-400 font-bold uppercase block">
-                              Way 2 • Sentences
-                            </span>
-                            <span className="text-lg font-extrabold text-on-surface block mt-0.5">
+                            <span className="text-lg font-black text-on-surface block mt-0.5">
                               {reqSent} Sentences
                             </span>
-                            <span className="text-[10px] text-on-surface-variant">
-                              E${settings.sentenceValue} per sentence
+                            <span className="text-[10px] opacity-80 block mt-0.5">
+                              E${settings.sentenceValue} ea • Covers E${reqSent * settings.sentenceValue}
                             </span>
-                          </div>
-                          <div className="p-3 rounded-xl bg-surface-container-lowest border border-cyan-500/30">
-                            <span className="text-[10px] text-cyan-400 font-bold uppercase block">
-                              Way 3 • Book Words
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRepaymentMethod('words')}
+                            className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                              selectedRepaymentMethod === 'words'
+                                ? 'bg-cyan-500/25 border-cyan-400 text-white shadow-lg ring-2 ring-cyan-400/40'
+                                : 'bg-surface-container-lowest border-outline-variant/30 text-on-surface-variant hover:border-cyan-400/40'
+                            }`}
+                          >
+                            <span className="text-[10px] text-cyan-300 font-bold uppercase block">
+                              Way 2 • Vocab Words
                             </span>
-                            <span className="text-lg font-extrabold text-on-surface block mt-0.5">
-                              {reqWords} Vocab Words
+                            <span className="text-lg font-black text-on-surface block mt-0.5">
+                              {reqWords} Words
                             </span>
-                            <span className="text-[10px] text-on-surface-variant">
-                              E${settings.wordValue} per word
+                            <span className="text-[10px] opacity-80 block mt-0.5">
+                              E${settings.wordValue} ea • Covers E${reqWords * settings.wordValue}
                             </span>
-                          </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRepaymentMethod('phrasal_verbs')}
+                            className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                              selectedRepaymentMethod === 'phrasal_verbs'
+                                ? 'bg-indigo-500/25 border-indigo-400 text-white shadow-lg ring-2 ring-indigo-400/40'
+                                : 'bg-surface-container-lowest border-outline-variant/30 text-on-surface-variant hover:border-indigo-400/40'
+                            }`}
+                          >
+                            <span className="text-[10px] text-indigo-300 font-bold uppercase block">
+                              Way 3 • Phrasal Verbs
+                            </span>
+                            <span className="text-lg font-black text-on-surface block mt-0.5">
+                              {reqPV} Phrasal Verbs
+                            </span>
+                            <span className="text-[10px] opacity-80 block mt-0.5">
+                              E${settings.phrasalVerbValue} ea • Covers E${reqPV * settings.phrasalVerbValue}
+                            </span>
+                          </button>
                         </div>
                       </div>
                     );
@@ -3065,6 +3101,14 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
                   <Upload className="w-4 h-4" />
                   Upload My Own Photo
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPrintCardModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-headline font-bold flex items-center gap-2 cursor-pointer bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 transition-all"
+                >
+                  <Printer className="w-4 h-4 text-cyan-400" />
+                  Print Replacement Card
+                </button>
               </div>
 
               <div className="space-y-2">
@@ -3200,6 +3244,15 @@ export const StudentWebApp: React.FC<StudentWebAppProps> = ({
           );
         })}
       </nav>
+      {/* Student Card Replacement Print Modal */}
+      {currentStudent && (
+        <StudentCardPrintModal
+          isOpen={isPrintCardModalOpen}
+          onClose={() => setIsPrintCardModalOpen(false)}
+          student={currentStudent}
+          settings={settings}
+        />
+      )}
     </div>
   );
 };
