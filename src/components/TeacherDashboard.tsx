@@ -32,6 +32,7 @@ import {
   KeyRound,
   Bell,
   Globe,
+  Briefcase,
 } from 'lucide-react';
 import { StudentAvatar } from './StudentAvatar';
 import {
@@ -61,6 +62,7 @@ import { StudentReportsModal } from './StudentReportsModal';
 import { DataBackupModal } from './DataBackupModal';
 import { StudentYearlyHistory } from './StudentYearlyHistory';
 import { StudentPasswordModal } from './StudentPasswordModal';
+import { SalaryDisbursementModal } from './SalaryDisbursementModal';
 
 export interface TeacherDashboardProps {
   students: Student[];
@@ -135,6 +137,9 @@ export interface TeacherDashboardProps {
   onOpenCloudSync?: () => void;
   onResetStudentPassword?: (studentId: string) => void;
   onChangeStudentPassword?: (studentId: string, newPassword: string | undefined) => void;
+  onDisburseSalaries?: (
+    disbursements: { studentId: string; amount: number; customReason?: string }[]
+  ) => void;
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
@@ -176,6 +181,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onOpenCloudSync,
   onResetStudentPassword,
   onChangeStudentPassword,
+  onDisburseSalaries,
 }) => {
   const [localClassFilter, setLocalClassFilter] = useState<string>(selectedClassId);
   const effectiveClassFilter = onSelectClass ? selectedClassId : localClassFilter;
@@ -226,9 +232,52 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [studentForHistory, setStudentForHistory] = useState<Student | null>(null);
   const [studentForPasswordModal, setStudentForPasswordModal] = useState<Student | null>(null);
+  const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'grants' | 'adjustments' | 'loans'>(
     'all'
   );
+
+  const handleDisburseSingleStudentSalary = (student: Student) => {
+    if (!onDisburseSalaries || student.cardStatus === 'delisted') return;
+
+    const amount =
+      student.paymentFrequency === 'monthly'
+        ? settings.monthlyPayment || 482
+        : settings.bimonthlyPayment || 241;
+
+    const thresholdDays = student.paymentFrequency === 'monthly' ? 14 : 7;
+    let recentlyPaid = false;
+    let daysAgo = 0;
+    if (student.lastSalaryPaidAt) {
+      const lastDate = new Date(student.lastSalaryPaidAt);
+      if (!isNaN(lastDate.getTime())) {
+        daysAgo = Math.max(
+          0,
+          Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+        );
+        recentlyPaid = daysAgo < thresholdDays;
+      }
+    }
+
+    if (recentlyPaid) {
+      const confirmProceed = window.confirm(
+        `${student.name} received a cadence salary ${
+          daysAgo === 0 ? 'today' : `${daysAgo} day(s) ago`
+        }.\n\nDo you want to disburse another E$${amount}.00 salary?`
+      );
+      if (!confirmProceed) return;
+    }
+
+    onDisburseSalaries([
+      {
+        studentId: student.id,
+        amount,
+        customReason: `Cadence Salary Disbursed (${
+          student.paymentFrequency === 'monthly' ? 'Monthly' : 'Bi-weekly'
+        }: +E$${amount.toFixed(2)})`,
+      },
+    ]);
+  };
 
   React.useEffect(() => {
     if (!students.some((s) => s.id === dispenserStudentId) && students[0]) {
@@ -529,6 +578,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           >
             <DollarSign className="w-3.5 h-3.5 text-tertiary-fixed-dim" />
             <span>Bulk E$</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsSalaryModalOpen(true)}
+            className="glass-pill px-3.5 py-2 rounded-full text-xs font-medium text-emerald-300 hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-all flex items-center gap-1.5 shadow-sm"
+            title="Disburse Cadence Salaries (Bulk or Individual)"
+          >
+            <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Pay Salaries</span>
           </button>
 
           <button
@@ -1410,6 +1469,52 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
                   )}
 
+                  {/* Salary Cadence & 1-Click Disburse Button */}
+                  <div className="glass-well rounded-2xl p-2.5 flex items-center justify-between gap-2 text-xs font-mono border border-emerald-500/20 bg-emerald-500/5">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-on-surface font-bold text-xs">
+                        <Briefcase className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>
+                          {student.paymentFrequency === 'monthly'
+                            ? `E$${settings.monthlyPayment || 482}/mo`
+                            : `E$${settings.bimonthlyPayment || 241}/bi-wk`}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-on-surface-variant truncate pl-5">
+                        {student.lastSalaryPaidAt ? (
+                          (() => {
+                            const daysAgo = Math.max(
+                              0,
+                              Math.floor(
+                                (Date.now() - new Date(student.lastSalaryPaidAt).getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              )
+                            );
+                            return `Paid ${daysAgo === 0 ? 'today' : `${daysAgo}d ago`} (${new Date(
+                              student.lastSalaryPaidAt
+                            ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+                          })()
+                        ) : (
+                          <span className="text-emerald-400/80">🌱 Not yet paid this cycle</span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isDelisted}
+                      onClick={() => handleDisburseSingleStudentSalary(student)}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 font-bold text-[11px] transition-all disabled:opacity-40 shrink-0 flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                      title={`Disburse ${
+                        student.paymentFrequency === 'monthly'
+                          ? `E$${settings.monthlyPayment || 482}`
+                          : `E$${settings.bimonthlyPayment || 241}`
+                      } cadence salary`}
+                    >
+                      <DollarSign className="w-3 h-3 text-emerald-400" />
+                      <span>Pay Salary</span>
+                    </button>
+                  </div>
+
                   {/* Quick Action Footer Buttons */}
                   <div className="grid grid-cols-4 gap-1.5 pt-1">
                     <button
@@ -1553,6 +1658,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                               className="px-2.5 py-1 rounded-lg bg-tertiary-container/20 text-tertiary-fixed-dim font-bold"
                             >
                               +E$
+                            </button>
+                            <button
+                              type="button"
+                              disabled={student.cardStatus === 'delisted'}
+                              onClick={() => handleDisburseSingleStudentSalary(student)}
+                              className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-400/30 font-bold text-[11px] flex items-center gap-1 disabled:opacity-40"
+                              title={`Pay Cadence Salary (${
+                                student.paymentFrequency === 'monthly'
+                                  ? `E$${settings.monthlyPayment || 482}`
+                                  : `E$${settings.bimonthlyPayment || 241}`
+                              })`}
+                            >
+                              <Briefcase className="w-3 h-3 text-emerald-400" />
+                              <span>Salary</span>
                             </button>
                             <button
                               type="button"
@@ -1876,6 +1995,19 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               onResetStudentPassword(studentId);
             }
           }}
+        />
+      )}
+
+      {onDisburseSalaries && (
+        <SalaryDisbursementModal
+          isOpen={isSalaryModalOpen}
+          onClose={() => setIsSalaryModalOpen(false)}
+          students={students}
+          classrooms={classrooms}
+          settings={settings}
+          initialClassFilter={effectiveClassFilter}
+          theme={theme}
+          onDisburseSalaries={onDisburseSalaries}
         />
       )}
     </div>

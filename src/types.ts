@@ -55,7 +55,7 @@ export interface BalanceDisclaimerNotice {
   newBalance: number;
   delta: number;
   reason: string;
-  category: 'reward' | 'fine' | 'store' | 'loan' | 'transfer' | 'adjustment';
+  category: 'reward' | 'fine' | 'store' | 'loan' | 'transfer' | 'adjustment' | 'salary';
   createdAt: string;
   acknowledgedAt?: string;
 }
@@ -284,6 +284,7 @@ export interface Student {
   reservedBalance?: number;       // E$ currently held for pending store/transfer requests
   disclaimers?: BalanceDisclaimerNotice[];
   p2pTransfersHistory?: P2PTransferRecord[];
+  lastSalaryPaidAt?: string;
 }
 
 export interface CreditLimitRaiseTransaction {
@@ -318,7 +319,7 @@ export interface BalanceAdjustmentTransaction {
   previousBalance: number;
   newBalance: number;
   reason: string;
-  category?: 'reward' | 'correction' | 'fine' | 'contest' | 'activity' | 'store' | 'other';
+  category?: 'reward' | 'correction' | 'fine' | 'contest' | 'activity' | 'store' | 'salary' | 'other';
   creditScoreChange?: number;
   timestamp: string;
 }

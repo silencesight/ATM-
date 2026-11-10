@@ -37,6 +37,7 @@ const REASON_PRESETS = {
     { label: 'Homework / Project Bonus', category: 'reward' as const, defaultCreditChange: 5 },
     { label: 'Classroom Competition 1st Place', category: 'contest' as const, defaultCreditChange: 10 },
     { label: 'Peer Tutoring & Helping', category: 'activity' as const, defaultCreditChange: 5 },
+    { label: 'Cadence Salary / Compensation', category: 'salary' as const, defaultCreditChange: 0 },
     { label: 'Manual Balance Correction', category: 'correction' as const, defaultCreditChange: 0 },
   ],
   decrease: [

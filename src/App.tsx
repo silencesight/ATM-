@@ -1417,6 +1417,87 @@ export default function App() {
     );
   };
 
+  // Cadence Salary Disbursement (Manual bulk or single student salary payment)
+  const handleDisburseSalaries = (
+    disbursements: { studentId: string; amount: number; customReason?: string }[]
+  ) => {
+    if (!disbursements || disbursements.length === 0) return;
+
+    const nowIso = new Date().toISOString();
+    let totalPaid = 0;
+    const paidNames: string[] = [];
+
+    setStudents((prevStudents) => {
+      const disbursementMap = new Map(disbursements.map((d) => [d.studentId, d]));
+
+      return prevStudents.map((student) => {
+        const item = disbursementMap.get(student.id);
+        if (!item || item.amount <= 0 || student.cardStatus === 'delisted') {
+          return student;
+        }
+
+        const prevBalance = student.currentBalance;
+        const newBalance = prevBalance + item.amount;
+        totalPaid += item.amount;
+        paidNames.push(student.name);
+
+        const reason =
+          item.customReason ||
+          `Cadence Salary Disbursed (${
+            student.paymentFrequency === 'monthly' ? 'Monthly' : 'Bi-weekly'
+          }: +E$${item.amount.toFixed(2)})`;
+
+        const adjustmentTx: BalanceAdjustmentTransaction = {
+          id: `salary_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: student.id,
+          studentName: student.name,
+          type: 'increase',
+          amount: item.amount,
+          previousBalance: prevBalance,
+          newBalance,
+          reason,
+          category: 'salary',
+          creditScoreChange: 0,
+          timestamp: nowIso,
+        };
+
+        const salaryDisclaimer = buildBalanceDisclaimer(
+          student.id,
+          prevBalance,
+          newBalance,
+          reason,
+          'salary'
+        );
+
+        return {
+          ...student,
+          currentBalance: newBalance,
+          lastSalaryPaidAt: nowIso,
+          balanceAdjustmentsHistory: [adjustmentTx, ...(student.balanceAdjustmentsHistory || [])],
+          disclaimers: [salaryDisclaimer, ...(student.disclaimers || [])],
+        };
+      });
+    });
+
+    if (disbursements.length === 1) {
+      const studentName =
+        students.find((s) => s.id === disbursements[0].studentId)?.name || 'student';
+      addToast(
+        'success',
+        'Salary Disbursed',
+        `Disbursed E$${disbursements[0].amount.toLocaleString('en-US')}.00 cadence salary to ${studentName}.`
+      );
+    } else {
+      addToast(
+        'success',
+        'Salaries Disbursed',
+        `Disbursed a total of E$${totalPaid.toLocaleString(
+          'en-US'
+        )}.00 in salaries across ${disbursements.length} students.`
+      );
+    }
+  };
+
   // Classroom Management Handlers
   const handleCreateClassroom = (classroomData: Omit<Classroom, 'id' | 'createdAt'>) => {
     const newClass: Classroom = {
@@ -3161,6 +3242,7 @@ export default function App() {
               onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
               onResetStudentPassword={handleResetStudentPassword}
               onChangeStudentPassword={handleChangeStudentPassword}
+              onDisburseSalaries={handleDisburseSalaries}
             />
           )}
 
