@@ -305,10 +305,11 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenCloudSync}
-            title="Cloud Sync & Shareable Student Web App Link"
-            className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-primary-container hover:border-primary-container/50 transition-all cursor-pointer"
+            title="Real-Time Cloud Sync (PC, Phone & Student Web)"
+            className="relative w-9 h-9 rounded-full glass-pill flex items-center justify-center text-primary-container hover:border-primary-container/50 transition-all cursor-pointer group"
           >
             <Globe className="w-4 h-4" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
           </button>
         )}
 

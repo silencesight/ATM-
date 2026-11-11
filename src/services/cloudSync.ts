@@ -175,6 +175,22 @@ let cachedClientKey = '';
 let cachedSupabaseClient: SupabaseClient | null = null;
 let lastPushedContentFingerprint = '';
 
+export function computeStateFingerprint(state: Partial<CloudClassroomState>): string {
+  return JSON.stringify({
+    s: state.students || [],
+    l: state.loans || [],
+    c: state.storeCatalog || [],
+    cl: state.classrooms || [],
+    st: state.settings || {},
+    p: state.pendingRequests || [],
+    ct: state.contracts || [],
+  });
+}
+
+export function setLastPushedContentFingerprint(fingerprint: string): void {
+  lastPushedContentFingerprint = fingerprint;
+}
+
 export function normalizeSupabaseUrl(rawUrl?: string): string {
   if (!rawUrl) return DEFAULT_SUPABASE_URL;
   const cleaned = rawUrl.trim();
@@ -885,15 +901,7 @@ export async function pushClassroomStateToCloud(
   }
 
   // Avoid duplicate network uploads when state content hasn't changed
-  const contentFingerprint = JSON.stringify({
-    s: state.students,
-    l: state.loans,
-    c: state.storeCatalog,
-    cl: state.classrooms,
-    st: state.settings,
-    p: state.pendingRequests,
-    ct: state.contracts || [],
-  });
+  const contentFingerprint = computeStateFingerprint(state);
 
   if (!options?.force && contentFingerprint === lastPushedContentFingerprint) {
     return { ok: true };
@@ -1456,10 +1464,18 @@ export function subscribeToClassroomRealtime(options: {
             schema: 'public',
             table: 'atm_classroom_state',
           },
-          () => {
+          (payload) => {
             if (isClosed) return;
-            if (role === 'student') {
-              checkStudentState(true);
+            if (onStateSync) {
+              const newRow = payload?.new as
+                | { updated_at?: string; state?: CloudClassroomState }
+                | undefined;
+              if (newRow?.state && newRow.updated_at) {
+                lastSeenUpdatedAt = newRow.updated_at;
+                onStateSync(newRow.state);
+              } else {
+                checkStudentState(true);
+              }
             }
           }
         )
@@ -1470,21 +1486,29 @@ export function subscribeToClassroomRealtime(options: {
 
     const onVisibilityChange = () => {
       if (typeof document !== 'undefined' && !document.hidden) {
-        if (role === 'teacher') checkTeacherActions();
-        else checkStudentState(false);
+        if (role === 'teacher' && onStudentAction) checkTeacherActions();
+        if (onStateSync) checkStudentState(false);
       }
     };
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', onVisibilityChange);
     }
 
-    // Initial check + low-frequency 8s lightweight fallback check (38 bytes only)
+    // Initial check + continuous synchronization check
     if (role === 'teacher') {
-      checkTeacherActions();
-      pollTimer = window.setInterval(checkTeacherActions, 3000);
+      if (onStudentAction) checkTeacherActions();
+      if (onStateSync) checkStudentState(false);
+      pollTimer = window.setInterval(() => {
+        if (isClosed) return;
+        if (onStudentAction) checkTeacherActions();
+        if (onStateSync) checkStudentState(false);
+      }, 3500);
     } else {
       checkStudentState(true);
-      pollTimer = window.setInterval(() => checkStudentState(false), 5000);
+      pollTimer = window.setInterval(() => {
+        if (isClosed) return;
+        checkStudentState(false);
+      }, 5000);
     }
 
     return () => {

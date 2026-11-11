@@ -15,6 +15,8 @@ import {
   Code2,
   ChevronDown,
   ChevronUp,
+  Download,
+  UploadCloud,
 } from 'lucide-react';
 import { TeacherSettings } from '../types';
 import {
@@ -35,6 +37,10 @@ interface CloudSyncModalProps {
     dbUrl: string,
     supabaseKey?: string
   ) => Promise<{ ok: boolean; error?: string }>;
+  onPullFromCloud?: (
+    dbUrl: string,
+    supabaseKey?: string
+  ) => Promise<{ ok: boolean; count?: number; error?: string }>;
   onOpenStudentWebPreview: () => void;
 }
 
@@ -44,6 +50,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   settings,
   onUpdateSettings,
   onForcePushToCloud,
+  onPullFromCloud,
   onOpenStudentWebPreview,
 }) => {
   const [dbUrlInput, setDbUrlInput] = useState<string>(
@@ -111,6 +118,29 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
         res.error ||
           'Could not connect to Supabase. Verify your Project URL, Anon Key, and make sure you ran the SQL Setup Script.'
       );
+    }
+  };
+
+  const handlePullFromCloud = async () => {
+    const cleanUrl = saveConfiguredCloudDbUrl(dbUrlInput, supabaseKeyInput);
+    const cleanKey = normalizeSupabaseKey(supabaseKeyInput);
+    if (!cleanUrl || !cleanKey) {
+      setSyncStatus('error');
+      setStatusMessage('Please enter your Supabase Project URL and Anon API Key.');
+      return;
+    }
+    if (!onPullFromCloud) return;
+    setSyncStatus('syncing');
+    setStatusMessage('Downloading latest classroom state from Supabase...');
+    const res = await onPullFromCloud(cleanUrl, cleanKey);
+    if (res.ok) {
+      setSyncStatus('success');
+      setStatusMessage(
+        `Successfully downloaded and synchronized latest state from Supabase (${res.count ?? 0} students loaded)!`
+      );
+    } else {
+      setSyncStatus('error');
+      setStatusMessage(res.error || 'Failed to download classroom state from Supabase.');
     }
   };
 
@@ -273,13 +303,26 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            {onPullFromCloud && (
+              <button
+                type="button"
+                onClick={handlePullFromCloud}
+                disabled={syncStatus === 'syncing'}
+                className="px-4 py-2.5 rounded-xl glass-pill text-xs font-headline font-bold text-emerald-300 hover:border-emerald-400/50 hover:bg-emerald-500/10 flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+                title="Download the latest classroom roster and balances from Supabase to this device"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                Pull Latest from Supabase
+              </button>
+            )}
             <button
               type="submit"
-              className="liquid-button-primary px-5 py-2.5 rounded-xl text-xs font-headline font-bold flex items-center gap-2 cursor-pointer"
+              disabled={syncStatus === 'syncing'}
+              className="liquid-button-primary px-5 py-2.5 rounded-xl text-xs font-headline font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Save &amp; Sync Classroom to Supabase
+              <UploadCloud className="w-3.5 h-3.5" />
+              Save &amp; Push to Supabase
             </button>
           </div>
         </form>

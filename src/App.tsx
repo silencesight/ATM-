@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sidebar, ActiveAppView } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { ClassroomRulesModal } from './components/ClassroomRulesModal';
@@ -46,6 +46,8 @@ import {
   getConfiguredSupabaseKey,
   fetchClassroomStateFromCloud,
   removeCloudStudentAction,
+  computeStateFingerprint,
+  setLastPushedContentFingerprint,
 } from './services/cloudSync';
 import { INITIAL_STUDENTS, INITIAL_LOANS } from './data/initialData';
 import { loadClassrooms, saveClassrooms } from './data/classrooms';
@@ -334,6 +336,17 @@ export default function App() {
 
   // Hydrate & merge any recent Student Web App updates from Supabase on Teacher startup
   const [hasHydratedFromCloud, setHasHydratedFromCloud] = useState(false);
+  const lastSyncedUpdatedAtRef = useRef<string>(
+    (() => {
+      try {
+        return localStorage.getItem('esl_classroom_updated_at') || '';
+      } catch {
+        return '';
+      }
+    })()
+  );
+  const lastPushedUpdatedAtRef = useRef<string>('');
+  const isApplyingRemoteUpdateRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (isStandaloneStudentWeb) return;
@@ -356,19 +369,67 @@ export default function App() {
 
         if (res.source === 'cloud' && res.state) {
           const cloud = res.state;
+          const localSavedStamp = (() => {
+            try {
+              return localStorage.getItem('esl_classroom_updated_at') || '';
+            } catch {
+              return '';
+            }
+          })();
+
           const isLocalDefaultSample =
             students.length <= INITIAL_STUDENTS.length &&
-            cloud.students.length > INITIAL_STUDENTS.length;
+            (cloud.students?.length || 0) > INITIAL_STUDENTS.length;
 
-          if (isLocalDefaultSample) {
-            setStudents(cloud.students);
-            setLoans(cloud.loans || []);
-            if (cloud.storeCatalog?.length) setStoreCatalog(cloud.storeCatalog);
-            if (cloud.classrooms?.length) setClassrooms(cloud.classrooms);
-            if (cloud.pendingRequests?.length) setPendingRequests(cloud.pendingRequests);
-            if (cloud.contracts?.length) setContracts(cloud.contracts);
+          // Hydrate from cloud if local state is default sample, or if cloud has a newer/matching timestamp,
+          // or if local has no recorded timestamp yet.
+          const isCloudNewerOrEqual =
+            !localSavedStamp ||
+            (Boolean(cloud.updatedAt) && cloud.updatedAt >= localSavedStamp);
+
+          if (isLocalDefaultSample || isCloudNewerOrEqual) {
+            isApplyingRemoteUpdateRef.current = true;
+            if (Array.isArray(cloud.students) && cloud.students.length > 0) {
+              setStudents(cloud.students);
+            }
+            if (Array.isArray(cloud.loans)) {
+              setLoans(cloud.loans);
+            }
+            if (cloud.storeCatalog?.length) {
+              setStoreCatalog(cloud.storeCatalog);
+            }
+            if (cloud.classrooms?.length) {
+              setClassrooms(cloud.classrooms);
+            }
+            if (Array.isArray(cloud.pendingRequests)) {
+              setPendingRequests(cloud.pendingRequests);
+            }
+            if (Array.isArray(cloud.contracts)) {
+              setContracts(cloud.contracts);
+            }
+            if (cloud.settings) {
+              setSettings((prev) => ({
+                ...prev,
+                ...cloud.settings,
+                cloudDatabaseUrl: prev.cloudDatabaseUrl || cloud.settings?.cloudDatabaseUrl,
+                cloudSupabaseKey: prev.cloudSupabaseKey || cloud.settings?.cloudSupabaseKey,
+              }));
+            }
+
+            const stamp = cloud.updatedAt || new Date().toISOString();
+            try {
+              localStorage.setItem('esl_classroom_updated_at', stamp);
+            } catch {}
+            lastSyncedUpdatedAtRef.current = stamp;
+            lastPushedUpdatedAtRef.current = stamp;
+            setLastPushedContentFingerprint(computeStateFingerprint(cloud));
+
+            setTimeout(() => {
+              isApplyingRemoteUpdateRef.current = false;
+            }, 350);
           } else {
-            // Merge any student profile updates, P2P transfers, and active loans from cloud
+            // Local state has an even newer timestamp (e.g. offline edits made locally)
+            // Merge student avatar/password/disclaimer updates from cloud without overwriting fresh local balances
             if (Array.isArray(cloud.students) && cloud.students.length > 0) {
               const cloudStudentMap = new Map(cloud.students.map((cs) => [cs.id, cs]));
               setStudents((prev) =>
@@ -497,9 +558,12 @@ export default function App() {
   // Push classroom state to Cloud & Local BroadcastChannel whenever state changes in Teacher Mode
   useEffect(() => {
     if (isStandaloneStudentWeb || !hasHydratedFromCloud) return;
+    if (isApplyingRemoteUpdateRef.current) return;
+
+    const nowIso = new Date().toISOString();
     const statePayload: CloudClassroomState = {
       version: 4,
-      updatedAt: new Date().toISOString(),
+      updatedAt: nowIso,
       students,
       loans,
       storeCatalog,
@@ -508,12 +572,21 @@ export default function App() {
       pendingRequests,
       contracts,
     };
-    const timer = window.setTimeout(() => {
-      pushClassroomStateToCloud(
+
+    const timer = window.setTimeout(async () => {
+      if (isApplyingRemoteUpdateRef.current) return;
+      const res = await pushClassroomStateToCloud(
         statePayload,
         settings.cloudDatabaseUrl,
         settings.cloudSupabaseKey
       );
+      if (res.ok) {
+        lastSyncedUpdatedAtRef.current = nowIso;
+        lastPushedUpdatedAtRef.current = nowIso;
+        try {
+          localStorage.setItem('esl_classroom_updated_at', nowIso);
+        } catch {}
+      }
     }, 250);
     return () => clearTimeout(timer);
   }, [
@@ -913,11 +986,69 @@ export default function App() {
       }
     };
 
+    const handleIncomingStateSync = (remoteState: CloudClassroomState) => {
+      if (!remoteState || !remoteState.updatedAt) return;
+
+      // Skip echoes of our own pushes or older timestamps
+      if (
+        lastPushedUpdatedAtRef.current &&
+        remoteState.updatedAt <= lastPushedUpdatedAtRef.current
+      ) {
+        return;
+      }
+      if (
+        lastSyncedUpdatedAtRef.current &&
+        remoteState.updatedAt <= lastSyncedUpdatedAtRef.current
+      ) {
+        return;
+      }
+
+      isApplyingRemoteUpdateRef.current = true;
+      if (Array.isArray(remoteState.students) && remoteState.students.length > 0) {
+        setStudents(remoteState.students);
+      }
+      if (Array.isArray(remoteState.loans)) {
+        setLoans(remoteState.loans);
+      }
+      if (Array.isArray(remoteState.storeCatalog) && remoteState.storeCatalog.length > 0) {
+        setStoreCatalog(remoteState.storeCatalog);
+      }
+      if (Array.isArray(remoteState.classrooms) && remoteState.classrooms.length > 0) {
+        setClassrooms(remoteState.classrooms);
+      }
+      if (Array.isArray(remoteState.pendingRequests)) {
+        setPendingRequests(remoteState.pendingRequests);
+      }
+      if (Array.isArray(remoteState.contracts)) {
+        setContracts(remoteState.contracts);
+      }
+      if (remoteState.settings) {
+        setSettings((prev) => ({
+          ...prev,
+          ...remoteState.settings,
+          cloudDatabaseUrl: prev.cloudDatabaseUrl || remoteState.settings?.cloudDatabaseUrl,
+          cloudSupabaseKey: prev.cloudSupabaseKey || remoteState.settings?.cloudSupabaseKey,
+        }));
+      }
+
+      lastSyncedUpdatedAtRef.current = remoteState.updatedAt;
+      lastPushedUpdatedAtRef.current = remoteState.updatedAt;
+      try {
+        localStorage.setItem('esl_classroom_updated_at', remoteState.updatedAt);
+      } catch {}
+      setLastPushedContentFingerprint(computeStateFingerprint(remoteState));
+
+      setTimeout(() => {
+        isApplyingRemoteUpdateRef.current = false;
+      }, 350);
+    };
+
     const unsubscribe = subscribeToClassroomRealtime({
       role: 'teacher',
       dbUrl: getConfiguredCloudDbUrl(settings.cloudDatabaseUrl),
       supabaseKey: getConfiguredSupabaseKey(settings.cloudSupabaseKey),
       onStudentAction: handleIncomingStudentAction,
+      onStateSync: handleIncomingStateSync,
     });
 
     return () => unsubscribe();
@@ -3530,6 +3661,63 @@ export default function App() {
               { force: true }
             )
           }
+          onPullFromCloud={async (dbUrl, supabaseKey) => {
+            try {
+              const res = await fetchClassroomStateFromCloud(dbUrl, supabaseKey);
+              if (res.source === 'cloud' && res.state) {
+                const cloud = res.state;
+                isApplyingRemoteUpdateRef.current = true;
+                if (Array.isArray(cloud.students) && cloud.students.length > 0) {
+                  setStudents(cloud.students);
+                }
+                if (Array.isArray(cloud.loans)) {
+                  setLoans(cloud.loans);
+                }
+                if (cloud.storeCatalog?.length) {
+                  setStoreCatalog(cloud.storeCatalog);
+                }
+                if (cloud.classrooms?.length) {
+                  setClassrooms(cloud.classrooms);
+                }
+                if (Array.isArray(cloud.pendingRequests)) {
+                  setPendingRequests(cloud.pendingRequests);
+                }
+                if (Array.isArray(cloud.contracts)) {
+                  setContracts(cloud.contracts);
+                }
+                if (cloud.settings) {
+                  setSettings((prev) => ({
+                    ...prev,
+                    ...cloud.settings,
+                    cloudDatabaseUrl: dbUrl || prev.cloudDatabaseUrl,
+                    cloudSupabaseKey: supabaseKey || prev.cloudSupabaseKey,
+                  }));
+                }
+                const stamp = cloud.updatedAt || new Date().toISOString();
+                try {
+                  localStorage.setItem('esl_classroom_updated_at', stamp);
+                } catch {}
+                lastSyncedUpdatedAtRef.current = stamp;
+                lastPushedUpdatedAtRef.current = stamp;
+                setLastPushedContentFingerprint(computeStateFingerprint(cloud));
+                setTimeout(() => {
+                  isApplyingRemoteUpdateRef.current = false;
+                }, 350);
+                addToast(
+                  'success',
+                  'Cloud Sync',
+                  `Loaded ${cloud.students.length} students directly from Supabase!`
+                );
+                return { ok: true, count: cloud.students.length };
+              }
+              return { ok: false, error: res.error || 'No state returned from Supabase.' };
+            } catch (err) {
+              return {
+                ok: false,
+                error: err instanceof Error ? err.message : 'Failed to pull from Supabase.',
+              };
+            }
+          }}
           onOpenStudentWebPreview={() => setCurrentView('student_web')}
         />
       )}
