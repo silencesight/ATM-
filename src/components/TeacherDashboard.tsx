@@ -63,6 +63,7 @@ import { DataBackupModal } from './DataBackupModal';
 import { StudentYearlyHistory } from './StudentYearlyHistory';
 import { StudentPasswordModal } from './StudentPasswordModal';
 import { SalaryDisbursementModal } from './SalaryDisbursementModal';
+import { GrantSalaryRaiseModal } from './GrantSalaryRaiseModal';
 
 export interface TeacherDashboardProps {
   students: Student[];
@@ -140,6 +141,12 @@ export interface TeacherDashboardProps {
   onDisburseSalaries?: (
     disbursements: { studentId: string; amount: number; customReason?: string }[]
   ) => void;
+  onGrantSalaryRaise?: (
+    studentId: string,
+    newSalary: number,
+    reason: string,
+    creditScoreBonus?: number
+  ) => void;
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
@@ -182,6 +189,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onResetStudentPassword,
   onChangeStudentPassword,
   onDisburseSalaries,
+  onGrantSalaryRaise,
 }) => {
   const [localClassFilter, setLocalClassFilter] = useState<string>(selectedClassId);
   const effectiveClassFilter = onSelectClass ? selectedClassId : localClassFilter;
@@ -233,6 +241,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [studentForHistory, setStudentForHistory] = useState<Student | null>(null);
   const [studentForPasswordModal, setStudentForPasswordModal] = useState<Student | null>(null);
   const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
+  const [selectedStudentForSalaryRaise, setSelectedStudentForSalaryRaise] = useState<Student | null>(null);
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'grants' | 'adjustments' | 'loans'>(
     'all'
   );
@@ -241,7 +250,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     if (!onDisburseSalaries || student.cardStatus === 'delisted') return;
 
     const amount =
-      student.paymentFrequency === 'monthly'
+      typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0
+        ? student.customSalaryAmount
+        : student.paymentFrequency === 'monthly'
         ? settings.monthlyPayment || 482
         : settings.bimonthlyPayment || 241;
 
@@ -1469,51 +1480,82 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
                   )}
 
-                  {/* Salary Cadence & 1-Click Disburse Button */}
-                  <div className="glass-well rounded-2xl p-2.5 flex items-center justify-between gap-2 text-xs font-mono border border-emerald-500/20 bg-emerald-500/5">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 text-on-surface font-bold text-xs">
-                        <Briefcase className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <span>
-                          {student.paymentFrequency === 'monthly'
-                            ? `E$${settings.monthlyPayment || 482}/mo`
-                            : `E$${settings.bimonthlyPayment || 241}/bi-wk`}
-                        </span>
+                  {/* Salary Cadence, Custom Raise Badge & 1-Click Disburse Button */}
+                  {(() => {
+                    const standardBase =
+                      student.paymentFrequency === 'monthly'
+                        ? settings.monthlyPayment || 482
+                        : settings.bimonthlyPayment || 241;
+                    const effectiveSalary =
+                      typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0
+                        ? student.customSalaryAmount
+                        : standardBase;
+                    const hasRaise =
+                      typeof student.customSalaryAmount === 'number' &&
+                      student.customSalaryAmount > 0 &&
+                      student.customSalaryAmount !== standardBase;
+                    const raiseDelta = effectiveSalary - standardBase;
+
+                    return (
+                      <div className="glass-well rounded-2xl p-2.5 flex items-center justify-between gap-2 text-xs font-mono border border-emerald-500/20 bg-emerald-500/5">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 text-on-surface font-bold text-xs flex-wrap">
+                            <Briefcase className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>
+                              E${effectiveSalary}.00 /{' '}
+                              {student.paymentFrequency === 'monthly' ? 'mo' : 'bi-wk'}
+                            </span>
+                            {hasRaise && (
+                              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30 flex items-center gap-1">
+                                <TrendingUp className="w-2.5 h-2.5" />
+                                <span>{raiseDelta > 0 ? `+E$${raiseDelta} Raise` : 'Custom Wage'}</span>
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-on-surface-variant truncate pl-5">
+                            {student.lastSalaryPaidAt ? (
+                              (() => {
+                                const daysAgo = Math.max(
+                                  0,
+                                  Math.floor(
+                                    (Date.now() - new Date(student.lastSalaryPaidAt).getTime()) /
+                                      (1000 * 60 * 60 * 24)
+                                  )
+                                );
+                                return `Paid ${daysAgo === 0 ? 'today' : `${daysAgo}d ago`} (${new Date(
+                                  student.lastSalaryPaidAt
+                                ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+                              })()
+                            ) : (
+                              <span className="text-emerald-400/80">🌱 Not yet paid this cycle</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedStudentForSalaryRaise(student)}
+                            className="px-2.5 py-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-emerald-300 hover:border-emerald-400/40 text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                            title="Customize Student Wage / Grant Salary Raise"
+                          >
+                            <TrendingUp className="w-3 h-3 text-emerald-400" />
+                            <span>Raise</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isDelisted}
+                            onClick={() => handleDisburseSingleStudentSalary(student)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 font-bold text-[11px] transition-all disabled:opacity-40 flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                            title={`Disburse E$${effectiveSalary}.00 cadence salary`}
+                          >
+                            <DollarSign className="w-3 h-3 text-emerald-400" />
+                            <span>Pay Salary</span>
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-[10px] text-on-surface-variant truncate pl-5">
-                        {student.lastSalaryPaidAt ? (
-                          (() => {
-                            const daysAgo = Math.max(
-                              0,
-                              Math.floor(
-                                (Date.now() - new Date(student.lastSalaryPaidAt).getTime()) /
-                                  (1000 * 60 * 60 * 24)
-                              )
-                            );
-                            return `Paid ${daysAgo === 0 ? 'today' : `${daysAgo}d ago`} (${new Date(
-                              student.lastSalaryPaidAt
-                            ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
-                          })()
-                        ) : (
-                          <span className="text-emerald-400/80">🌱 Not yet paid this cycle</span>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      disabled={isDelisted}
-                      onClick={() => handleDisburseSingleStudentSalary(student)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 font-bold text-[11px] transition-all disabled:opacity-40 shrink-0 flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                      title={`Disburse ${
-                        student.paymentFrequency === 'monthly'
-                          ? `E$${settings.monthlyPayment || 482}`
-                          : `E$${settings.bimonthlyPayment || 241}`
-                      } cadence salary`}
-                    >
-                      <DollarSign className="w-3 h-3 text-emerald-400" />
-                      <span>Pay Salary</span>
-                    </button>
-                  </div>
+                    );
+                  })()}
 
                   {/* Quick Action Footer Buttons */}
                   <div className="grid grid-cols-4 gap-1.5 pt-1">
@@ -1659,20 +1701,50 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             >
                               +E$
                             </button>
-                            <button
-                              type="button"
-                              disabled={student.cardStatus === 'delisted'}
-                              onClick={() => handleDisburseSingleStudentSalary(student)}
-                              className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-400/30 font-bold text-[11px] flex items-center gap-1 disabled:opacity-40"
-                              title={`Pay Cadence Salary (${
+                            {(() => {
+                              const effSalary =
+                                typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0
+                                  ? student.customSalaryAmount
+                                  : student.paymentFrequency === 'monthly'
+                                  ? settings.monthlyPayment || 482
+                                  : settings.bimonthlyPayment || 241;
+                              const standardBase =
                                 student.paymentFrequency === 'monthly'
-                                  ? `E$${settings.monthlyPayment || 482}`
-                                  : `E$${settings.bimonthlyPayment || 241}`
-                              })`}
-                            >
-                              <Briefcase className="w-3 h-3 text-emerald-400" />
-                              <span>Salary</span>
-                            </button>
+                                  ? settings.monthlyPayment || 482
+                                  : settings.bimonthlyPayment || 241;
+                              const hasRaise =
+                                typeof student.customSalaryAmount === 'number' &&
+                                student.customSalaryAmount > 0 &&
+                                student.customSalaryAmount !== standardBase;
+
+                              return (
+                                <>
+                                  <button
+                                    type="button"
+                                    disabled={student.cardStatus === 'delisted'}
+                                    onClick={() => handleDisburseSingleStudentSalary(student)}
+                                    className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-400/30 font-bold text-[11px] flex items-center gap-1 disabled:opacity-40"
+                                    title={`Pay Cadence Salary (E$${effSalary}.00)`}
+                                  >
+                                    <Briefcase className="w-3 h-3 text-emerald-400" />
+                                    <span>Salary (E${effSalary})</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedStudentForSalaryRaise(student)}
+                                    className={`px-2 py-1 rounded-lg font-bold text-[11px] flex items-center gap-1 transition-all ${
+                                      hasRaise
+                                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                                        : 'glass-well text-on-surface hover:text-emerald-300'
+                                    }`}
+                                    title="Customize Wage / Grant Salary Raise"
+                                  >
+                                    <TrendingUp className="w-3 h-3 text-emerald-400" />
+                                    <span>Raise</span>
+                                  </button>
+                                </>
+                              );
+                            })()}
                             <button
                               type="button"
                               onClick={() => setStudentForManualAdjust(student)}
@@ -1889,6 +1961,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           isOpen={true}
           onClose={() => setSelectedStudentForCreditRaise(null)}
           onGrantRaise={onGrantCreditLimitRaise}
+          onGrantSalaryRaise={onGrantSalaryRaise}
+          settings={settings}
         />
       )}
 
@@ -2008,6 +2082,18 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           initialClassFilter={effectiveClassFilter}
           theme={theme}
           onDisburseSalaries={onDisburseSalaries}
+          onOpenSalaryRaiseModal={(st) => setSelectedStudentForSalaryRaise(st)}
+        />
+      )}
+
+      {selectedStudentForSalaryRaise && onGrantSalaryRaise && (
+        <GrantSalaryRaiseModal
+          isOpen={Boolean(selectedStudentForSalaryRaise)}
+          onClose={() => setSelectedStudentForSalaryRaise(null)}
+          student={selectedStudentForSalaryRaise}
+          students={students}
+          settings={settings}
+          onGrantSalaryRaise={onGrantSalaryRaise}
         />
       )}
     </div>

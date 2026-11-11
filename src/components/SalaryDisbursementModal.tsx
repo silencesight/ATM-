@@ -13,6 +13,7 @@ import {
   Sparkles,
   Info,
   Filter,
+  TrendingUp,
 } from 'lucide-react';
 import { Student, Classroom, TeacherSettings } from '../types';
 import { StudentAvatar } from './StudentAvatar';
@@ -28,6 +29,7 @@ export interface SalaryDisbursementModalProps {
   onDisburseSalaries: (
     disbursements: { studentId: string; amount: number; customReason?: string }[]
   ) => void;
+  onOpenSalaryRaiseModal?: (student: Student) => void;
 }
 
 interface StudentSalaryRow {
@@ -38,6 +40,9 @@ interface StudentSalaryRow {
   daysAgo: number | null;
   lastPaidDateStr: string | null;
   thresholdDays: number;
+  standardBase: number;
+  hasCustomSalary: boolean;
+  raiseDelta: number;
 }
 
 export const SalaryDisbursementModal: React.FC<SalaryDisbursementModalProps> = ({
@@ -49,6 +54,7 @@ export const SalaryDisbursementModal: React.FC<SalaryDisbursementModalProps> = (
   initialClassFilter = 'all',
   theme = 'dark',
   onDisburseSalaries,
+  onOpenSalaryRaiseModal,
 }) => {
   const [classFilter, setClassFilter] = useState<string>(initialClassFilter);
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,10 +75,22 @@ export const SalaryDisbursementModal: React.FC<SalaryDisbursementModalProps> = (
   // Compute rows with salary calculation & duplicate detection
   const studentRows = useMemo<StudentSalaryRow[]>(() => {
     return students.map((s) => {
-      const defaultAmount =
+      const standardBase =
         s.paymentFrequency === 'monthly'
           ? settings.monthlyPayment || 482
           : settings.bimonthlyPayment || 241;
+
+      const defaultAmount =
+        typeof s.customSalaryAmount === 'number' && s.customSalaryAmount > 0
+          ? s.customSalaryAmount
+          : standardBase;
+
+      const hasCustomSalary =
+        typeof s.customSalaryAmount === 'number' &&
+        s.customSalaryAmount > 0 &&
+        s.customSalaryAmount !== standardBase;
+
+      const raiseDelta = (s.customSalaryAmount || standardBase) - standardBase;
 
       const thresholdDays = s.paymentFrequency === 'monthly' ? 14 : 7;
       let recentlyPaid = false;
@@ -105,6 +123,9 @@ export const SalaryDisbursementModal: React.FC<SalaryDisbursementModalProps> = (
         daysAgo,
         lastPaidDateStr,
         thresholdDays,
+        standardBase,
+        hasCustomSalary,
+        raiseDelta,
       };
     });
   }, [students, settings, customAmounts]);
@@ -485,6 +506,14 @@ export const SalaryDisbursementModal: React.FC<SalaryDisbursementModalProps> = (
                           >
                             {s.paymentFrequency === 'monthly' ? 'Monthly' : 'Bi-weekly'}
                           </span>
+                          {row.hasCustomSalary && (
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 flex items-center gap-1 shadow-sm">
+                              <TrendingUp className="w-3 h-3 text-emerald-400" />
+                              <span>
+                                {row.raiseDelta > 0 ? `+E$${row.raiseDelta} Raise` : 'Custom Wage'}
+                              </span>
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2 text-[11px] font-mono text-on-surface-variant mt-0.5">
@@ -520,6 +549,16 @@ export const SalaryDisbursementModal: React.FC<SalaryDisbursementModalProps> = (
                     {/* Right: Salary Amount & Override Field */}
                     <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
                       <div className="flex items-center gap-1.5">
+                        {onOpenSalaryRaiseModal && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenSalaryRaiseModal(s)}
+                            className="p-1.5 rounded-xl glass-pill text-on-surface-variant hover:text-emerald-300 hover:border-emerald-400/40 transition-colors"
+                            title="Customize Student Wage / Grant Raise"
+                          >
+                            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                          </button>
+                        )}
                         <span className="text-xs font-mono font-bold text-emerald-400">E$</span>
                         <input
                           type="number"

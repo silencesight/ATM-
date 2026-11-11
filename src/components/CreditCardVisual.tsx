@@ -164,7 +164,11 @@ export const CreditCardVisual: React.FC<CreditCardVisualProps> = ({
                     isUltra ? 'text-[7px] px-1.5 py-0.5' : isCompact ? 'text-[8px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'
                   } font-mono font-bold rounded-full bg-white/15 text-white border border-white/25 backdrop-blur-md`}
                 >
-                  {student.paymentFrequency === 'monthly' ? 'E$482/MO' : 'E$241/BI-WK'}
+                  {typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0
+                    ? `E$${student.customSalaryAmount}/${student.paymentFrequency === 'monthly' ? 'MO' : 'BI-WK'}`
+                    : student.paymentFrequency === 'monthly'
+                    ? 'E$482/MO'
+                    : 'E$241/BI-WK'}
                 </span>
               </div>
             </div>
@@ -387,7 +391,11 @@ export const CreditCardVisual: React.FC<CreditCardVisualProps> = ({
               Cadence
             </p>
             <p className="font-bold text-on-surface font-mono text-sm mt-0.5">
-              {student.paymentFrequency === 'monthly' ? 'E$482/mo' : 'E$241/bi-wk'}
+              {typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0
+                ? `E$${student.customSalaryAmount}/${student.paymentFrequency === 'monthly' ? 'mo' : 'bi-wk'}`
+                : student.paymentFrequency === 'monthly'
+                ? 'E$482/mo'
+                : 'E$241/bi-wk'}
             </p>
           </div>
         </div>

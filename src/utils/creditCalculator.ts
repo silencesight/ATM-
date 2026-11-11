@@ -130,6 +130,33 @@ export function calculateEnglishRepaymentValue(
 }
 
 /**
+ * Returns a student's customized salary amount if set, or default cadence amount from settings
+ */
+export function getStudentSalary(
+  student: { paymentFrequency?: 'monthly' | 'bimonthly'; customSalaryAmount?: number },
+  settings: Partial<TeacherSettings> = DEFAULT_TEACHER_SETTINGS
+): number {
+  if (typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0) {
+    return student.customSalaryAmount;
+  }
+  return student.paymentFrequency === 'monthly'
+    ? (settings.monthlyPayment || 482)
+    : (settings.bimonthlyPayment || 241);
+}
+
+/**
+ * Returns a student's standard school cadence base salary without custom raise
+ */
+export function getStudentStandardCadenceSalary(
+  student: { paymentFrequency?: 'monthly' | 'bimonthly' },
+  settings: Partial<TeacherSettings> = DEFAULT_TEACHER_SETTINGS
+): number {
+  return student.paymentFrequency === 'monthly'
+    ? (settings.monthlyPayment || 482)
+    : (settings.bimonthlyPayment || 241);
+}
+
+/**
  * Helper to compute task breakdown combinations to cover an amount
  */
 export function suggestTaskCombinations(

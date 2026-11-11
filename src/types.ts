@@ -285,6 +285,23 @@ export interface Student {
   disclaimers?: BalanceDisclaimerNotice[];
   p2pTransfersHistory?: P2PTransferRecord[];
   lastSalaryPaidAt?: string;
+
+  // Custom Salary & Wage Raises
+  customSalaryAmount?: number; // Custom salary amount overriding the default paymentFrequency rate
+  salaryRaisesHistory?: SalaryRaiseRecord[];
+}
+
+export interface SalaryRaiseRecord {
+  id: string;
+  studentId: string;
+  studentName: string;
+  previousSalary: number;
+  newSalary: number;
+  raiseAmount: number;
+  reason: string;
+  grantedBy: string;
+  creditScoreBonus?: number;
+  timestamp: string;
 }
 
 export interface CreditLimitRaiseTransaction {

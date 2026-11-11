@@ -310,11 +310,18 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 Allowance Yield
               </span>
               <div className="flex items-center justify-between gap-2 mt-0.5">
-                <span className="text-lg font-mono font-bold text-on-surface block">
-                  {student.paymentFrequency === 'monthly'
-                    ? `E$ ${settings.monthlyPayment}/MO`
-                    : `E$ ${settings.bimonthlyPayment}/2WK`}
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-lg font-mono font-bold text-on-surface block">
+                    {student.paymentFrequency === 'monthly'
+                      ? `E$ ${student.customSalaryAmount || settings.monthlyPayment}/MO`
+                      : `E$ ${student.customSalaryAmount || settings.bimonthlyPayment}/2WK`}
+                  </span>
+                  {student.customSalaryAmount && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[9px] font-bold border border-emerald-400/30">
+                      HONORS WAGE
+                    </span>
+                  )}
+                </div>
                 {onUpdatePaymentFrequency && (
                   <button
                     type="button"

@@ -9,8 +9,10 @@ import {
   History,
   ArrowUpRight,
   ShieldCheck,
+  Briefcase,
+  DollarSign,
 } from 'lucide-react';
-import { Student, CreditTier } from '../types';
+import { Student, CreditTier, TeacherSettings } from '../types';
 import { getCreditTier } from '../utils/creditCalculator';
 import { StudentSelectorNav } from './StudentSelectorNav';
 
@@ -20,9 +22,16 @@ interface GrantCreditLimitRaiseModalProps {
   students?: Student[];
   selectedStudent?: Student;
   student?: Student;
+  settings?: TeacherSettings;
   onGrantRaise: (
     studentId: string,
     newLimit: number,
+    reason: string,
+    creditScoreBonus?: number
+  ) => void;
+  onGrantSalaryRaise?: (
+    studentId: string,
+    newSalary: number,
     reason: string,
     creditScoreBonus?: number
   ) => void;
@@ -45,7 +54,9 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
   students = [],
   selectedStudent,
   student,
+  settings,
   onGrantRaise,
+  onGrantSalaryRaise,
 }) => {
   const activeTargetStudent = selectedStudent || student;
   const safeStudents = Array.isArray(students) && students.length > 0 
@@ -65,7 +76,25 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
   const currentStudent = safeStudents.find((s) => s.id === studentId) || activeTargetStudent;
   const currentLimit = currentStudent?.maxLoanLimit || 50;
 
-  // Calculation mode: 'increment' (+E$) or 'exact' (target new limit)
+  // Promotion Scope: Salary raise, Credit limit raise, or Both
+  const [promotionScope, setPromotionScope] = useState<'salary' | 'credit_limit' | 'both'>(
+    onGrantSalaryRaise ? 'both' : 'credit_limit'
+  );
+
+  // Salary Calculations
+  const standardSalaryBase =
+    currentStudent?.paymentFrequency === 'monthly'
+      ? settings?.monthlyPayment || 482
+      : settings?.bimonthlyPayment || 241;
+  const currentSalary =
+    typeof currentStudent?.customSalaryAmount === 'number' && currentStudent.customSalaryAmount > 0
+      ? currentStudent.customSalaryAmount
+      : standardSalaryBase;
+
+  const [salaryIncrement, setSalaryIncrement] = useState<number>(50);
+  const [customSalaryIncrement, setCustomSalaryIncrement] = useState<string>('');
+
+  // Credit Limit Calculations: 'increment' (+E$) or 'exact' (target new limit)
   const [mode, setMode] = useState<'increment' | 'exact'>('increment');
   const [incrementAmount, setIncrementAmount] = useState<number>(100);
   const [customIncrement, setCustomIncrement] = useState<string>('');
@@ -76,6 +105,10 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
   const [scoreBonus, setScoreBonus] = useState<number>(15);
 
   if (!isOpen) return null;
+
+  const effectiveNewSalary =
+    currentSalary +
+    (customSalaryIncrement !== '' ? Math.max(0, parseInt(customSalaryIncrement) || 0) : salaryIncrement);
 
   const effectiveNewLimit =
     mode === 'increment'
@@ -92,15 +125,29 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
     : { name: 'Standard', minScore: 300, maxLoanLimit: 50, badgeColor: 'text-slate-400', badgeBg: 'bg-slate-800', cardLabel: 'STANDARD' };
 
   const canSubmit =
-    currentStudent &&
-    currentStudent.cardStatus === 'active' &&
-    effectiveNewLimit > 0 &&
-    effectiveNewLimit !== currentLimit;
+    Boolean(currentStudent && currentStudent.cardStatus === 'active');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit || !currentStudent) return;
-    onGrantRaise(currentStudent.id, effectiveNewLimit, effectiveReason, scoreBonus);
+
+    if (promotionScope === 'credit_limit' || promotionScope === 'both') {
+      if (effectiveNewLimit > 0 && effectiveNewLimit !== currentLimit) {
+        onGrantRaise(currentStudent.id, effectiveNewLimit, effectiveReason, scoreBonus);
+      }
+    }
+
+    if ((promotionScope === 'salary' || promotionScope === 'both') && onGrantSalaryRaise) {
+      if (effectiveNewSalary > 0) {
+        onGrantSalaryRaise(
+          currentStudent.id,
+          effectiveNewSalary,
+          effectiveReason,
+          promotionScope === 'both' ? 0 : scoreBonus
+        );
+      }
+    }
+
     onClose();
   };
 
@@ -162,8 +209,107 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
             />
           </div>
 
-          {/* Current vs New Limit Card */}
-          {currentStudent && (
+          {/* Promotion Scope Selector */}
+          {onGrantSalaryRaise && (
+            <div className="glass-well p-1 rounded-2xl grid grid-cols-3 gap-1 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => setPromotionScope('salary')}
+                className={`py-2 px-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  promotionScope === 'salary'
+                    ? 'bg-emerald-500 text-black shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Salary Raise</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPromotionScope('both')}
+                className={`py-2 px-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  promotionScope === 'both'
+                    ? 'bg-primary-container text-on-primary-fixed shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Salary + Credit</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPromotionScope('credit_limit')}
+                className={`py-2 px-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  promotionScope === 'credit_limit'
+                    ? 'bg-slate-700 text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Credit Limit</span>
+              </button>
+            </div>
+          )}
+
+          {/* Salary Raise Configuration Card */}
+          {(promotionScope === 'salary' || promotionScope === 'both') && currentStudent && (
+            <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-emerald-300 font-bold flex items-center gap-1.5 uppercase tracking-wider">
+                  <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+                  Cadence Salary Raise (Next Payout)
+                </span>
+                <span className="text-on-surface-variant">
+                  Current: E${currentSalary}.00/{currentStudent.paymentFrequency === 'monthly' ? 'mo' : '2wk'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                {[25, 50, 75, 100].map((amt) => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => {
+                      setSalaryIncrement(amt);
+                      setCustomSalaryIncrement('');
+                    }}
+                    className={`py-1.5 px-2 rounded-lg font-mono text-xs font-bold transition-all border ${
+                      customSalaryIncrement === '' && salaryIncrement === amt
+                        ? 'bg-emerald-500 text-black border-emerald-400 shadow-sm'
+                        : 'glass-well border-outline-variant/25 text-on-surface hover:border-emerald-400/40'
+                    }`}
+                  >
+                    +E${amt}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs font-mono text-on-surface-variant shrink-0">
+                  Custom Raise (+E$):
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="e.g. 60"
+                  value={customSalaryIncrement}
+                  onChange={(e) => setCustomSalaryIncrement(e.target.value)}
+                  className="w-full px-3 py-1.5 rounded-lg glass-well border border-outline-variant/30 text-on-surface font-mono text-xs font-bold focus:outline-none focus:border-emerald-400"
+                />
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-black/40 border border-emerald-500/30 flex items-center justify-between text-xs font-mono">
+                <span className="text-on-surface-variant">New Regular Salary:</span>
+                <strong className="text-emerald-300 font-bold text-sm">
+                  E$ {effectiveNewSalary}.00 / {currentStudent.paymentFrequency === 'monthly' ? 'mo' : '2wk'} (+E${effectiveNewSalary - currentSalary} raise)
+                </strong>
+              </div>
+            </div>
+          )}
+
+          {/* Current vs New Limit Card (shown for Credit Limit or Both) */}
+          {(promotionScope === 'credit_limit' || promotionScope === 'both') && currentStudent && (
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
               <div className="flex items-center justify-between text-xs font-mono">
                 <div className="flex items-center gap-2">
@@ -212,112 +358,114 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
             </div>
           )}
 
-          {/* Step 2: Choose Rise Mode & Amount */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-400 font-mono">
-                2. Choose Rise Amount (Your Choice)
-              </label>
-              <div className="flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-[11px] font-mono">
-                <button
-                  type="button"
-                  onClick={() => setMode('increment')}
-                  className={`px-2.5 py-1 rounded-md transition-colors ${
-                    mode === 'increment' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  + Increase Amount
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode('exact')}
-                  className={`px-2.5 py-1 rounded-md transition-colors ${
-                    mode === 'exact' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Set Specific Limit
-                </button>
+          {/* Step 2: Choose Rise Mode & Amount (for Credit Limit) */}
+          {(promotionScope === 'credit_limit' || promotionScope === 'both') && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] uppercase font-bold tracking-widest text-slate-400 font-mono">
+                  Credit Limit Rise Amount
+                </label>
+                <div className="flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-[11px] font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setMode('increment')}
+                    className={`px-2.5 py-1 rounded-md transition-colors ${
+                      mode === 'increment' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    + Increase Amount
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode('exact')}
+                    className={`px-2.5 py-1 rounded-md transition-colors ${
+                      mode === 'exact' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Set Specific Limit
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {mode === 'increment' ? (
-              <div className="space-y-2">
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {PRESET_INCREASES.map((inc) => {
-                    const isSelected = customIncrement === '' && incrementAmount === inc;
-                    return (
-                      <button
-                        key={inc}
-                        type="button"
-                        onClick={() => {
-                          setCustomIncrement('');
-                          setIncrementAmount(inc);
-                        }}
-                        className={`py-2 rounded-lg font-mono font-bold text-xs transition-all border ${
-                          isSelected
-                            ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-200 border-slate-800'
-                        }`}
-                      >
-                        +E${inc}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center gap-2 pt-1">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-2 text-slate-500 font-mono text-xs">+E$</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={customIncrement}
-                      onChange={(e) => setCustomIncrement(e.target.value)}
-                      placeholder="Or type custom rise (e.g. 75, 250, 400)"
-                      className="w-full pl-10 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
-                    />
+              {mode === 'increment' ? (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {PRESET_INCREASES.map((inc) => {
+                      const isSelected = customIncrement === '' && incrementAmount === inc;
+                      return (
+                        <button
+                          key={inc}
+                          type="button"
+                          onClick={() => {
+                            setCustomIncrement('');
+                            setIncrementAmount(inc);
+                          }}
+                          className={`py-2 rounded-lg font-mono font-bold text-xs transition-all border ${
+                            isSelected
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                              : 'bg-slate-950 hover:bg-slate-800 text-slate-200 border-slate-800'
+                          }`}
+                        >
+                          +E${inc}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-2 text-slate-500 font-mono text-xs">+E$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={customIncrement}
+                        onChange={(e) => setCustomIncrement(e.target.value)}
+                        placeholder="Or type custom rise (e.g. 75, 250, 400)"
+                        className="w-full pl-10 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="grid grid-cols-5 gap-2">
-                  {PRESET_NEW_LIMITS.map((lim) => {
-                    const isSelected = customExactLimit === '' && exactLimit === lim;
-                    return (
-                      <button
-                        key={lim}
-                        type="button"
-                        onClick={() => {
-                          setCustomExactLimit('');
-                          setExactLimit(lim);
-                        }}
-                        className={`py-2 rounded-lg font-mono font-bold text-xs transition-all border ${
-                          isSelected
-                            ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-200 border-slate-800'
-                        }`}
-                      >
-                        E${lim}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center gap-2 pt-1">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-2 text-slate-500 font-mono text-xs">E$</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={customExactLimit}
-                      onChange={(e) => setCustomExactLimit(e.target.value)}
-                      placeholder="Enter exact new limit (e.g. 450, 800)"
-                      className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
-                    />
+              ) : (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-5 gap-2">
+                    {PRESET_NEW_LIMITS.map((lim) => {
+                      const isSelected = customExactLimit === '' && exactLimit === lim;
+                      return (
+                        <button
+                          key={lim}
+                          type="button"
+                          onClick={() => {
+                            setCustomExactLimit('');
+                            setExactLimit(lim);
+                          }}
+                          className={`py-2 rounded-lg font-mono font-bold text-xs transition-all border ${
+                            isSelected
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+                              : 'bg-slate-950 hover:bg-slate-800 text-slate-200 border-slate-800'
+                          }`}
+                        >
+                          E${lim}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-2 text-slate-500 font-mono text-xs">E$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={customExactLimit}
+                        onChange={(e) => setCustomExactLimit(e.target.value)}
+                        placeholder="Enter exact new limit (e.g. 450, 800)"
+                        className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Step 3: Commendation / Reason */}
           <div>
@@ -437,7 +585,11 @@ export const GrantCreditLimitRaiseModal: React.FC<GrantCreditLimitRaiseModalProp
                 className="px-5 py-2 text-xs font-bold uppercase tracking-wider text-slate-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-500/10 font-mono"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Confirm Limit Rise
+                {promotionScope === 'salary'
+                  ? `Grant Salary Raise (E$${effectiveNewSalary})`
+                  : promotionScope === 'both'
+                  ? 'Confirm Promotion (Salary & Credit)'
+                  : 'Confirm Limit Rise'}
               </button>
             </div>
           </div>

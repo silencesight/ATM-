@@ -29,6 +29,7 @@ import {
   ClassroomContract,
   BalanceAdjustmentTransaction,
   CreditLimitRaiseTransaction,
+  SalaryRaiseRecord,
   PendingStudentRequest,
   BalanceDisclaimerNotice,
   P2PTransferRecord,
@@ -986,6 +987,66 @@ export default function App() {
       'success',
       'Credit Limit Rise Granted! 🚀',
       `${student.name}'s loan limit raised from E$${prevLimit} to E$${newLimit}${bonusNote}.`
+    );
+  };
+
+  // Grant custom salary raise to student (customizes regular cadence wage)
+  const handleGrantSalaryRaise = (
+    studentId: string,
+    newSalary: number,
+    reason: string,
+    creditScoreBonus: number = 0
+  ) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return;
+
+    const baseStandard =
+      student.paymentFrequency === 'monthly'
+        ? settings.monthlyPayment || 482
+        : settings.bimonthlyPayment || 241;
+
+    const prevSalary =
+      typeof student.customSalaryAmount === 'number' && student.customSalaryAmount > 0
+        ? student.customSalaryAmount
+        : baseStandard;
+
+    const oldScore = student.creditScore;
+    const newScore = Math.min(850, Math.max(300, oldScore + (creditScoreBonus || 0)));
+    const raiseDelta = newSalary - prevSalary;
+
+    const raiseRecord: SalaryRaiseRecord = {
+      id: `salraise_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      studentId: student.id,
+      studentName: student.name,
+      previousSalary: prevSalary,
+      newSalary,
+      raiseAmount: raiseDelta,
+      reason: reason || 'Teacher discretionary wage raise',
+      grantedBy: 'Teacher Anthony',
+      creditScoreBonus: creditScoreBonus || 0,
+      timestamp: new Date().toISOString(),
+    };
+
+    setStudents((prev) =>
+      prev.map((s) =>
+        s.id === studentId
+          ? {
+              ...s,
+              customSalaryAmount: newSalary,
+              creditScore: newScore,
+              salaryRaisesHistory: [raiseRecord, ...(s.salaryRaisesHistory || [])],
+            }
+          : s
+      )
+    );
+
+    const bonusNote = creditScoreBonus > 0 ? ` (+${creditScoreBonus} credit score bonus)` : '';
+    const diffStr =
+      raiseDelta >= 0 ? `+E$${raiseDelta}.00 raise` : `E$${Math.abs(raiseDelta)}.00 adjustment`;
+    addToast(
+      'success',
+      'Salary Raise Granted! 🎉',
+      `${student.name}'s regular salary updated to E$${newSalary}.00 (${diffStr})${bonusNote}.`
     );
   };
 
@@ -3243,6 +3304,7 @@ export default function App() {
               onResetStudentPassword={handleResetStudentPassword}
               onChangeStudentPassword={handleChangeStudentPassword}
               onDisburseSalaries={handleDisburseSalaries}
+              onGrantSalaryRaise={handleGrantSalaryRaise}
             />
           )}
 
